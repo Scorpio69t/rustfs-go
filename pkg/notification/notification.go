@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/minio/minio-go/v7/pkg/set"
+	"github.com/Scorpio69t/rustfs-go/pkg/set"
 )
 
 // EventType is a S3 notification event associated to the bucket notification configuration

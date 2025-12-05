@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/Scorpio69t/rustfs-go"
-	"github.com/Scorpio69t/rustfs-go/credentials"
+	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
 func main() {

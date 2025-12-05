@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7/pkg/s3utils"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3utils"
 )
 
 // Signature and API related constants.

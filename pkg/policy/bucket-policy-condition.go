@@ -18,7 +18,7 @@
 package policy
 
 import (
-	"github.com/minio/minio-go/v7/pkg/set"
+	"github.com/Scorpio69t/rustfs-go/pkg/set"
 )
 
 // ConditionKeyMap - map of policy condition key and value.
