@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go"
+	"github.com/Scorpio69t/rustfs-go/v1"
 	"github.com/Scorpio69t/rustfs-go/v1/credentials"
 )
 

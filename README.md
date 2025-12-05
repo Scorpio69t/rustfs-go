@@ -32,7 +32,7 @@ import (
     "context"
     "log"
 
-    "github.com/Scorpio69t/rustfs-go"
+    "github.com/Scorpio69t/rustfs-go/v1"
     "github.com/Scorpio69t/rustfs-go/v1/credentials"
 )
 
