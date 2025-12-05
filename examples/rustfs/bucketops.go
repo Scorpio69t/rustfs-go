@@ -11,16 +11,20 @@ import (
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
+const (
+	// Note: These constants are dummy values,
+	// please replace them with values for your setup.
+	YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
+	YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+	YOURENDPOINT        = "127.0.0.1:9000"
+	YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
+)
+
 func main() {
 	// 初始化客户端
-	endpoint := "127.0.0.1:9000"
-	accessKeyID := "rustfsadmin"
-	secretAccessKey := "rustfsadmin"
-
-	client, err := rustfs.New(endpoint, &rustfs.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
+		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure: false,
-		Region: "us-east-1",
 	})
 	if err != nil {
 		log.Fatalln(err)
@@ -29,7 +33,7 @@ func main() {
 	ctx := context.Background()
 
 	// 创建存储桶
-	bucketName := "test-bucket"
+	bucketName := YOURBUCKET
 	err = client.MakeBucket(ctx, bucketName, rustfs.MakeBucketOptions{
 		Region: "us-east-1",
 	})
