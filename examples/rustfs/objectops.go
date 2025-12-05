@@ -13,22 +13,24 @@ import (
 )
 
 func main() {
-	// 初始化客户端
-	endpoint := "rustfs.example.com"
-	accessKeyID := "your-access-key"
-	secretAccessKey := "your-secret-key"
+	const (
+		YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
+		YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+		YOURENDPOINT        = "127.0.0.1:9000"
+		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
+	)
 
-	client, err := rustfs.New(endpoint, &rustfs.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: true,
-		Region: "us-east-1",
+	// 初始化客户端
+	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
+		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
+		Secure: false,
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	ctx := context.Background()
-	bucketName := "test-bucket"
+	bucketName := YOURBUCKET
 	objectName := "test-object.txt"
 
 	// 上传对象（从字符串）
@@ -46,13 +48,13 @@ func main() {
 		uploadInfo.Key, uploadInfo.ETag, uploadInfo.Size)
 
 	// 从文件上传对象
-	// uploadInfo, err = client.FPutObject(ctx, bucketName, "file-object.txt", "/path/to/local/file.txt", rustfs.PutObjectOptions{
-	// 	ContentType: "text/plain",
-	// })
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-	// log.Printf("成功从文件上传对象: %s\n", uploadInfo.Key)
+	uploadInfo, err = client.FPutObject(ctx, bucketName, "file-object.txt", "./file-object.txt", rustfs.PutObjectOptions{
+		ContentType: "text/plain",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Printf("成功从文件上传对象: %s\n", uploadInfo.Key)
 
 	// 获取对象信息
 	objInfo, err := client.StatObject(ctx, bucketName, objectName, rustfs.StatObjectOptions{})
@@ -67,10 +69,15 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer obj.Reader.Close()
+	defer func(obj *rustfs.Object) {
+		err := obj.Close()
+		if err != nil {
+
+		}
+	}(obj)
 
 	buf := make([]byte, 1024)
-	n, err := obj.Reader.Read(buf)
+	n, err := obj.Read(buf)
 	if err != nil && err.Error() != "EOF" {
 		log.Fatalln(err)
 	}
@@ -84,9 +91,9 @@ func main() {
 	// log.Println("成功下载对象到文件")
 
 	// 删除对象
-	err = client.RemoveObject(ctx, bucketName, objectName, rustfs.RemoveObjectOptions{})
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Printf("成功删除对象: %s\n", objectName)
+	//err = client.RemoveObject(ctx, bucketName, objectName, rustfs.RemoveObjectOptions{})
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//log.Printf("成功删除对象: %s\n", objectName)
 }

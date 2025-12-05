@@ -1,0 +1,4 @@
+hello, rustfs!
+This is a test file for the rustfs filesystem.
+It contains multiple lines of text.
+Have a great day!

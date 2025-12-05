@@ -11,16 +11,14 @@ import (
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
-const (
-	// Note: These constants are dummy values,
-	// please replace them with values for your setup.
-	YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
-	YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
-	YOURENDPOINT        = "127.0.0.1:9000"
-	YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
-)
-
 func main() {
+	const (
+		YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
+		YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+		YOURENDPOINT        = "127.0.0.1:9000"
+		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
+	)
+
 	// 初始化客户端
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
