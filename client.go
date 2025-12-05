@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/v1/credentials"
+	"github.com/Scorpio69t/rustfs-go/credentials"
 )
 
 // BucketLookupType - type of bucket lookup.

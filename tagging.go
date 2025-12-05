@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3utils"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3utils"
 )
 
 // Tag - object tag

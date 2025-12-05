@@ -32,8 +32,8 @@ import (
     "context"
     "log"
 
-    "github.com/Scorpio69t/rustfs-go/v1"
-    "github.com/Scorpio69t/rustfs-go/v1/credentials"
+    "github.com/Scorpio69t/rustfs-go"
+    "github.com/Scorpio69t/rustfs-go/credentials"
 )
 
 func main() {
@@ -236,4 +236,4 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 支持
 
-如有问题或建议，请提交 [Issue](https://github.com/Scorpio69t/rustfs-go/v1/issues)。
+如有问题或建议，请提交 [Issue](https://github.com/Scorpio69t/rustfs-go/issues)。

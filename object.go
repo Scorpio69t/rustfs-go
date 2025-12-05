@@ -10,9 +10,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3errors"
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3signer"
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3utils"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3errors"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3signer"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3utils"
 )
 
 // PutObjectOptions - options for PutObject

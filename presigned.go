@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3signer"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3signer"
 )
 
 // PresignedGetObject - generate presigned GET URL

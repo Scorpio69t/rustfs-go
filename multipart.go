@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/v1/pkg/s3utils"
+	"github.com/Scorpio69t/rustfs-go/pkg/s3utils"
 )
 
 // InitiateMultipartUploadResult - initiate multipart upload result

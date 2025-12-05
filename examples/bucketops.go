@@ -7,19 +7,19 @@ import (
 	"context"
 	"log"
 
-	"github.com/Scorpio69t/rustfs-go/v1"
-	"github.com/Scorpio69t/rustfs-go/v1/credentials"
+	"github.com/Scorpio69t/rustfs-go"
+	"github.com/Scorpio69t/rustfs-go/credentials"
 )
 
 func main() {
 	// 初始化客户端
-	endpoint := "localhost:9000"
+	endpoint := "127.0.0.1:9000"
 	accessKeyID := "rustfsadmin"
 	secretAccessKey := "rustfsadmin"
 
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: true,
+		Secure: false,
 		Region: "us-east-1",
 	})
 	if err != nil {
