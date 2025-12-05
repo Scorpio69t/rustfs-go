@@ -14,22 +14,24 @@ import (
 )
 
 func main() {
-	// 初始化客户端
-	endpoint := "rustfs.example.com"
-	accessKeyID := "your-access-key"
-	secretAccessKey := "your-secret-key"
+	const (
+		YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
+		YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+		YOURENDPOINT        = "127.0.0.1:9000"
+		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
+	)
 
-	client, err := rustfs.New(endpoint, &rustfs.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: true,
-		Region: "us-east-1",
+	// 初始化客户端
+	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
+		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
+		Secure: false,
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	ctx := context.Background()
-	bucketName := "test-bucket"
+	bucketName := YOURBUCKET
 	objectName := "test-object.txt"
 
 	// 生成预签名 GET URL（1小时有效）
@@ -47,14 +49,31 @@ func main() {
 	log.Printf("预签名 PUT URL (1小时有效):\n%s\n", presignedPutURL.String())
 
 	// 生成预签名 POST URL
-	policy := &rustfs.PostPolicy{
-		Expiration: time.Now().Add(time.Hour),
-		Conditions: []map[string]interface{}{
-			{"bucket": bucketName},
-			{"key": "post-object.txt"},
-			{"Content-Type": "text/plain"},
-		},
+	policy := rustfs.NewPostPolicy()
+	err = policy.SetExpires(time.Now().Add(time.Hour))
+	if err != nil {
+		log.Fatalln(err)
+		return
 	}
+
+	err = policy.SetCondition("$eq", "bucket", bucketName)
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	err = policy.SetCondition("$eq", "key", "post-object.txt")
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	err = policy.SetCondition("$eq", "Content-Type", "text/plain")
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
 	postURL, formData, err := client.PresignedPostPolicy(ctx, policy)
 	if err != nil {
 		log.Fatalln(err)
