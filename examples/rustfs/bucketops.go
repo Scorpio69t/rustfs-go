@@ -13,8 +13,8 @@ import (
 
 func main() {
 	const (
-		YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
-		YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+		YOURACCESSKEYID     = "fjnKu9maolkJ2U3Y8hVQ"
+		YOURSECRETACCESSKEY = "Fg1dL82iWsPVUToSCErKOtk4RZAlIcfp5enwa0xD"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
 	)
