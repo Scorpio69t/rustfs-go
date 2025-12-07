@@ -4,7 +4,7 @@
 
 | 阶段 | 任务数 | 完成 | 进度 |
 |------|--------|------|------|
-| 第一阶段：基础架构 | 12 | 0 | 0% |
+| 第一阶段：基础架构 | 12 | 12 | 100% |
 | 第二阶段：核心模块 | 15 | 0 | 0% |
 | 第三阶段：Bucket 模块 | 14 | 0 | 0% |
 | 第四阶段：Object 模块 | 18 | 0 | 0% |
@@ -1220,11 +1220,11 @@ func trimETag(etag string) string {
 ```
 
 #### 验证清单
-- [ ] `internal/core/request.go` 已创建
-- [ ] `internal/core/executor.go` 已创建
-- [ ] `internal/core/response.go` 已创建
-- [ ] 编译通过
-- [ ] 与现有代码集成测试
+- [x] `internal/core/request.go` 已创建
+- [x] `internal/core/executor.go` 已创建
+- [x] `internal/core/response.go` 已创建
+- [x] 编译通过
+- [x] 与现有代码集成测试
 
 ---
 
