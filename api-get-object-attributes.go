@@ -177,11 +177,7 @@ func (c *Client) GetObjectAttributes(ctx context.Context, bucketName, objectName
 
 	defer closeResponse(resp)
 
-	hasEtag := resp.Header.Get(ETag)
-	if hasEtag != "" {
-		return nil, errors.New("getObjectAttributes is not supported by the current endpoint version")
-	}
-
+	// First check HTTP status code
 	if resp.StatusCode != http.StatusOK {
 		ER := new(ErrorResponse)
 		if err := xml.NewDecoder(resp.Body).Decode(ER); err != nil {
@@ -189,6 +185,14 @@ func (c *Client) GetObjectAttributes(ctx context.Context, bucketName, objectName
 		}
 
 		return nil, *ER
+	}
+
+	// Check if the endpoint returned a HEAD-like response instead of proper GetObjectAttributes.
+	// GetObjectAttributes API returns ETag in the XML body, NOT as an HTTP header.
+	// If ETag header is present with a 200 OK, the server likely doesn't support
+	// GetObjectAttributes and returned a HEAD-style response instead.
+	if hasEtag := resp.Header.Get(ETag); hasEtag != "" {
+		return nil, errors.New("getObjectAttributes is not supported by the current endpoint version")
 	}
 
 	OA := new(ObjectAttributes)
