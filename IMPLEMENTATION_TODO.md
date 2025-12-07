@@ -47,9 +47,9 @@ mkdir -p examples/advanced/presign
 ```
 
 #### 验证清单
-- [ ] 所有目录已创建
-- [ ] 目录结构符合设计方案
-- [ ] `.gitkeep` 文件添加到空目录（可选）
+- [x] 所有目录已创建
+- [x] 目录结构符合设计方案
+- [x] `.gitkeep` 文件添加到空目录（可选）
 
 ---
 
@@ -402,12 +402,12 @@ type CompletePart struct {
 ```
 
 #### 验证清单
-- [ ] `types/common.go` 已创建
-- [ ] `types/bucket.go` 已创建
-- [ ] `types/object.go` 已创建
-- [ ] `types/upload.go` 已创建
-- [ ] 所有类型编译通过
-- [ ] GoDoc 注释完整
+- [x] `types/common.go` 已创建
+- [x] `types/bucket.go` 已创建
+- [x] `types/object.go` 已创建
+- [x] `types/upload.go` 已创建
+- [x] 所有类型编译通过
+- [x] GoDoc 注释完整
 
 ---
 
