@@ -732,11 +732,11 @@ func ToAPIError(err error) *APIError {
 ```
 
 #### 验证清单
-- [ ] `errors/codes.go` 已创建
-- [ ] `errors/errors.go` 已创建
-- [ ] `errors/check.go` 已创建
-- [ ] 编译通过
-- [ ] 单元测试通过
+- [x] `errors/codes.go` 已创建
+- [x] `errors/errors.go` 已创建
+- [x] `errors/check.go` 已创建
+- [x] 编译通过
+- [x] 单元测试通过
 
 ---
 
