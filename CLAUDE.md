@@ -10,7 +10,7 @@ Commands
 
 ```bash
 # Run all tests with race detection (requires MinIO server at localhost:9000)
-SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minioadmin SECRET_KEY=minioadmin ENABLE_HTTPS=1 MINT_MODE=full go test -race -v ./...
+SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=rustfsadmin SECRET_KEY=rustfsadmin ENABLE_HTTPS=1 MINT_MODE=full go test -race -v ./...
 
 # Run tests without race detection
 go test ./...
@@ -20,10 +20,10 @@ go test -short -race ./...
 
 # Run functional tests
 go build -race functional_tests.go
-SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minioadmin SECRET_KEY=minioadmin ENABLE_HTTPS=1 MINT_MODE=full ./functional_tests
+SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=rustfsadmin SECRET_KEY=rustfsadmin ENABLE_HTTPS=1 MINT_MODE=full ./functional_tests
 
 # Run functional tests without TLS
-SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minioadmin SECRET_KEY=minioadmin ENABLE_HTTPS=0 MINT_MODE=full ./functional_tests
+SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=rustfsadmin SECRET_KEY=rustfsadmin ENABLE_HTTPS=0 MINT_MODE=full ./functional_tests
 ```
 
 ### Linting and Code Quality
