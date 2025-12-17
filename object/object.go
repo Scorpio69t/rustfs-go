@@ -2,11 +2,8 @@
 package object
 
 import (
-	"context"
-
 	"github.com/Scorpio69t/rustfs-go/internal/cache"
 	"github.com/Scorpio69t/rustfs-go/internal/core"
-	"github.com/Scorpio69t/rustfs-go/types"
 )
 
 // objectService Object 服务实现
@@ -23,59 +20,14 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 	}
 }
 
-// Put, Get, Stat, Delete 方法已在独立文件中实现
+// Put, Get, Stat, Delete, List, Copy 方法已在独立文件中实现
 // - put.go: Put 方法
 // - get.go: Get 方法
 // - stat.go: Stat 方法
 // - delete.go: Delete 方法
-
-// List 列出对象
-func (s *objectService) List(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo {
-	// 创建结果通道
-	resultCh := make(chan types.ObjectInfo)
-
-	go func() {
-		defer close(resultCh)
-
-		// 验证参数
-		if err := validateBucketName(bucketName); err != nil {
-			// TODO: 发送错误到通道
-			return
-		}
-
-		// 应用选项
-		options := applyListOptions(opts)
-		_ = options
-
-		// TODO: 实现列出对象逻辑
-	}()
-
-	return resultCh
-}
-
-// Copy 复制对象
-func (s *objectService) Copy(ctx context.Context, destBucket, destObject, srcBucket, srcObject string, opts ...CopyOption) (types.CopyInfo, error) {
-	// 验证参数
-	if err := validateBucketName(destBucket); err != nil {
-		return types.CopyInfo{}, err
-	}
-	if err := validateObjectName(destObject); err != nil {
-		return types.CopyInfo{}, err
-	}
-	if err := validateBucketName(srcBucket); err != nil {
-		return types.CopyInfo{}, err
-	}
-	if err := validateObjectName(srcObject); err != nil {
-		return types.CopyInfo{}, err
-	}
-
-	// 应用选项
-	options := applyCopyOptions(opts)
-	_ = options
-
-	// TODO: 实现复制逻辑
-	return types.CopyInfo{}, ErrNotImplemented
-}
+// - list.go: List 方法
+// - copy.go: Copy 方法
+// - multipart.go: InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload 方法
 
 // applyPutOptions 应用上传选项
 func applyPutOptions(opts []PutOption) PutOptions {

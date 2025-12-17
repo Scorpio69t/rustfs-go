@@ -114,6 +114,9 @@ type ListOptions struct {
 
 	// 包含元数据
 	WithMetadata bool
+
+	// 自定义头
+	CustomHeaders http.Header
 }
 
 // CopyOptions 复制选项
@@ -123,12 +126,18 @@ type CopyOptions struct {
 
 	// 目标元数据
 	UserMetadata map[string]string
+	UserTags     map[string]string
 
 	// 替换元数据
 	ReplaceMetadata bool
+	ReplaceTagging  bool
 
 	// 内容类型
-	ContentType string
+	ContentType        string
+	ContentEncoding    string
+	ContentDisposition string
+	CacheControl       string
+	Expires            time.Time
 
 	// 存储类
 	StorageClass string

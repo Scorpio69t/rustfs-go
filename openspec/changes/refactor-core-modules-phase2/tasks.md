@@ -159,14 +159,24 @@
 
 ## 6. 更新客户端入口
 
-- [ ] 6.1 更新 client.go
-  - [ ] 6.1.1 添加 bucketService 和 objectService 字段
-  - [ ] 6.1.2 实现 Bucket() 方法
-  - [ ] 6.1.3 实现 Object() 方法
-  - [ ] 6.1.4 保留旧的快捷方法（标记为 Deprecated）
+- [x] 6.1 更新 client.go
+  - [x] 6.1.1 添加 bucketService 和 objectService 字段
+  - [x] 6.1.2 实现 Bucket() 方法
+  - [x] 6.1.3 实现 Object() 方法
+  - [x] 6.1.4 保留旧的快捷方法（标记为 Deprecated）
+  - [x] 6.1.5 实现 IP 地址自动使用路径风格桶查找
+  - [x] 6.1.6 创建向后兼容层（compat.go）
 
-- [ ] 6.2 更新 options.go
-  - [ ] 6.2.1 确保所有配置选项正确传递给子服务
+- [x] 6.2 更新 options.go
+  - [x] 6.2.1 确保所有配置选项正确传递给子服务
+  - [x] 6.2.2 添加选项验证和默认值设置
+
+- [x] 6.3 客户端单元测试（client_test.go）
+  - [x] TestNew（4 个测试用例，全部通过）
+  - [x] TestClientMethods（6 个测试用例，全部通过）
+  - [x] TestBackwardCompatibility（4 个测试用例，全部通过）
+  - [x] TestParseEndpointURL（4 个测试用例，全部通过）
+  - [x] 性能基准测试（3 个 benchmark）
 
 ## 7. 文档和示例
 
