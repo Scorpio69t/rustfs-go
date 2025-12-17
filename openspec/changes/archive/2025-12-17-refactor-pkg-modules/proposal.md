@@ -1,32 +1,20 @@
 # 提案：重构 pkg 包模块
 
-## 元数据
+## Why
 
-- **提案 ID**: `refactor-pkg-modules`
-- **标题**: 重构 pkg 包模块，移除 MinIO 版权，实现自主实现
-- **状态**: 草稿
-- **创建日期**: 2025-12-17
-- **作者**: RustFS Go SDK Team
+当前 `pkg/` 目录下的多个包（credentials、signer、s3utils、set 等）直接继承自 MinIO Go SDK，包含 MinIO 的版权信息和实现细节。为了使 RustFS Go SDK 成为一个独立的、自主实现的项目，需要对这些包进行彻底重构。主要问题包括：版权问题（所有 pkg 包都包含 MinIO 的版权声明）、代码依赖（部分实现与 MinIO 特定功能强耦合）、命名混淆（如 `EnvMinio`、`FileMinioClient` 等命名与 RustFS 不符）、冗余代码（包含一些 RustFS 不需要的功能）以及维护困难（代码注释和文档仍引用 MinIO）。
 
-## 背景
+## What Changes
 
-当前 `pkg/` 目录下的多个包（credentials、signer、s3utils、set 等）直接继承自 MinIO Go SDK，包含 MinIO 的版权信息和实现细节。为了使 RustFS Go SDK 成为一个独立的、自主实现的项目，需要对这些包进行彻底重构。
+- **新增**: 创建 `pkg/signer` 公共 API 包，提供 AWS 签名功能供其他包使用
+- **修改**: 更新 `pkg/credentials` 包的所有文件版权声明为 RustFS 版权，使用 `pkg/signer` 解决循环依赖问题
+- **删除**: 移除 `pkg/s3utils` 包（功能已被 `internal/signer/utils.go` 替代）和 `pkg/set` 包（项目中未使用）
+- **保持**: 所有公共 API 保持向后兼容，现有代码无需修改
 
-### 当前问题
+## Impact
 
-1. **版权问题**: 所有 pkg 包都包含 MinIO 的版权声明
-2. **代码依赖**: 部分实现与 MinIO 特定功能强耦合
-3. **命名混淆**: 如 `EnvMinio`、`FileMinioClient` 等命名与 RustFS 不符
-4. **冗余代码**: 包含一些 RustFS 不需要的功能（如某些 STS 扩展）
-5. **维护困难**: 代码注释和文档仍引用 MinIO
-
-### 目标
-
-1. 完全移除 MinIO 版权信息，使用 RustFS 自己的版权
-2. 重新实现所有核心功能，确保代码独立性
-3. 统一命名规范，使用 RustFS 相关命名
-4. 简化代码结构，只保留 RustFS 需要的功能
-5. 提供完整的单元测试覆盖
+- 影响的规范：新增 `pkg-refactor` 规范
+- 影响的代码：`pkg/credentials/*`（23个文件）、`pkg/signer/*`（新增）、`internal/signer/*`（修改）
 
 ## 详细设计
 

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/internal/signer"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
+	"github.com/Scorpio69t/rustfs-go/pkg/signer"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
