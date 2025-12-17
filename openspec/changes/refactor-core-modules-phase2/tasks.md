@@ -117,28 +117,45 @@
 
 ## 5. 实现 Object 服务框架
 
-- [ ] 5.1 创建服务接口 (object/service.go)
-  - [ ] 5.1.1 定义 ObjectService 接口
-  - [ ] 5.1.2 定义 UploadService 接口
-  - [ ] 5.1.3 定义 DownloadService 接口
-  - [ ] 5.1.4 定义 MultipartService 接口
+- [x] 5.1 创建服务接口 (object/service.go)
+  - [x] 5.1.1 定义 Service 接口（Put, Get, Stat, Delete, List, Copy）
+  - [x] 5.1.2 定义选项函数类型（PutOption, GetOption, StatOption, DeleteOption, ListOption, CopyOption）
 
-- [ ] 5.2 实现选项函数 (object/options.go)
-  - [ ] 5.2.1 实现 PutOption 函数集
-  - [ ] 5.2.2 实现 GetOption 函数集
-  - [ ] 5.2.3 实现 ListOption 函数集
-  - [ ] 5.2.4 实现 DeleteOption、StatOption 等
+- [x] 5.2 实现选项函数 (object/options.go)
+  - [x] 5.2.1 实现 PutOptions 结构体和选项函数
+    - [x] WithContentType, WithContentEncoding, WithContentDisposition
+    - [x] WithUserMetadata, WithUserTags, WithStorageClass
+    - [x] WithPartSize
+  - [x] 5.2.2 实现 GetOptions 结构体和选项函数
+    - [x] WithGetRange, WithVersionID
+  - [x] 5.2.3 实现 ListOptions 结构体和选项函数
+    - [x] WithListPrefix, WithListRecursive, WithListMaxKeys
+  - [x] 5.2.4 实现 DeleteOptions, StatOptions, CopyOptions 结构体
+    - [x] WithVersionID（通用）, WithCopySourceVersionID, WithCopyMetadata
 
-- [ ] 5.3 创建 Object 服务入口 (object/object.go)
-  - [ ] 5.3.1 实现 objectService 结构体
-  - [ ] 5.3.2 实现 NewObjectService 构造函数
-  - [ ] 5.3.3 实现 Upload() 方法返回 UploadService
-  - [ ] 5.3.4 实现 Download() 方法返回 DownloadService
+- [x] 5.3 创建 Object 服务入口 (object/object.go)
+  - [x] 5.3.1 实现 objectService 结构体
+  - [x] 5.3.2 实现 NewService 构造函数
+  - [x] 5.3.3 实现所有接口方法的框架（标记为 TODO）
+    - [x] Put, Get, Stat, Delete, List, Copy
+  - [x] 5.3.4 实现选项应用函数
+    - [x] applyPutOptions, applyGetOptions, applyStatOptions
+    - [x] applyDeleteOptions, applyListOptions, applyCopyOptions
+  - [x] 5.3.5 实现验证函数
+    - [x] validateBucketName, validateObjectName
 
-- [ ] 5.4 实现上传服务基础框架 (object/upload/)
-  - [ ] 5.4.1 创建 upload.go 服务入口
-  - [ ] 5.4.2 实现 uploadService 结构体
-  - [ ] 5.4.3 实现 Put 方法的基础框架（调用 core.Execute）
+- [x] 5.4 辅助功能 (object/errors.go, types/object.go)
+  - [x] 错误定义（ErrInvalidBucketName, ErrInvalidObjectName, ErrNotImplemented）
+  - [x] 添加 CopyInfo 类型到 types/object.go
+
+- [x] 5.5 Object 服务单元测试 (object/object_test.go)
+  - [x] TestValidateBucketName（4 个测试用例）
+  - [x] TestValidateObjectName（3 个测试用例）
+  - [x] TestApplyPutOptions（3 个测试用例）
+  - [x] TestApplyGetOptions（2 个测试用例）
+  - [x] TestApplyListOptions（3 个测试用例）
+  - [x] TestNewService（1 个测试用例）
+  - [x] 性能基准测试（2 个 benchmark）
 
 ## 6. 更新客户端入口
 

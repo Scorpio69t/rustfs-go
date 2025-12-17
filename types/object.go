@@ -88,3 +88,18 @@ type DeleteError struct {
 	Code      string
 	Message   string
 }
+
+// CopyInfo 复制信息
+type CopyInfo struct {
+	Bucket          string
+	Key             string
+	ETag            string
+	VersionID       string
+	SourceVersionID string
+	LastModified    time.Time
+	ChecksumCRC32   string
+	ChecksumCRC32C  string
+	ChecksumSHA1    string
+	ChecksumSHA256  string
+	ChecksumCRC64NVME string
+}
