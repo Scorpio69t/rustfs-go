@@ -4,11 +4,15 @@ package core
 import (
 	"context"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
+	"github.com/Scorpio69t/rustfs-go/internal/signer"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
+	"github.com/Scorpio69t/rustfs-go/types"
 )
 
 // Executor 请求执行器
@@ -173,15 +177,171 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 
 // makeTargetURL 构建目标 URL
 func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryValues url.Values) (*url.URL, error) {
-	// TODO: 实现 URL 构建逻辑
-	// 根据 bucketLookup 决定使用路径风格还是虚拟主机风格
-	return nil, nil
+	host := e.endpointURL.Host
+	scheme := e.endpointURL.Scheme
+
+	// 处理端口：去除 80 (http) 和 443 (https)
+	// 原因：浏览器和 curl 会自动移除这些端口，导致预签名 URL 签名不匹配
+	if h, p, err := net.SplitHostPort(host); err == nil {
+		if (scheme == "http" && p == "80") || (scheme == "https" && p == "443") {
+			host = h
+			// 如果是 IPv6 地址，需要加方括号
+			if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
+				host = "[" + h + "]"
+			}
+		}
+	}
+
+	urlStr := scheme + "://" + host + "/"
+
+	// 如果有桶名，构建完整 URL
+	if bucketName != "" {
+		// 判断是否使用虚拟主机风格
+		isVirtualHost := e.isVirtualHostStyleRequest(bucketName)
+
+		if isVirtualHost {
+			// 虚拟主机风格: http://bucket.host/object
+			urlStr = scheme + "://" + bucketName + "." + host + "/"
+			if objectName != "" {
+				urlStr += encodePath(objectName)
+			}
+		} else {
+			// 路径风格: http://host/bucket/object
+			urlStr = urlStr + bucketName + "/"
+			if objectName != "" {
+				urlStr += encodePath(objectName)
+			}
+		}
+	}
+
+	// 添加查询参数
+	if len(queryValues) > 0 {
+		urlStr = urlStr + "?" + queryEncode(queryValues)
+	}
+
+	return url.Parse(urlStr)
+}
+
+// isVirtualHostStyleRequest 判断是否使用虚拟主机风格
+func (e *Executor) isVirtualHostStyleRequest(bucketName string) bool {
+	if bucketName == "" {
+		return false
+	}
+
+	lookup := types.BucketLookupType(e.bucketLookup)
+
+	switch lookup {
+	case types.BucketLookupDNS:
+		return true
+	case types.BucketLookupPath:
+		return false
+	case types.BucketLookupAuto:
+		// 自动检测：检查桶名是否符合 DNS 命名规范
+		return isValidVirtualHostBucket(bucketName, e.endpointURL.Scheme == "https")
+	}
+
+	return false
+}
+
+// isValidVirtualHostBucket 检查桶名是否符合虚拟主机 DNS 命名规范
+func isValidVirtualHostBucket(bucketName string, https bool) bool {
+	if strings.Contains(bucketName, ".") {
+		// 包含点的桶名在 HTTPS 下会导致证书不匹配
+		if https {
+			return false
+		}
+	}
+	// 检查桶名长度（3-63 字符）
+	if len(bucketName) < 3 || len(bucketName) > 63 {
+		return false
+	}
+	// 检查是否为 IP 地址格式
+	if net.ParseIP(bucketName) != nil {
+		return false
+	}
+	return true
+}
+
+// encodePath URL 编码路径（保留 /）
+func encodePath(pathName string) string {
+	if pathName == "" {
+		return "/"
+	}
+
+	// S3 要求保留路径中的斜杠，但编码其他特殊字符（包括 +）
+	var encodedPathname strings.Builder
+	for _, segment := range strings.Split(pathName, "/") {
+		if encodedPathname.Len() > 0 {
+			encodedPathname.WriteByte('/')
+		}
+		// url.PathEscape 不会编码 +，需要手动处理
+		encoded := url.PathEscape(segment)
+		encoded = strings.ReplaceAll(encoded, "+", "%2B")
+		encodedPathname.WriteString(encoded)
+	}
+
+	result := encodedPathname.String()
+	if result == "" {
+		return "/"
+	}
+	return result
+}
+
+// queryEncode 编码查询参数
+func queryEncode(v url.Values) string {
+	if v == nil {
+		return ""
+	}
+	// url.Values.Encode() 已经按字典序排序并编码
+	return v.Encode()
 }
 
 // signRequest 签名请求
 func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location string) error {
-	// TODO: 实现签名逻辑
+	// 获取凭证
+	if e.credentials == nil {
+		return nil // 匿名请求
+	}
+
+	creds, err := e.credentials.Get()
+	if err != nil {
+		return err
+	}
+
+	// 如果是匿名凭证，不签名
+	if creds.SignerType == credentials.SignatureAnonymous {
+		return nil
+	}
+
+	// 使用区域（优先使用桶位置）
+	region := location
+	if region == "" {
+		region = e.region
+	}
+
+	// 如果是预签名请求
+	if meta.PresignURL {
+		expires := time.Duration(meta.Expires) * time.Second
+		sn := signer.NewSigner(convertSignerType(creds.SignerType))
+		sn.Presign(req, creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, region, expires)
+		return nil
+	}
+
+	// 普通请求签名
+	signer.SignRequest(req, creds, region)
 	return nil
+}
+
+// convertSignerType 转换签名类型
+func convertSignerType(st credentials.SignatureType) signer.SignerType {
+	switch st {
+	case credentials.SignatureV2:
+		return signer.SignerV2
+	case credentials.SignatureAnonymous:
+		return signer.SignerAnonymous
+	default:
+		return signer.SignerV4
+	}
 }
 
 // getBucketLocation 获取桶位置
@@ -199,7 +359,41 @@ func (e *Executor) shouldRetry(err error, attempt int) bool {
 	if attempt >= e.maxRetries-1 {
 		return false
 	}
-	// TODO: 检查网络错误等
+
+	// 检查错误类型
+	if err == nil {
+		return false
+	}
+
+	// 检查是否为网络错误
+	errStr := err.Error()
+
+	// 连接被拒绝、超时、临时错误等可重试
+	if strings.Contains(errStr, "connection refused") ||
+		strings.Contains(errStr, "connection reset") ||
+		strings.Contains(errStr, "broken pipe") ||
+		strings.Contains(errStr, "no such host") ||
+		strings.Contains(errStr, "TLS handshake timeout") ||
+		strings.Contains(errStr, "i/o timeout") ||
+		strings.Contains(errStr, "net/http: request canceled") ||
+		strings.Contains(errStr, "context deadline exceeded") {
+		return true
+	}
+
+	// 检查 url.Error
+	if urlErr, ok := err.(*url.Error); ok {
+		if urlErr.Temporary() || urlErr.Timeout() {
+			return true
+		}
+		// 递归检查内部错误
+		return e.shouldRetry(urlErr.Err, attempt)
+	}
+
+	// 检查 net.Error
+	if netErr, ok := err.(net.Error); ok {
+		return netErr.Temporary() || netErr.Timeout()
+	}
+
 	return false
 }
 
