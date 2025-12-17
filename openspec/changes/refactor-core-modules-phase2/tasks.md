@@ -64,24 +64,56 @@
 
 ## 4. 实现 Bucket 服务
 
-- [ ] 4.1 创建服务接口 (bucket/service.go)
-  - [ ] 4.1.1 定义 BucketService 接口
-  - [ ] 4.1.2 定义 ConfigService 接口
-  - [ ] 4.1.3 定义 PolicyService 接口
-  - [ ] 4.1.4 定义选项函数类型
+- [x] 4.1 创建服务接口 (bucket/service.go)
+  - [x] 4.1.1 定义 Service 接口（Create, Delete, Exists, List, GetLocation）
+  - [x] 4.1.2 定义 CreateOption 和 DeleteOption 函数类型
+  - [x] 4.1.3 实现选项函数（WithRegion, WithObjectLocking, WithForceCreate, WithForceDelete）
 
-- [ ] 4.2 实现基础操作
-  - [ ] 4.2.1 实现 Create (bucket/create.go)
-  - [ ] 4.2.2 实现 Delete (bucket/delete.go)
-  - [ ] 4.2.3 实现 Exists (bucket/exists.go)
-  - [ ] 4.2.4 实现 List (bucket/list.go)
+- [x] 4.2 实现基础操作
+  - [x] 4.2.1 实现 Create (bucket/create.go)
+    - [x] 桶名验证
+    - [x] 区域配置支持
+    - [x] 对象锁定支持
+    - [x] CreateBucketConfiguration XML 生成
+    - [x] 位置缓存更新
+  - [x] 4.2.2 实现 Delete (bucket/delete.go)
+    - [x] 桶名验证
+    - [x] 强制删除选项
+    - [x] 位置缓存清理
+  - [x] 4.2.3 实现 Exists (bucket/exists.go)
+    - [x] HEAD 请求检查
+    - [x] NoSuchBucket 错误处理
+    - [x] 404 状态码处理
+  - [x] 4.2.4 实现 List (bucket/list.go)
+    - [x] ListAllMyBucketsResult XML 解析
+    - [x] 返回桶信息列表
+  - [x] 4.2.5 实现 GetLocation (bucket/list.go)
+    - [x] 位置缓存查询
+    - [x] LocationConstraint XML 解析
+    - [x] 默认 us-east-1 处理
 
-- [ ] 4.3 实现 bucket 服务入口 (bucket/bucket.go)
-  - [ ] 4.3.1 实现 bucketService 结构体
-  - [ ] 4.3.2 实现 NewBucketService 构造函数
-  - [ ] 4.3.3 实现接口方法
+- [x] 4.3 实现 bucket 服务入口 (bucket/bucket.go)
+  - [x] 4.3.1 实现 bucketService 结构体
+  - [x] 4.3.2 实现 NewService 构造函数
+  - [x] 4.3.3 实现选项应用函数
+  - [x] 4.3.4 实现桶名验证函数
 
-- [ ] 4.4 Bucket 服务单元测试
+- [x] 4.4 辅助功能 (bucket/utils.go, bucket/errors.go)
+  - [x] SHA256 哈希计算
+  - [x] 响应关闭工具
+  - [x] 错误解析工具
+  - [x] 自定义错误类型
+
+- [x] 4.5 Bucket 服务单元测试 (bucket/bucket_test.go)
+  - [x] TestCreate（4 个测试用例）
+  - [x] TestDelete（3 个测试用例）
+  - [x] TestExists（3 个测试用例）
+  - [x] TestList（2 个测试用例）
+  - [x] TestGetLocation（3 个测试用例）
+  - [x] TestValidateBucketName（6 个测试用例）
+  - [x] TestApplyCreateOptions（4 个测试用例）
+  - [x] TestApplyDeleteOptions（2 个测试用例）
+  - [x] 性能基准测试（2 个 benchmark）
 
 ## 5. 实现 Object 服务框架
 
