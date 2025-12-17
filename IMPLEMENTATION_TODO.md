@@ -16,7 +16,7 @@
 ## 🚀 第一阶段：基础架构搭建（预计 5 天）
 
 ### 任务 1.1：创建目录结构
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 0.5 天
 
 #### 实施步骤
@@ -54,7 +54,7 @@ mkdir -p examples/advanced/presign
 ---
 
 ### 任务 1.2：创建类型定义包 `types/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 1.2.1 创建 `types/common.go`
@@ -412,7 +412,7 @@ type CompletePart struct {
 ---
 
 ### 任务 1.3：创建错误定义包 `errors/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 0.5 天
 
 #### 1.3.1 创建 `errors/codes.go`
@@ -629,7 +629,7 @@ import "errors"
 func IsNotFound(err error) bool {
     var apiErr *APIError
     if errors.As(err, &apiErr) {
-        return apiErr.Code() == ErrCodeNoSuchBucket || 
+        return apiErr.Code() == ErrCodeNoSuchBucket ||
                apiErr.Code() == ErrCodeNoSuchKey ||
                apiErr.Code() == ErrCodeNoSuchUpload
     }
@@ -741,7 +741,7 @@ func ToAPIError(err error) *APIError {
 ---
 
 ### 任务 1.4：创建内部核心包 `internal/core/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1.5 天
 
 #### 1.4.1 创建 `internal/core/request.go`
@@ -1229,7 +1229,7 @@ func trimETag(etag string) string {
 ---
 
 ### 任务 1.5：创建内部缓存包 `internal/cache/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 0.5 天
 
 #### 1.5.1 创建 `internal/cache/location.go`
@@ -1314,7 +1314,7 @@ func (c *LocationCache) Clear() {
 ---
 
 ### 任务 1.6：更新根目录客户端文件
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 1.6.1 创建新的 `options.go`
@@ -1412,7 +1412,7 @@ func (e *invalidArgumentError) Error() string {
 ## 🔧 第二阶段：核心模块实现（预计 7 天）
 
 ### 任务 2.1：实现签名模块 `internal/signer/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 > **注意**: 此任务主要是将现有的 `pkg/signer/` 逻辑迁移到内部包，并进行适当的封装。
@@ -1627,7 +1627,7 @@ func (s *V4Signer) deriveSigningKey(secretKey, region string, t time.Time) []byt
 func (s *V4Signer) buildAuthorizationHeader(req *http.Request, accessKey, region, signature string, t time.Time) string {
     _, signedHeaders := s.canonicalHeaders(req.Header)
     scope := s.credentialScope(region, t)
-    
+
     return "AWS4-HMAC-SHA256 " +
         "Credential=" + accessKey + "/" + scope + ", " +
         "SignedHeaders=" + signedHeaders + ", " +
@@ -1645,7 +1645,7 @@ func hmacSHA256(key, data []byte) []byte {
 ---
 
 ### 任务 2.2：实现传输层 `internal/transport/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 2.2.1 创建 `internal/transport/transport.go`
@@ -1690,16 +1690,16 @@ func DefaultTransport(secure bool) (*http.Transport, error) {
 type TransportOptions struct {
     // TLS 配置
     TLSConfig *tls.Config
-    
+
     // 超时设置
     DialTimeout   time.Duration
     DialKeepAlive time.Duration
-    
+
     // 连接池
     MaxIdleConns        int
     MaxIdleConnsPerHost int
     IdleConnTimeout     time.Duration
-    
+
     // 代理
     Proxy func(*http.Request) (*url.URL, error)
 }
@@ -1710,17 +1710,17 @@ func NewTransport(opts TransportOptions) *http.Transport {
     if dialTimeout <= 0 {
         dialTimeout = 30 * time.Second
     }
-    
+
     dialKeepAlive := opts.DialKeepAlive
     if dialKeepAlive <= 0 {
         dialKeepAlive = 30 * time.Second
     }
-    
+
     maxIdleConns := opts.MaxIdleConns
     if maxIdleConns <= 0 {
         maxIdleConns = 100
     }
-    
+
     idleConnTimeout := opts.IdleConnTimeout
     if idleConnTimeout <= 0 {
         idleConnTimeout = 90 * time.Second
@@ -1738,11 +1738,11 @@ func NewTransport(opts TransportOptions) *http.Transport {
         ExpectContinueTimeout: 1 * time.Second,
         DisableCompression:    true,
     }
-    
+
     if opts.TLSConfig != nil {
         tr.TLSClientConfig = opts.TLSConfig
     }
-    
+
     if opts.Proxy != nil {
         tr.Proxy = opts.Proxy
     } else {
@@ -1756,7 +1756,7 @@ func NewTransport(opts TransportOptions) *http.Transport {
 ---
 
 ### 任务 2.3：创建服务接口定义
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 2.3.1 创建 `bucket/service.go`
@@ -2141,7 +2141,7 @@ type ListUploadOptions struct {
 ---
 
 ### 任务 2.4：实现选项函数
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 2.4.1 创建 `object/options.go`
@@ -2420,7 +2420,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 ## 📦 第三阶段：Bucket 模块实现（预计 5 天）
 
 ### 任务 3.1：实现 Bucket 基础操作
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 > 将 `api-put-bucket.go`、`api-remove.go`、`api-stat.go`、`api-list.go` 中的桶操作迁移到 `bucket/` 包
@@ -2433,7 +2433,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 - [ ] `GetBucketLocation` → 内部使用
 
 ### 任务 3.2：实现 Bucket 配置操作
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 > 将各 `api-bucket-*.go` 文件迁移到 `bucket/config/` 包
@@ -2449,7 +2449,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 - [ ] `api-bucket-qos.go` → `bucket/config/qos.go`
 
 ### 任务 3.3：实现 Bucket 策略操作
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 > 将 `api-bucket-policy.go` 迁移到 `bucket/policy/` 包
@@ -2459,7 +2459,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 ## 📁 第四阶段：Object 模块实现（预计 8 天）
 
 ### 任务 4.1：实现上传功能 `object/upload/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 3 天
 
 #### 待迁移的功能
@@ -2471,7 +2471,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 - [ ] `api-append-object.go` → `object/upload/append.go`
 
 ### 任务 4.2：实现下载功能 `object/download/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 #### 待迁移的功能
@@ -2480,7 +2480,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 - [ ] Range 下载 → `object/download/range.go`
 
 ### 任务 4.3：实现对象管理功能 `object/manage/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 #### 待迁移的功能
@@ -2493,7 +2493,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 - [ ] `api-restore.go` → `object/manage/restore.go`
 
 ### 任务 4.4：实现预签名功能 `object/presign/`
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 待迁移的功能
@@ -2504,7 +2504,7 @@ func WithStatSSE(sse encrypt.ServerSide) StatOption {
 ## 🔗 第五阶段：兼容层和测试（预计 5 天）
 
 ### 任务 5.1：创建兼容层
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 在根包中创建兼容旧 API 的方法，标记为 deprecated。
@@ -2556,7 +2556,7 @@ func (c *Client) GetObject(ctx context.Context, bucketName, objectName string, o
 ```
 
 ### 任务 5.2：编写单元测试
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 2 天
 
 #### 测试清单
@@ -2568,7 +2568,7 @@ func (c *Client) GetObject(ctx context.Context, bucketName, objectName string, o
 - [ ] `object/` 包测试
 
 ### 任务 5.3：更新文档和示例
-**状态**: ⬜ 未开始  
+**状态**: ⬜ 未开始
 **预计时间**: 1 天
 
 #### 文档清单
@@ -2619,4 +2619,3 @@ chore: 其他变更
 ---
 
 *最后更新: 2024年*
-
