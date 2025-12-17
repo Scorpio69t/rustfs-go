@@ -3,7 +3,6 @@ package object
 
 import (
 	"context"
-	"io"
 
 	"github.com/Scorpio69t/rustfs-go/internal/cache"
 	"github.com/Scorpio69t/rustfs-go/internal/core"
@@ -24,80 +23,11 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 	}
 }
 
-// Put 上传对象
-func (s *objectService) Put(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts ...PutOption) (types.UploadInfo, error) {
-	// 验证参数
-	if err := validateBucketName(bucketName); err != nil {
-		return types.UploadInfo{}, err
-	}
-	if err := validateObjectName(objectName); err != nil {
-		return types.UploadInfo{}, err
-	}
-
-	// 应用选项
-	options := applyPutOptions(opts)
-	_ = options // TODO: 使用 options
-
-	// TODO: 实现上传逻辑
-	return types.UploadInfo{
-		Bucket: bucketName,
-		Key:    objectName,
-	}, ErrNotImplemented
-}
-
-// Get 下载对象
-func (s *objectService) Get(ctx context.Context, bucketName, objectName string, opts ...GetOption) (io.ReadCloser, types.ObjectInfo, error) {
-	// 验证参数
-	if err := validateBucketName(bucketName); err != nil {
-		return nil, types.ObjectInfo{}, err
-	}
-	if err := validateObjectName(objectName); err != nil {
-		return nil, types.ObjectInfo{}, err
-	}
-
-	// 应用选项
-	options := applyGetOptions(opts)
-	_ = options
-
-	// TODO: 实现下载逻辑
-	return nil, types.ObjectInfo{}, ErrNotImplemented
-}
-
-// Stat 获取对象信息
-func (s *objectService) Stat(ctx context.Context, bucketName, objectName string, opts ...StatOption) (types.ObjectInfo, error) {
-	// 验证参数
-	if err := validateBucketName(bucketName); err != nil {
-		return types.ObjectInfo{}, err
-	}
-	if err := validateObjectName(objectName); err != nil {
-		return types.ObjectInfo{}, err
-	}
-
-	// 应用选项
-	options := applyStatOptions(opts)
-	_ = options
-
-	// TODO: 实现获取对象信息逻辑
-	return types.ObjectInfo{}, ErrNotImplemented
-}
-
-// Delete 删除对象
-func (s *objectService) Delete(ctx context.Context, bucketName, objectName string, opts ...DeleteOption) error {
-	// 验证参数
-	if err := validateBucketName(bucketName); err != nil {
-		return err
-	}
-	if err := validateObjectName(objectName); err != nil {
-		return err
-	}
-
-	// 应用选项
-	options := applyDeleteOptions(opts)
-	_ = options
-
-	// TODO: 实现删除逻辑
-	return ErrNotImplemented
-}
+// Put, Get, Stat, Delete 方法已在独立文件中实现
+// - put.go: Put 方法
+// - get.go: Get 方法
+// - stat.go: Stat 方法
+// - delete.go: Delete 方法
 
 // List 列出对象
 func (s *objectService) List(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo {
