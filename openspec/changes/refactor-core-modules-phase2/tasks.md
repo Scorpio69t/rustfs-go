@@ -22,17 +22,26 @@
 
 ## 2. 实现传输层 (internal/transport/)
 
-- [ ] 2.1 创建 transport.go
-  - [ ] 2.1.1 实现 DefaultTransport 函数
-  - [ ] 2.1.2 实现 TransportOptions 结构体
-  - [ ] 2.1.3 实现 NewTransport 函数
-  - [ ] 2.1.4 配置 TLS 和连接池参数
+- [x] 2.1 创建 transport.go
+  - [x] 2.1.1 实现 DefaultTransport 函数
+  - [x] 2.1.2 实现 TransportOptions 结构体
+  - [x] 2.1.3 实现 NewTransport 函数
+  - [x] 2.1.4 配置 TLS 和连接池参数
+  - [x] 2.1.5 实现 NewHTTPClient 辅助函数
+  - [x] 2.1.6 支持自定义 CA 证书（SSL_CERT_FILE）
 
-- [ ] 2.2 创建 trace.go (可选)
+- [ ] 2.2 创建 trace.go (可选 - 后续实现)
   - [ ] 2.2.1 实现 HTTP 请求追踪
   - [ ] 2.2.2 添加调试日志支持
 
-- [ ] 2.3 传输层单元测试
+- [x] 2.3 传输层单元测试
+  - [x] 2.3.1 DefaultTransport 测试（2 个测试用例）
+  - [x] 2.3.2 NewTransport 测试（3 个测试用例）
+  - [x] 2.3.3 TLS 配置测试
+  - [x] 2.3.4 代理配置测试
+  - [x] 2.3.5 连接池配置测试
+  - [x] 2.3.6 NewHTTPClient 测试（3 个测试用例）
+  - [x] 2.3.7 性能基准测试（2 个 benchmark）
 
 ## 3. 完善核心执行器 (internal/core/)
 
