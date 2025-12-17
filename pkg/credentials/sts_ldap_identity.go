@@ -52,11 +52,11 @@ type LDAPIdentityResult struct {
 	SubjectFromToken string `xml:",omitempty"`
 }
 
-// LDAPIdentity retrieves credentials from MinIO
-type LDAPIdentity struct {
+// LDAPIdentity retrieves credentials from RustFS
+type LDAPIdentity struct{
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service.
+	// Optional http Client to use when connecting to RustFS STS service.
 	// (overrides default client in CredContext)
 	Client *http.Client
 
@@ -134,7 +134,7 @@ func NewLDAPIdentityWithSessionPolicy(stsEndpoint, ldapUsername, ldapPassword, p
 	}), nil
 }
 
-// RetrieveWithCredContext gets the credential by calling the MinIO STS API for
+// RetrieveWithCredContext gets the credential by calling the RustFS STS API for
 // LDAP on the configured stsEndpoint.
 func (k *LDAPIdentity) RetrieveWithCredContext(cc *CredContext) (value Value, err error) {
 	if cc == nil {
@@ -228,7 +228,7 @@ func (k *LDAPIdentity) RetrieveWithCredContext(cc *CredContext) (value Value, er
 	}, nil
 }
 
-// Retrieve gets the credential by calling the MinIO STS API for
+// Retrieve gets the credential by calling the RustFS STS API for
 // LDAP on the configured stsEndpoint.
 func (k *LDAPIdentity) Retrieve() (value Value, err error) {
 	return k.RetrieveWithCredContext(defaultCredContext)

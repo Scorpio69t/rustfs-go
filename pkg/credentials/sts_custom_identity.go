@@ -49,7 +49,7 @@ type AssumeRoleWithCustomTokenResponse struct {
 }
 
 // CustomTokenIdentity - satisfies the Provider interface, and retrieves
-// credentials from MinIO using the AssumeRoleWithCustomToken STS API.
+// credentials from RustFS using the AssumeRoleWithCustomToken STS API.
 type CustomTokenIdentity struct {
 	Expiry
 
@@ -146,7 +146,7 @@ func (c *CustomTokenIdentity) RetrieveWithCredContext(cc *CredContext) (value Va
 	}, nil
 }
 
-// Retrieve - to satisfy Provider interface; fetches credentials from MinIO.
+// Retrieve - to satisfy Provider interface; fetches credentials from RustFS.
 func (c *CustomTokenIdentity) Retrieve() (value Value, err error) {
 	return c.RetrieveWithCredContext(nil)
 }

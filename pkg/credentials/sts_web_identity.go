@@ -41,7 +41,7 @@ type AssumeRoleWithWebIdentityResponse struct {
 }
 
 // WebIdentityResult - Contains the response to a successful AssumeRoleWithWebIdentity
-// request, including temporary credentials that can be used to make MinIO API requests.
+// request, including temporary credentials that can be used to make RustFS API requests.
 type WebIdentityResult struct {
 	AssumedRoleUser AssumedRoleUser `xml:",omitempty"`
 	Audience        string          `xml:",omitempty"`
@@ -64,12 +64,12 @@ type WebIdentityToken struct {
 	Expiry       int
 }
 
-// A STSWebIdentity retrieves credentials from MinIO service, and keeps track if
+// A STSWebIdentity retrieves credentials from RustFS service, and keeps track if
 // those credentials are expired.
 type STSWebIdentity struct {
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service.
+	// Optional http Client to use when connecting to RustFS STS service.
 	// (overrides default client in CredContext)
 	Client *http.Client
 
@@ -259,7 +259,7 @@ func (m *STSWebIdentity) RetrieveWithCredContext(cc *CredContext) (Value, error)
 	}, nil
 }
 
-// Retrieve retrieves credentials from the MinIO service.
+// Retrieve retrieves credentials from the RustFS service.
 // Error will be returned if the request fails.
 func (m *STSWebIdentity) Retrieve() (Value, error) {
 	return m.RetrieveWithCredContext(nil)

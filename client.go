@@ -245,3 +245,43 @@ func isIPAddress(host string) bool {
 	// 检查是否是 IP 地址
 	return net.ParseIP(hostOnly) != nil
 }
+
+// HealthCheck 执行服务健康检查
+//
+// 通过发送一个简单的 HEAD 请求来验证与 RustFS 服务器的连接是否正常
+//
+// Parameters:
+//   - opts: 健康检查选项（可以为 nil 使用默认值）
+//
+// Returns:
+//   - *core.HealthCheckResult: 健康检查结果
+//
+// Example:
+//
+//	result := client.HealthCheck(nil)
+//	if result.Healthy {
+//	    fmt.Printf("服务健康，响应时间: %v\n", result.ResponseTime)
+//	}
+func (c *Client) HealthCheck(opts *core.HealthCheckOptions) *core.HealthCheckResult {
+	return c.executor.HealthCheck(opts)
+}
+
+// HealthCheckWithRetry 执行带重试的健康检查
+//
+// 如果第一次检查失败，会自动重试指定次数
+//
+// Parameters:
+//   - opts: 健康检查选项
+//   - maxRetries: 最大重试次数（如果 <= 0，默认为 3）
+//
+// Returns:
+//   - *core.HealthCheckResult: 最终的健康检查结果
+//
+// Example:
+//
+//	result := client.HealthCheckWithRetry(&core.HealthCheckOptions{
+//	    Timeout: 5 * time.Second,
+//	}, 3)
+func (c *Client) HealthCheckWithRetry(opts *core.HealthCheckOptions, maxRetries int) *core.HealthCheckResult {
+	return c.executor.HealthCheckWithRetry(opts, maxRetries)
+}

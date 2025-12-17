@@ -8,7 +8,7 @@
   - [x] 1.1.3 实现签名密钥派生 (deriveSigningKey)
   - [x] 1.1.4 实现 Authorization 头构建 (buildAuthorizationHeader)
   - [x] 1.1.5 实现预签名 URL 生成 (Presign)
-  - [ ] 1.1.6 支持流式签名 (Chunk Signature) - 后续实现
+  - [x] 1.1.6 支持流式签名 (Chunk Signature) - 已完成
 
 - [x] 1.2 完善 V2 签名器实现
   - [x] 1.2.1 实现 V2 签名算法 (Sign)
@@ -30,9 +30,9 @@
   - [x] 2.1.5 实现 NewHTTPClient 辅助函数
   - [x] 2.1.6 支持自定义 CA 证书（SSL_CERT_FILE）
 
-- [ ] 2.2 创建 trace.go (可选 - 后续实现)
-  - [ ] 2.2.1 实现 HTTP 请求追踪
-  - [ ] 2.2.2 添加调试日志支持
+- [x] 2.2 创建 trace.go - 已完成
+  - [x] 2.2.1 实现 HTTP 请求追踪（8 个测试用例，全部通过）
+  - [x] 2.2.2 添加调试日志支持（TraceInfo 和 TraceHook）
 
 - [x] 2.3 传输层单元测试
   - [x] 2.3.1 DefaultTransport 测试（2 个测试用例）
@@ -51,7 +51,7 @@
   - [x] 3.1.3 完善 Execute 方法的错误处理
   - [x] 3.1.4 完善 shouldRetry 和 shouldRetryResponse 逻辑
   - [x] 3.1.5 实现辅助方法（isVirtualHostStyleRequest, encodePath 等）
-  - [ ] 3.1.6 实现健康检查逻辑（可选，后续实现）
+  - [x] 3.1.6 实现健康检查逻辑（7 个测试用例，全部通过）
 
 - [x] 3.2 完善 response.go（已有基础实现）
   - [x] 3.2.1 完善 ParseObjectInfo 方法

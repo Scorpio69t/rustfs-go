@@ -45,7 +45,7 @@ type AssumeRoleResponse struct {
 
 // AssumeRoleResult - Contains the response to a successful AssumeRole
 // request, including temporary credentials that can be used to make
-// MinIO API requests.
+// RustFS API requests.
 type AssumeRoleResult struct {
 	// The identifiers for the temporary security credentials that the operation
 	// returns.
@@ -71,12 +71,12 @@ type AssumeRoleResult struct {
 	PackedPolicySize int `xml:",omitempty"`
 }
 
-// A STSAssumeRole retrieves credentials from MinIO service, and keeps track if
+// A STSAssumeRole retrieves credentials from RustFS service, and keeps track if
 // those credentials are expired.
 type STSAssumeRole struct {
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service
+	// Optional http Client to use when connecting to RustFS STS service
 	// (overrides default client in CredContext)
 	Client *http.Client
 
@@ -105,7 +105,7 @@ type STSAssumeRoleOptions struct {
 	RoleSessionName string
 	ExternalID      string
 
-	TokenRevokeType string // Optional, used for token revokation (MinIO only extension)
+	TokenRevokeType string // Optional, used for token revokation (RustFS extension)
 }
 
 // NewSTSAssumeRole returns a pointer to a new
@@ -222,7 +222,7 @@ func getAssumeRoleCredentials(clnt *http.Client, endpoint string, opts STSAssume
 	return a, nil
 }
 
-// RetrieveWithCredContext retrieves credentials from the MinIO service.
+// RetrieveWithCredContext retrieves credentials from the RustFS service.
 // Error will be returned if the request fails, optional cred context.
 func (m *STSAssumeRole) RetrieveWithCredContext(cc *CredContext) (Value, error) {
 	if cc == nil {
@@ -262,7 +262,7 @@ func (m *STSAssumeRole) RetrieveWithCredContext(cc *CredContext) (Value, error) 
 	}, nil
 }
 
-// Retrieve retrieves credentials from the MinIO service.
+// Retrieve retrieves credentials from the RustFS service.
 // Error will be returned if the request fails.
 func (m *STSAssumeRole) Retrieve() (Value, error) {
 	return m.RetrieveWithCredContext(nil)

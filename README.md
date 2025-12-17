@@ -27,7 +27,9 @@ RustFS Go SDK is a comprehensive Go client library for interacting with RustFS o
 - ✅ **Full S3 API Compatibility** - Complete support for all S3-compatible operations
 - ✅ **Clean API Design** - Intuitive and easy-to-use interface
 - ✅ **Comprehensive Operations** - Bucket management, object operations, multipart uploads, and more
-- ✅ **Presigned URLs** - Generate secure presigned URLs for temporary access
+- ✅ **Streaming Signature** - AWS Signature V4 streaming support for chunked uploads
+- ✅ **Health Check** - Built-in health check with retry mechanism
+- ✅ **HTTP Tracing** - Request tracing for performance monitoring and debugging
 - ✅ **Error Handling** - Robust error handling and retry mechanisms
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
@@ -204,6 +206,64 @@ err = multipartSvc.AbortMultipartUpload(ctx, "my-bucket", "large-file.txt", uplo
 
 > **⏳ 待实现**: 对象标签功能计划在后续版本中提供。
 
+### 🏥 Health Check
+
+```go
+// 基本健康检查
+result := client.HealthCheck(nil)
+if result.Healthy {
+    fmt.Printf("✅ 服务健康，响应时间: %v\n", result.ResponseTime)
+} else {
+    fmt.Printf("❌ 服务不健康: %v\n", result.Error)
+}
+
+// 带超时的健康检查
+opts := &core.HealthCheckOptions{
+    Timeout: 5 * time.Second,
+    Context: context.Background(),
+}
+result := client.HealthCheck(opts)
+
+// 带重试的健康检查
+result := client.HealthCheckWithRetry(opts, 3)
+```
+
+> 📖 **完整示例**: 查看 [examples/rustfs/health.go](examples/rustfs/health.go)
+
+### 📊 HTTP Request Tracing
+
+```go
+import "github.com/Scorpio69t/rustfs-go/internal/transport"
+
+// 创建追踪 hook
+var traceInfo *transport.TraceInfo
+hook := func(info transport.TraceInfo) {
+    traceCopy := info
+    traceInfo = &traceCopy
+}
+
+// 创建带追踪的 context
+traceCtx := transport.NewTraceContext(ctx, hook)
+
+// 执行请求
+bucketSvc := client.Bucket()
+exists, err := bucketSvc.Exists(traceCtx, "my-bucket")
+
+// 分析追踪信息
+if traceInfo != nil {
+    fmt.Printf("连接复用: %v\n", traceInfo.ConnReused)
+    fmt.Printf("总耗时: %v\n", traceInfo.TotalDuration())
+
+    // 各阶段耗时
+    timings := traceInfo.GetTimings()
+    for stage, duration := range timings {
+        fmt.Printf("%s: %v\n", stage, duration)
+    }
+}
+```
+
+> 📖 **完整示例**: 查看 [examples/rustfs/trace.go](examples/rustfs/trace.go)
+
 ## 🔑 Credentials Management
 
 ### Static Credentials
@@ -242,6 +302,8 @@ More example code can be found in the [examples/rustfs](examples/rustfs/) direct
 - [Bucket Operations](examples/rustfs/bucketops.go) - 存储桶操作示例
 - [Object Operations](examples/rustfs/objectops.go) - 对象操作示例
 - [Multipart Upload](examples/rustfs/multipart.go) - 分片上传示例
+- [Health Check](examples/rustfs/health.go) - 健康检查示例
+- [HTTP Tracing](examples/rustfs/trace.go) - HTTP 请求追踪示例
 
 ### 运行示例
 
@@ -252,6 +314,8 @@ cd examples/rustfs
 go run -tags example bucketops.go
 go run -tags example objectops.go
 go run -tags example multipart.go
+go run -tags example health.go
+go run -tags example trace.go
 ```
 
 > **💡 提示**: 运行示例前，请确保：
@@ -295,7 +359,9 @@ RustFS Go SDK 是一个用于与 RustFS 对象存储系统交互的 Go 语言客
 - ✅ **完全兼容 S3 API** - 支持所有 S3 兼容操作
 - ✅ **简洁的 API 设计** - 直观易用的接口
 - ✅ **完整的操作支持** - 存储桶管理、对象操作、多部分上传等
-- ✅ **预签名 URL** - 生成安全的预签名 URL 用于临时访问
+- ✅ **流式签名** - 支持 AWS Signature V4 分块上传流式签名
+- ✅ **健康检查** - 内置健康检查机制，支持重试
+- ✅ **HTTP 追踪** - 请求追踪功能，便于性能监控和调试
 - ✅ **错误处理** - 完善的错误处理和重试机制
 - ✅ **流式支持** - 高效的大文件流式上传/下载
 - ✅ **生产就绪** - 经过充分测试，提供完整示例
@@ -468,20 +534,84 @@ copyInfo, err := client.CopyObject(ctx, "source-bucket", "source-object.txt",
 
 ### 🏷️ 对象标签
 
+> **⏳ 待实现**: 对象标签功能计划在后续版本中提供。
+
+### 🏥 健康检查
+
 ```go
-// 设置对象标签
-err := client.SetObjectTagging(ctx, "my-bucket", "my-object.txt",
-    map[string]string{
-        "environment": "production",
-        "project":     "rustfs-go",
-    })
+// 基本健康检查
+result := client.HealthCheck(nil)
+if result.Healthy {
+    fmt.Printf("✅ 服务健康，响应时间: %v\n", result.ResponseTime)
+} else {
+    fmt.Printf("❌ 服务不健康: %v\n", result.Error)
+}
 
-// 获取对象标签
-tags, err := client.GetObjectTagging(ctx, "my-bucket", "my-object.txt")
+// 带超时的健康检查
+opts := &core.HealthCheckOptions{
+    Timeout: 5 * time.Second,
+    Context: context.Background(),
+}
+result := client.HealthCheck(opts)
 
-// 删除对象标签
-err = client.RemoveObjectTagging(ctx, "my-bucket", "my-object.txt")
+// 检查特定存储桶
+opts := &core.HealthCheckOptions{
+    Timeout:    3 * time.Second,
+    BucketName: "my-bucket",
+    Context:    ctx,
+}
+result := client.HealthCheck(opts)
+
+// 带重试的健康检查
+result := client.HealthCheckWithRetry(opts, 3)
+
+// 定期健康检查
+ticker := time.NewTicker(30 * time.Second)
+defer ticker.Stop()
+
+for range ticker.C {
+    result := client.HealthCheck(nil)
+    if !result.Healthy {
+        log.Printf("健康检查失败: %v", result.Error)
+    }
+}
 ```
+
+> 📖 **完整示例**: 查看 [examples/rustfs/health.go](examples/rustfs/health.go)
+
+### 📊 HTTP 请求追踪
+
+```go
+import "github.com/Scorpio69t/rustfs-go/internal/transport"
+
+// 创建追踪回调
+var traceInfo *transport.TraceInfo
+hook := func(info transport.TraceInfo) {
+    traceCopy := info
+    traceInfo = &traceCopy
+}
+
+// 创建带追踪的 context
+traceCtx := transport.NewTraceContext(ctx, hook)
+
+// 执行请求
+bucketSvc := client.Bucket()
+exists, err := bucketSvc.Exists(traceCtx, "my-bucket")
+
+// 分析追踪信息
+if traceInfo != nil {
+    fmt.Printf("连接复用: %v\n", traceInfo.ConnReused)
+    fmt.Printf("总耗时: %v\n", traceInfo.TotalDuration())
+
+    // 各阶段耗时
+    timings := traceInfo.GetTimings()
+    for stage, duration := range timings {
+        fmt.Printf("%s: %v\n", stage, duration)
+    }
+}
+```
+
+> 📖 **完整示例**: 查看 [examples/rustfs/trace.go](examples/rustfs/trace.go)
 
 ## 🔑 凭证管理
 
@@ -516,11 +646,31 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 📝 示例代码
 
-更多示例代码请查看 [examples](examples/) 目录：
+更多示例代码请查看 [examples/rustfs](examples/rustfs/) 目录：
 
 - [存储桶操作示例](examples/rustfs/bucketops.go)
 - [对象操作示例](examples/rustfs/objectops.go)
-- [预签名 URL 示例](examples/rustfs/presigned.go)
+- [分片上传示例](examples/rustfs/multipart.go)
+- [健康检查示例](examples/rustfs/health.go)
+- [HTTP 追踪示例](examples/rustfs/trace.go)
+
+### 运行示例
+
+```bash
+cd examples/rustfs
+
+# 运行示例
+go run -tags example bucketops.go
+go run -tags example objectops.go
+go run -tags example multipart.go
+go run -tags example health.go
+go run -tags example trace.go
+```
+
+> **💡 提示**: 运行示例前，请确保：
+> - RustFS 服务器正在运行（默认 `127.0.0.1:9000`）
+> - 更新示例代码中的访问密钥
+> - 创建示例中使用的存储桶
 
 ## 📖 API 文档
 
