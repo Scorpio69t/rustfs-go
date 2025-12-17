@@ -74,13 +74,13 @@ func TestEnvAWSRetrieve(t *testing.T) {
 	}
 }
 
-func TestEnvMinioRetrieve(t *testing.T) {
+func TestEnvRustfsRetrieve(t *testing.T) {
 	os.Clearenv()
 
-	t.Setenv("MINIO_ACCESS_KEY", "access")
-	t.Setenv("MINIO_SECRET_KEY", "secret")
+	t.Setenv("RUSTFS_ACCESS_KEY", "access")
+	t.Setenv("RUSTFS_SECRET_KEY", "secret")
 
-	e := EnvMinio{}
+	e := EnvRustfs{}
 	if !e.IsExpired() {
 		t.Error("Expect creds to be expired before retrieve.")
 	}

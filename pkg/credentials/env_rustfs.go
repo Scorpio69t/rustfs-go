@@ -20,35 +20,35 @@ package credentials
 
 import "os"
 
-// A EnvMinio retrieves credentials from the environment variables of the
-// running process. EnvMinioironment credentials never expire.
+// A EnvRustfs retrieves credentials from the environment variables of the
+// running process. EnvRustfsironment credentials never expire.
 //
 // Environment variables used:
 //
-// * Access Key ID:     MINIO_ACCESS_KEY.
-// * Secret Access Key: MINIO_SECRET_KEY.
-// * Access Key ID:     MINIO_ROOT_USER.
-// * Secret Access Key: MINIO_ROOT_PASSWORD.
-type EnvMinio struct {
+// * Access Key ID:     RUSTFS_ACCESS_KEY.
+// * Secret Access Key: RUSTFS_SECRET_KEY.
+// * Access Key ID:     RUSTFS_ROOT_USER.
+// * Secret Access Key: RUSTFS_ROOT_PASSWORD.
+type EnvRustfs struct {
 	retrieved bool
 }
 
-// NewEnvMinio returns a pointer to a new Credentials object
+// NewEnvRustfs returns a pointer to a new Credentials object
 // wrapping the environment variable provider.
-func NewEnvMinio() *Credentials {
-	return New(&EnvMinio{})
+func NewEnvRustfs() *Credentials {
+	return New(&EnvRustfs{})
 }
 
-func (e *EnvMinio) retrieve() (Value, error) {
+func (e *EnvRustfs) retrieve() (Value, error) {
 	e.retrieved = false
 
-	id := os.Getenv("MINIO_ROOT_USER")
-	secret := os.Getenv("MINIO_ROOT_PASSWORD")
+	id := os.Getenv("RUSTFS_ROOT_USER")
+	secret := os.Getenv("RUSTFS_ROOT_PASSWORD")
 
 	signerType := SignatureV4
 	if id == "" || secret == "" {
-		id = os.Getenv("MINIO_ACCESS_KEY")
-		secret = os.Getenv("MINIO_SECRET_KEY")
+		id = os.Getenv("RUSTFS_ACCESS_KEY")
+		secret = os.Getenv("RUSTFS_SECRET_KEY")
 		if id == "" || secret == "" {
 			signerType = SignatureAnonymous
 		}
@@ -63,16 +63,16 @@ func (e *EnvMinio) retrieve() (Value, error) {
 }
 
 // Retrieve retrieves the keys from the environment.
-func (e *EnvMinio) Retrieve() (Value, error) {
+func (e *EnvRustfs) Retrieve() (Value, error) {
 	return e.retrieve()
 }
 
 // RetrieveWithCredContext is like Retrieve() (no-op input cred context)
-func (e *EnvMinio) RetrieveWithCredContext(_ *CredContext) (Value, error) {
+func (e *EnvRustfs) RetrieveWithCredContext(_ *CredContext) (Value, error) {
 	return e.retrieve()
 }
 
 // IsExpired returns if the credentials have been retrieved.
-func (e *EnvMinio) IsExpired() bool {
+func (e *EnvRustfs) IsExpired() bool {
 	return !e.retrieved
 }

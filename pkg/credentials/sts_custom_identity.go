@@ -54,11 +54,11 @@ type AssumeRoleWithCustomTokenResponse struct {
 type CustomTokenIdentity struct {
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service.
+	// Optional http Client to use when connecting to RustFS STS service.
 	// (overrides default client in CredContext)
 	Client *http.Client
 
-	// MinIO server STS endpoint to fetch STS credentials.
+	// RustFS server STS endpoint to fetch STS credentials.
 	STSEndpoint string
 
 	// The custom token to use with the request.
