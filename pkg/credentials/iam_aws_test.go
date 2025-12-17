@@ -1,8 +1,8 @@
 //go:build !windows
 
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2017 MinIO, Inc.
+ * RustFS Go SDK
+ * Copyright 2025 RustFS Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package credentials
@@ -154,7 +155,7 @@ func initStsTestServer(expireOn string) *httptest.Server {
 	return server
 }
 
-func TestIAMMalformedEndpoint(t *testing.T) {
+func TestIAMRustfsMalformedEndpoint(t *testing.T) {
 	creds := NewIAM("%%%%")
 	_, err := creds.GetWithContext(defaultCredContext)
 	if err == nil {
@@ -162,7 +163,7 @@ func TestIAMMalformedEndpoint(t *testing.T) {
 	}
 }
 
-func TestIAMFailServer(t *testing.T) {
+func TestIAMRustfsFailServer(t *testing.T) {
 	server := initTestFailServer()
 	defer server.Close()
 
@@ -177,7 +178,7 @@ func TestIAMFailServer(t *testing.T) {
 	}
 }
 
-func TestIAMNoRoles(t *testing.T) {
+func TestIAMRustfsNoRoles(t *testing.T) {
 	server := initTestServerNoRoles()
 	defer server.Close()
 
@@ -191,7 +192,7 @@ func TestIAMNoRoles(t *testing.T) {
 	}
 }
 
-func TestIAM(t *testing.T) {
+func TestIAMRustfs(t *testing.T) {
 	server := initIMDSv2Server("2014-12-16T01:51:37Z", false)
 	defer server.Close()
 
@@ -221,7 +222,7 @@ func TestIAM(t *testing.T) {
 	}
 }
 
-func TestIAMFailAssume(t *testing.T) {
+func TestIAMRustfsFailAssume(t *testing.T) {
 	server := initIMDSv2Server("2014-12-16T01:51:37Z", true)
 	defer server.Close()
 
@@ -238,7 +239,7 @@ func TestIAMFailAssume(t *testing.T) {
 	}
 }
 
-func TestIAMIsExpired(t *testing.T) {
+func TestIAMRustfsIsExpired(t *testing.T) {
 	server := initIMDSv2Server("2014-12-16T01:51:37Z", false)
 	defer server.Close()
 
@@ -271,7 +272,7 @@ func TestIAMIsExpired(t *testing.T) {
 	}
 }
 
-func TestEcsTask(t *testing.T) {
+func TestEcsTaskRustfs(t *testing.T) {
 	server := initEcsTaskTestServer("2014-12-16T01:51:37Z")
 	defer server.Close()
 	p := &IAM{
@@ -300,7 +301,7 @@ func TestEcsTask(t *testing.T) {
 	}
 }
 
-func TestEcsTaskFullURI(t *testing.T) {
+func TestEcsTaskRustfsFullURI(t *testing.T) {
 	server := initEcsTaskTestServer("2014-12-16T01:51:37Z")
 	defer server.Close()
 	p := &IAM{}
@@ -328,14 +329,14 @@ func TestEcsTaskFullURI(t *testing.T) {
 	}
 }
 
-func TestSts(t *testing.T) {
+func TestSTSWebIdentityRustfs(t *testing.T) {
 	server := initStsTestServer("2014-12-16T01:51:37Z")
 	defer server.Close()
 	p := &IAM{
 		Endpoint: server.URL,
 	}
 
-	f, err := os.CreateTemp(t.TempDir(), "minio-go")
+	f, err := os.CreateTemp(t.TempDir(), "rustfs-go")
 	if err != nil {
 		t.Errorf("Unexpected failure %s", err)
 	}
@@ -368,14 +369,14 @@ func TestSts(t *testing.T) {
 	}
 }
 
-func TestStsCn(t *testing.T) {
+func TestSTSAssumeRoleRustfs(t *testing.T) {
 	server := initStsTestServer("2014-12-16T01:51:37Z")
 	defer server.Close()
 	p := &IAM{
 		Endpoint: server.URL,
 	}
 
-	f, err := os.CreateTemp(t.TempDir(), "minio-go")
+	f, err := os.CreateTemp(t.TempDir(), "rustfs-go")
 	if err != nil {
 		t.Errorf("Unexpected failure %s", err)
 	}

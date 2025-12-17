@@ -1,49 +1,29 @@
-/*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2015-2017 MinIO, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+// Package signer internal/signer/utils.go
 package signer
 
 import (
-	"crypto/hmac"
 	"crypto/sha256"
 	"net/http"
+	"net/url"
+	"sort"
 	"strings"
 )
 
-// unsignedPayload - value to be set to X-Amz-Content-Sha256 header when
-const unsignedPayload = "UNSIGNED-PAYLOAD"
+// Constants for unsigned payload
+const (
+	UnsignedPayload = "UNSIGNED-PAYLOAD"
+)
 
-// sum256 calculate sha256 sum for an input byte array.
+// sum256 计算 SHA256 哈希
 func sum256(data []byte) []byte {
 	hash := sha256.New()
 	hash.Write(data)
 	return hash.Sum(nil)
 }
 
-// sumHMAC calculate hmac between two input byte array.
-func sumHMAC(key, data []byte) []byte {
-	hash := hmac.New(sha256.New, key)
-	hash.Write(data)
-	return hash.Sum(nil)
-}
-
-// getHostAddr returns host header if available, otherwise returns host from URL
+// getHostAddr 返回 host header，如果不存在则返回 URL 中的 host
 func getHostAddr(req *http.Request) string {
-	host := req.Header.Get("host")
+	host := req.Header.Get("Host")
 	if host != "" && req.Host != host {
 		return host
 	}
@@ -53,10 +33,76 @@ func getHostAddr(req *http.Request) string {
 	return req.URL.Host
 }
 
-// Trim leading and trailing spaces and replace sequential spaces with one space, following Trimall()
-// in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+// signV4TrimAll 压缩连续空格为一个空格（按照 AWS Signature V4 规范）
+// http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
 func signV4TrimAll(input string) string {
-	// Compress adjacent spaces (a space is determined by
-	// unicode.IsSpace() internally here) to one space and return
+	// 使用 strings.Fields 会自动 trim 并压缩空格
 	return strings.Join(strings.Fields(input), " ")
+}
+
+// encodePath URL 编码路径（保留 /）
+func encodePath(pathName string) string {
+	if pathName == "" {
+		return "/"
+	}
+
+	// 保留尾部斜杠
+	trailingSlash := strings.HasSuffix(pathName, "/")
+
+	// S3 要求保留路径中的斜杠，但编码其他特殊字符
+	var encodedPathname strings.Builder
+	for _, s := range strings.Split(pathName, "/") {
+		if len(s) == 0 {
+			continue
+		}
+		encodedPathname.WriteString("/")
+		encodedPathname.WriteString(url.PathEscape(s))
+	}
+
+	path := encodedPathname.String()
+	if len(path) == 0 {
+		path = "/"
+	}
+
+	// 如果原路径有尾部斜杠且不是根路径，保留它
+	if trailingSlash && path != "/" {
+		path += "/"
+	}
+
+	return path
+}
+
+// queryEncode 编码查询参数（用于预签名 URL）
+func queryEncode(query url.Values) string {
+	// 对查询参数按键排序
+	keys := make([]string, 0, len(query))
+	for k := range query {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	var buf strings.Builder
+	for _, k := range keys {
+		vs := query[k]
+		keyEscaped := url.QueryEscape(k)
+		for _, v := range vs {
+			if buf.Len() > 0 {
+				buf.WriteByte('&')
+			}
+			buf.WriteString(keyEscaped)
+			buf.WriteByte('=')
+			buf.WriteString(url.QueryEscape(v))
+		}
+	}
+	return buf.String()
+}
+
+// headerExists 检查 header 是否存在
+func headerExists(key string, headers []string) bool {
+	for _, k := range headers {
+		if k == key {
+			return true
+		}
+	}
+	return false
 }

@@ -302,3 +302,38 @@ func hmacSHA256(key, data []byte) []byte {
 	h.Write(data)
 	return h.Sum(nil)
 }
+
+// SignV4STS 为 STS 请求签名（用于 AssumeRole 等操作）
+// 这是一个便捷函数，专门用于 STS 服务
+func SignV4STS(req http.Request, accessKeyID, secretAccessKey, location string) *http.Request {
+	region := location
+	if region == "" {
+		region = "us-east-1"
+	}
+
+	if accessKeyID == "" || secretAccessKey == "" {
+		return &req
+	}
+
+	// 设置时间
+	t := time.Now().UTC()
+	req.Header.Set("X-Amz-Date", t.Format(iso8601DateFormat))
+
+	// 确保有 Host 头
+	if req.Header.Get("Host") == "" {
+		req.Header.Set("Host", req.URL.Host)
+	}
+
+	// 设置 Content-SHA256 头（如果未设置）
+	if req.Header.Get("X-Amz-Content-Sha256") == "" {
+		req.Header.Set("X-Amz-Content-Sha256", UnsignedPayload)
+	}
+
+	// 使用 V4Signer 进行签名（STS 服务）
+	signer := &V4Signer{}
+	signature := signer.calculateSignature(&req, accessKeyID, secretAccessKey, region, t)
+	auth := signer.buildAuthorizationHeader(&req, accessKeyID, region, signature, t)
+	req.Header.Set("Authorization", auth)
+
+	return &req
+}

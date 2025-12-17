@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Scorpio69t/rustfs-go/internal/signer"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
+	"github.com/Scorpio69t/rustfs-go/pkg/signer"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
@@ -333,7 +333,8 @@ func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location
 	}
 
 	// 普通请求签名
-	signer.SignRequest(req, creds, region)
+	sn := signer.NewSigner(convertSignerType(creds.SignerType))
+	sn.Sign(req, creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, region)
 	return nil
 }
 

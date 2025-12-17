@@ -1,6 +1,6 @@
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2017 MinIO, Inc.
+ * RustFS Go SDK
+ * Copyright 2025 RustFS Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package credentials
@@ -380,9 +381,6 @@ func getCredentials(client *http.Client, endpoint string) (ec2RoleCredRespBody, 
 	token, err := fetchIMDSToken(client, endpoint)
 	if err != nil {
 		// Return only errors for valid situations, if the IMDSv2 is not enabled
-		// we will not be able to get the token, in such a situation we have
-		// to rely on IMDSv1 behavior as a fallback, this check ensures that.
-		// Refer https://github.com/minio/minio-go/issues/1866
 		if !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 			return ec2RoleCredRespBody{}, err
 		}

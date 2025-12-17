@@ -1,6 +1,6 @@
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2017 MinIO, Inc.
+ * RustFS Go SDK
+ * Copyright 2025 RustFS Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package credentials
@@ -34,11 +35,11 @@ package credentials
 //	creds := credentials.NewChainCredentials(
 //	    []credentials.Provider{
 //	        &credentials.EnvAWSS3{},
-//	        &credentials.EnvMinio{},
+//	        &credentials.EnvRustfs{},
 //	    })
 //
 //	// Usage of ChainCredentials.
-//	mc, err := minio.NewWithCredentials(endpoint, creds, secure, "us-east-1")
+//	mc, err := rustfs.NewWithCredentials(endpoint, creds, secure, "us-east-1")
 //	if err != nil {
 //	     log.Fatalln(err)
 //	}

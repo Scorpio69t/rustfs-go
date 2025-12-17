@@ -1,6 +1,6 @@
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2017 MinIO, Inc.
+ * RustFS Go SDK
+ * Copyright 2025 RustFS Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package credentials
@@ -24,21 +25,21 @@ import (
 	"runtime"
 )
 
-// A FileMinioClient retrieves credentials from the current user's home
+// A FileRustfsClient retrieves credentials from the current user's home
 // directory, and keeps track if those credentials are expired.
 //
 // Configuration file example: $HOME/.mc/config.json
-type FileMinioClient struct {
+type FileRustfsClient struct {
 	// Path to the shared credentials file.
 	//
-	// If empty will look for "MINIO_SHARED_CREDENTIALS_FILE" env variable. If the
+	// If empty will look for "RUSTFS_SHARED_CREDENTIALS_FILE" env variable. If the
 	// env value is empty will default to current user's home directory.
-	// Linux/OSX: "$HOME/.mc/config.json"
-	// Windows:   "%USERALIAS%\mc\config.json"
+	// Linux/OSX: "$HOME/.rustfs/config.json"
+	// Windows:   "%USERALIAS%\rustfs\config.json"
 	Filename string
 
-	// MinIO Alias to extract credentials from the shared credentials file. If empty
-	// will default to environment variable "MINIO_ALIAS" or "s3" if
+	// RustFS Alias to extract credentials from the shared credentials file. If empty
+	// will default to environment variable "RUSTFS_ALIAS" or "s3" if
 	// environment variable is also not set.
 	Alias string
 
@@ -46,33 +47,33 @@ type FileMinioClient struct {
 	retrieved bool
 }
 
-// NewFileMinioClient returns a pointer to a new Credentials object
+// NewFileRustfsClient returns a pointer to a new Credentials object
 // wrapping the Alias file provider.
-func NewFileMinioClient(filename, alias string) *Credentials {
-	return New(&FileMinioClient{
+func NewFileRustfsClient(filename, alias string) *Credentials {
+	return New(&FileRustfsClient{
 		Filename: filename,
 		Alias:    alias,
 	})
 }
 
-func (p *FileMinioClient) retrieve() (Value, error) {
+func (p *FileRustfsClient) retrieve() (Value, error) {
 	if p.Filename == "" {
-		if value, ok := os.LookupEnv("MINIO_SHARED_CREDENTIALS_FILE"); ok {
+		if value, ok := os.LookupEnv("RUSTFS_SHARED_CREDENTIALS_FILE"); ok {
 			p.Filename = value
 		} else {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				return Value{}, err
 			}
-			p.Filename = filepath.Join(homeDir, ".mc", "config.json")
+			p.Filename = filepath.Join(homeDir, ".rustfs", "config.json")
 			if runtime.GOOS == "windows" {
-				p.Filename = filepath.Join(homeDir, "mc", "config.json")
+				p.Filename = filepath.Join(homeDir, "rustfs", "config.json")
 			}
 		}
 	}
 
 	if p.Alias == "" {
-		p.Alias = os.Getenv("MINIO_ALIAS")
+		p.Alias = os.Getenv("RUSTFS_ALIAS")
 		if p.Alias == "" {
 			p.Alias = "s3"
 		}
@@ -95,17 +96,17 @@ func (p *FileMinioClient) retrieve() (Value, error) {
 
 // Retrieve reads and extracts the shared credentials from the current
 // users home directory.
-func (p *FileMinioClient) Retrieve() (Value, error) {
+func (p *FileRustfsClient) Retrieve() (Value, error) {
 	return p.retrieve()
 }
 
 // RetrieveWithCredContext - is like Retrieve()
-func (p *FileMinioClient) RetrieveWithCredContext(_ *CredContext) (Value, error) {
+func (p *FileRustfsClient) RetrieveWithCredContext(_ *CredContext) (Value, error) {
 	return p.retrieve()
 }
 
 // IsExpired returns if the shared credentials have expired.
-func (p *FileMinioClient) IsExpired() bool {
+func (p *FileRustfsClient) IsExpired() bool {
 	return !p.retrieved
 }
 

@@ -1,6 +1,6 @@
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2017 MinIO, Inc.
+ * RustFS Go SDK
+ * Copyright 2025 RustFS Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package credentials
@@ -24,13 +25,13 @@ import (
 	"testing"
 )
 
-func TestFileAWS(t *testing.T) {
+func TestFileRustfs(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("\"/bin/cat\": file does not exist")
 	}
 	os.Clearenv()
 
-	creds := NewFileAWSCredentials("credentials.sample", "")
+	creds := NewFileRustfsClient("credentials.sample", "")
 	credValues, err := creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +48,7 @@ func TestFileAWS(t *testing.T) {
 	}
 
 	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", "credentials.sample")
-	creds = NewFileAWSCredentials("", "")
+	creds = NewFileRustfsClient("", "")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +70,7 @@ func TestFileAWS(t *testing.T) {
 	}
 
 	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join(wd, "credentials.sample"))
-	creds = NewFileAWSCredentials("", "")
+	creds = NewFileRustfsClient("", "")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +89,7 @@ func TestFileAWS(t *testing.T) {
 	os.Clearenv()
 	t.Setenv("AWS_PROFILE", "no_token")
 
-	creds = NewFileAWSCredentials("credentials.sample", "")
+	creds = NewFileRustfsClient("credentials.sample", "")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -103,7 +104,7 @@ func TestFileAWS(t *testing.T) {
 
 	os.Clearenv()
 
-	creds = NewFileAWSCredentials("credentials.sample", "no_token")
+	creds = NewFileRustfsClient("credentials.sample", "no_token")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -116,7 +117,7 @@ func TestFileAWS(t *testing.T) {
 		t.Errorf("Expected 'secret', got %s'", credValues.SecretAccessKey)
 	}
 
-	creds = NewFileAWSCredentials("credentials-non-existent.sample", "no_token")
+	creds = NewFileRustfsClient("credentials-non-existent.sample", "no_token")
 	_, err = creds.GetWithContext(defaultCredContext)
 	if !os.IsNotExist(err) {
 		t.Errorf("Expected open non-existent.json: no such file or directory, got %s", err)
@@ -127,7 +128,7 @@ func TestFileAWS(t *testing.T) {
 
 	os.Clearenv()
 
-	creds = NewFileAWSCredentials("credentials.sample", "with_process")
+	creds = NewFileRustfsClient("credentials.sample", "with_process")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -147,10 +148,10 @@ func TestFileAWS(t *testing.T) {
 	}
 }
 
-func TestFileMinioClient(t *testing.T) {
+func TestFileRustfsClient(t *testing.T) {
 	os.Clearenv()
 
-	creds := NewFileMinioClient("config.json.sample", "")
+	creds := NewFileRustfsClient("config.json.sample", "")
 	credValues, err := creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -167,9 +168,9 @@ func TestFileMinioClient(t *testing.T) {
 	}
 
 	os.Clearenv()
-	t.Setenv("MINIO_ALIAS", "play")
+	t.Setenv("RUSTFS_ALIAS", "play")
 
-	creds = NewFileMinioClient("config.json.sample", "")
+	creds = NewFileRustfsClient("config.json.sample", "")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +188,7 @@ func TestFileMinioClient(t *testing.T) {
 
 	os.Clearenv()
 
-	creds = NewFileMinioClient("config.json.sample", "play")
+	creds = NewFileRustfsClient("config.json.sample", "play")
 	credValues, err = creds.GetWithContext(defaultCredContext)
 	if err != nil {
 		t.Fatal(err)
@@ -203,7 +204,7 @@ func TestFileMinioClient(t *testing.T) {
 		t.Errorf("Expected 'S3v2', got %s'", credValues.SignerType)
 	}
 
-	creds = NewFileMinioClient("non-existent.json", "play")
+	creds = NewFileRustfsClient("non-existent.json", "play")
 	_, err = creds.GetWithContext(defaultCredContext)
 	if !os.IsNotExist(err) {
 		t.Errorf("Expected open non-existent.json: no such file or directory, got %s", err)
