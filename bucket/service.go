@@ -36,7 +36,7 @@ type CreateOptions struct {
 	// ObjectLocking 启用对象锁定
 	ObjectLocking bool
 
-	// ForceCreate 强制创建（MinIO 扩展）
+	// ForceCreate 强制创建（RustFS 扩展）
 	ForceCreate bool
 }
 

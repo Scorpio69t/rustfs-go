@@ -25,8 +25,8 @@ test:
 examples:
 	@echo "Building s3 examples"
 	@cd ./examples/s3 && $(foreach v,$(wildcard examples/s3/*.go),go build -mod=mod -o ${TMPDIR}/$(basename $(v)) $(notdir $(v)) || exit 1;)
-	@echo "Building minio examples"
-	@cd ./examples/minio && $(foreach v,$(wildcard examples/minio/*.go),go build -mod=mod -o ${TMPDIR}/$(basename $(v)) $(notdir $(v)) || exit 1;)
+	@echo "Building rustfs examples"
+	@cd ./examples/rustfs && $(foreach v,$(wildcard examples/rustfs/*.go),go build -mod=mod -o ${TMPDIR}/$(basename $(v)) $(notdir $(v)) || exit 1;)
 
 functional-test:
 	@GO111MODULE=on go build -race functional_tests.go

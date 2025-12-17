@@ -96,7 +96,7 @@ location, err := bucketSvc.GetLocation(ctx, "my-bucket")
 
 // Delete bucket
 err = bucketSvc.Delete(ctx, "my-bucket")
-// Or force delete (MinIO extension, deletes all objects)
+// Or force delete (RustFS extension, deletes all objects)
 err = bucketSvc.Delete(ctx, "my-bucket", bucket.WithForceDelete(true))
 ```
 
@@ -337,7 +337,6 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ## 🔗 References
 
-- [MinIO Go SDK](https://github.com/minio/minio-go) - Main reference implementation
 - [AWS S3 API Documentation](https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html) - API specification
 - [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) - Signature algorithm
 
@@ -686,7 +685,6 @@ go run -tags example trace.go
 
 ## 🔗 参考资源
 
-- [MinIO Go SDK](https://github.com/minio/minio-go) - 主要参考实现
 - [AWS S3 API 文档](https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html) - API 规范
 - [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) - 签名算法
 

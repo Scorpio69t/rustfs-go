@@ -15,7 +15,7 @@ const (
 
 	// 对象相关
 	ErrCodeNoSuchKey         RustfsGoErrorCode = "NoSuchKey"
-	ErrCodeInvalidObjectName RustfsGoErrorCode = "XMinioInvalidObjectName"
+	ErrCodeInvalidObjectName RustfsGoErrorCode = "XRustfsInvalidObjectName"
 	ErrCodeNoSuchUpload      RustfsGoErrorCode = "NoSuchUpload"
 	ErrCodeNoSuchVersion     RustfsGoErrorCode = "NoSuchVersion"
 	ErrCodeInvalidPart       RustfsGoErrorCode = "InvalidPart"

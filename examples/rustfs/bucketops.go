@@ -98,8 +98,7 @@ func main() {
 	// 6. 删除存储桶（需要先清空存储桶中的对象）
 	// log.Println("\n=== 删除存储桶 ===")
 	// err = bucketSvc.Delete(ctx, bucketName)
-	// // 或者使用强制删除（MinIO 扩展，会删除所有对象）
-	// // err = bucketSvc.Delete(ctx, bucketName, bucket.WithForceDelete(true))
+
 	// if err != nil {
 	// 	log.Printf("删除存储桶失败: %v\n", err)
 	// } else {

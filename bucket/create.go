@@ -37,9 +37,9 @@ func (s *bucketService) Create(ctx context.Context, bucketName string, opts ...C
 		meta.CustomHeader.Set("x-amz-bucket-object-lock-enabled", "true")
 	}
 
-	// 设置强制创建头（MinIO 扩展）
+	// 设置强制创建头（RustFS 扩展）
 	if options.ForceCreate {
-		meta.CustomHeader.Set("x-minio-force-create", "true")
+		meta.CustomHeader.Set("x-rustfs-force-create", "true")
 	}
 
 	// 如果区域不是 us-east-1，需要发送 CreateBucketConfiguration

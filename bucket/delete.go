@@ -26,7 +26,7 @@ func (s *bucketService) Delete(ctx context.Context, bucketName string, opts ...D
 
 	// 设置强制删除头（如果支持）
 	if options.ForceDelete {
-		meta.CustomHeader.Set("x-minio-force-delete", "true")
+		meta.CustomHeader.Set("x-rustfs-force-delete", "true")
 	}
 
 	// 创建请求
