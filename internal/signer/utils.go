@@ -46,6 +46,9 @@ func encodePath(pathName string) string {
 		return "/"
 	}
 
+	// 保留尾部斜杠
+	trailingSlash := strings.HasSuffix(pathName, "/")
+
 	// S3 要求保留路径中的斜杠，但编码其他特殊字符
 	var encodedPathname strings.Builder
 	for _, s := range strings.Split(pathName, "/") {
@@ -59,6 +62,11 @@ func encodePath(pathName string) string {
 	path := encodedPathname.String()
 	if len(path) == 0 {
 		path = "/"
+	}
+
+	// 如果原路径有尾部斜杠且不是根路径，保留它
+	if trailingSlash && path != "/" {
+		path += "/"
 	}
 
 	return path

@@ -1,6 +1,7 @@
 //go:build example
 // +build example
 
+// bucketops-new.go - 使用新 API 的存储桶操作示例
 package main
 
 import (
@@ -8,72 +9,102 @@ import (
 	"log"
 
 	"github.com/Scorpio69t/rustfs-go"
+	"github.com/Scorpio69t/rustfs-go/bucket"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
 func main() {
 	const (
-		YOURACCESSKEYID     = "fjnKu9maolkJ2U3Y8hVQ"
-		YOURSECRETACCESSKEY = "Fg1dL82iWsPVUToSCErKOtk4RZAlIcfp5enwa0xD"
+		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
+		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
 		YOURENDPOINT        = "127.0.0.1:9000"
-		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
+		YOURBUCKET          = "mybucket" // 使用 'mc mb play/mybucket' 创建存储桶（如果不存在）
 	)
 
 	// 初始化客户端
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
-		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
-		Secure: false,
+		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
+		Secure:      false, // 设置为 true 使用 HTTPS
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("初始化客户端失败:", err)
 	}
 
 	ctx := context.Background()
-
-	// 创建存储桶
 	bucketName := YOURBUCKET
-	err = client.MakeBucket(ctx, bucketName, rustfs.MakeBucketOptions{
-		Region: "us-east-1",
-	})
+
+	// ===== 使用新 API =====
+	// 获取 Bucket 服务
+	bucketSvc := client.Bucket()
+
+	// 1. 创建存储桶
+	log.Println("\n=== 创建存储桶 ===")
+	err = bucketSvc.Create(ctx, bucketName,
+		bucket.WithRegion("us-east-1"),
+		// bucket.WithObjectLocking(true), // 可选：启用对象锁定
+	)
 	if err != nil {
 		log.Printf("创建存储桶失败: %v\n", err)
 	} else {
-		log.Printf("成功创建存储桶: %s\n", bucketName)
+		log.Printf("✅ 成功创建存储桶: %s\n", bucketName)
 	}
 
-	// 检查存储桶是否存在
-	exists, err := client.BucketExists(ctx, bucketName)
+	// 2. 检查存储桶是否存在
+	log.Println("\n=== 检查存储桶是否存在 ===")
+	exists, err := bucketSvc.Exists(ctx, bucketName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("检查存储桶失败:", err)
 	}
 	log.Printf("存储桶 %s 是否存在: %v\n", bucketName, exists)
 
-	// 列出所有存储桶
-	buckets, err := client.ListBuckets(ctx)
+	// 3. 获取存储桶位置
+	log.Println("\n=== 获取存储桶位置 ===")
+	location, err := bucketSvc.GetLocation(ctx, bucketName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("获取存储桶位置失败:", err)
 	}
-	log.Println("存储桶列表:")
-	for _, bucket := range buckets {
-		log.Printf("  - %s (创建时间: %s)\n", bucket.Name, bucket.CreationDate.Format("2006-01-02 15:04:05"))
+	log.Printf("存储桶 %s 的位置: %s\n", bucketName, location)
+
+	// 4. 列出所有存储桶
+	log.Println("\n=== 列出所有存储桶 ===")
+	buckets, err := bucketSvc.List(ctx)
+	if err != nil {
+		log.Fatalln("列出存储桶失败:", err)
+	}
+	log.Printf("共有 %d 个存储桶:\n", len(buckets))
+	for i, b := range buckets {
+		log.Printf("  %d. %s (创建时间: %s)\n",
+			i+1, b.Name, b.CreationDate.Format("2006-01-02 15:04:05"))
 	}
 
-	// 列出存储桶中的对象
-	log.Printf("\n存储桶 %s 中的对象:\n", bucketName)
-	objectsCh := client.ListObjects(ctx, bucketName, rustfs.ListObjectsOptions{
-		Prefix:  "",
-		MaxKeys: 100,
-	})
+	// 5. 列出存储桶中的对象（使用 Object 服务）
+	log.Printf("\n=== 存储桶 %s 中的对象 ===\n", bucketName)
+	objectSvc := client.Object()
+	objectsCh := objectSvc.List(ctx, bucketName)
+	count := 0
 	for obj := range objectsCh {
-		log.Printf("  - %s (大小: %d bytes, 修改时间: %s)\n",
-			obj.Key, obj.Size, obj.LastModified.Format("2006-01-02 15:04:05"))
+		if obj.Err != nil {
+			log.Printf("列出对象时出错: %v\n", obj.Err)
+			break
+		}
+		count++
+		log.Printf("  %d. %s (大小: %d bytes, 修改时间: %s)\n",
+			count, obj.Key, obj.Size, obj.LastModified.Format("2006-01-02 15:04:05"))
+	}
+	if count == 0 {
+		log.Println("  存储桶为空")
 	}
 
-	// 删除存储桶（需要先清空存储桶中的对象）
-	// err = client.RemoveBucket(ctx, bucketName, rustfs.RemoveBucketOptions{})
+	// 6. 删除存储桶（需要先清空存储桶中的对象）
+	// log.Println("\n=== 删除存储桶 ===")
+	// err = bucketSvc.Delete(ctx, bucketName)
+	// // 或者使用强制删除（MinIO 扩展，会删除所有对象）
+	// // err = bucketSvc.Delete(ctx, bucketName, bucket.WithForceDelete(true))
 	// if err != nil {
 	// 	log.Printf("删除存储桶失败: %v\n", err)
 	// } else {
-	// 	log.Printf("成功删除存储桶: %s\n", bucketName)
+	// 	log.Printf("✅ 成功删除存储桶: %s\n", bucketName)
 	// }
+
+	log.Println("\n=== 示例运行完成 ===")
 }

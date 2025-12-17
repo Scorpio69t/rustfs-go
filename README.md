@@ -56,8 +56,8 @@ import (
 func main() {
     // Initialize client
     client, err := rustfs.New("127.0.0.1:9000", &rustfs.Options{
-        Creds:  credentials.NewStaticV4("your-access-key", "your-secret-key", ""),
-        Secure: false, // Set to true for HTTPS
+        Credentials: credentials.NewStaticV4("your-access-key", "your-secret-key", ""),
+        Secure:      false, // Set to true for HTTPS
     })
     if err != nil {
         log.Fatalln(err)
@@ -71,149 +71,138 @@ func main() {
 ### 📦 Bucket Operations
 
 ```go
+// 获取 Bucket 服务
+bucketSvc := client.Bucket()
+
 // Create bucket
-err := client.MakeBucket(ctx, "my-bucket", rustfs.MakeBucketOptions{
-    Region: "us-east-1",
-})
+err := bucketSvc.Create(ctx, "my-bucket",
+    bucket.WithRegion("us-east-1"),
+    bucket.WithObjectLocking(false),
+)
 
 // List all buckets
-buckets, err := client.ListBuckets(ctx)
+buckets, err := bucketSvc.List(ctx)
 for _, bucket := range buckets {
     fmt.Println(bucket.Name)
 }
 
 // Check if bucket exists
-exists, err := client.BucketExists(ctx, "my-bucket")
+exists, err := bucketSvc.Exists(ctx, "my-bucket")
 
-// List objects in bucket
-objectsCh := client.ListObjects(ctx, "my-bucket", rustfs.ListObjectsOptions{
-    Prefix:  "prefix/",
-    MaxKeys: 100,
-})
-for obj := range objectsCh {
-    fmt.Println(obj.Key, obj.Size)
-}
+// Get bucket location
+location, err := bucketSvc.GetLocation(ctx, "my-bucket")
 
-// Remove bucket
-err = client.RemoveBucket(ctx, "my-bucket", rustfs.RemoveBucketOptions{})
+// Delete bucket
+err = bucketSvc.Delete(ctx, "my-bucket")
+// Or force delete (MinIO extension, deletes all objects)
+err = bucketSvc.Delete(ctx, "my-bucket", bucket.WithForceDelete(true))
 ```
 
 ### 📄 Object Operations
 
 ```go
+// 获取 Object 服务
+objectSvc := client.Object()
+
 // Upload object from reader
 data := strings.NewReader("Hello, RustFS!")
-uploadInfo, err := client.PutObject(ctx, "my-bucket", "my-object.txt",
-    data, data.Size(), rustfs.PutObjectOptions{
-        ContentType: "text/plain",
-        UserMetadata: map[string]string{
-            "author": "rustfs-go",
-        },
-    })
-
-// Upload object from file
-uploadInfo, err := client.FPutObject(ctx, "my-bucket", "file.txt",
-    "/path/to/local/file.txt", rustfs.PutObjectOptions{
-        ContentType: "text/plain",
-    })
+uploadInfo, err := objectSvc.Put(ctx, "my-bucket", "my-object.txt",
+    data, int64(data.Len()),
+    object.WithContentType("text/plain"),
+    object.WithUserMetadata(map[string]string{
+        "author": "rustfs-go",
+    }),
+    object.WithUserTags(map[string]string{
+        "category": "example",
+    }),
+)
 
 // Download object
-obj, err := client.GetObject(ctx, "my-bucket", "my-object.txt",
-    rustfs.GetObjectOptions{})
-defer obj.Close()
+reader, objInfo, err := objectSvc.Get(ctx, "my-bucket", "my-object.txt")
+defer reader.Close()
 
 buf := make([]byte, 1024)
-n, _ := obj.Read(buf)
+n, _ := reader.Read(buf)
 fmt.Println(string(buf[:n]))
 
-// Download object to file
-err = client.FGetObject(ctx, "my-bucket", "my-object.txt",
-    "/path/to/local/download.txt", rustfs.GetObjectOptions{})
+// Download with range
+reader, _, err := objectSvc.Get(ctx, "my-bucket", "my-object.txt",
+    object.WithGetRange(0, 99), // First 100 bytes
+)
 
 // Get object information
-objInfo, err := client.StatObject(ctx, "my-bucket", "my-object.txt",
-    rustfs.StatObjectOptions{})
+objInfo, err := objectSvc.Stat(ctx, "my-bucket", "my-object.txt")
 
-// Remove object
-err = client.RemoveObject(ctx, "my-bucket", "my-object.txt",
-    rustfs.RemoveObjectOptions{})
+// List objects
+objectsCh := objectSvc.List(ctx, "my-bucket")
+for obj := range objectsCh {
+    if obj.Err != nil {
+        log.Println(obj.Err)
+        break
+    }
+    fmt.Println(obj.Key, obj.Size)
+}
+
+// Copy object
+copyInfo, err := objectSvc.Copy(ctx,
+    "my-bucket", "copy.txt",     // destination
+    "my-bucket", "my-object.txt", // source
+)
+
+// Delete object
+err = objectSvc.Delete(ctx, "my-bucket", "my-object.txt")
 ```
 
 ### 🔄 Multipart Upload
 
 ```go
-// Initialize multipart upload
-uploadID, err := client.InitiateMultipartUpload(ctx, "my-bucket",
-    "large-file.txt", rustfs.PutObjectOptions{
-        ContentType: "text/plain",
-    })
-
-// Upload parts
-part1, err := client.UploadPart(ctx, "my-bucket", "large-file.txt",
-    uploadID, 1, part1Data, partSize, rustfs.PutObjectPartOptions{})
-part2, err := client.UploadPart(ctx, "my-bucket", "large-file.txt",
-    uploadID, 2, part2Data, partSize, rustfs.PutObjectPartOptions{})
-
-// Complete multipart upload
-parts := []rustfs.CompletePart{
-    {PartNumber: part1.PartNumber, ETag: part1.ETag},
-    {PartNumber: part2.PartNumber, ETag: part2.ETag},
+// 获取 Object 服务并类型断言为支持分片上传的接口
+objectSvc := client.Object()
+type MultipartService interface {
+    InitiateMultipartUpload(ctx context.Context, bucketName, objectName string,
+        opts ...object.PutOption) (string, error)
+    UploadPart(ctx context.Context, bucketName, objectName, uploadID string,
+        partNumber int, reader io.Reader, partSize int64,
+        opts ...object.PutOption) (types.ObjectPart, error)
+    CompleteMultipartUpload(ctx context.Context, bucketName, objectName, uploadID string,
+        parts []types.ObjectPart, opts ...object.PutOption) (types.UploadInfo, error)
+    AbortMultipartUpload(ctx context.Context, bucketName, objectName, uploadID string) error
 }
-uploadInfo, err := client.CompleteMultipartUpload(ctx, "my-bucket",
-    "large-file.txt", uploadID, parts, rustfs.PutObjectOptions{})
+multipartSvc := objectSvc.(MultipartService)
 
-// Abort multipart upload
-err = client.AbortMultipartUpload(ctx, "my-bucket", "large-file.txt",
-    uploadID, rustfs.AbortMultipartUploadOptions{})
+// 1. Initialize multipart upload
+uploadID, err := multipartSvc.InitiateMultipartUpload(ctx, "my-bucket", "large-file.txt",
+    object.WithContentType("text/plain"),
+)
+
+// 2. Upload parts
+var parts []types.ObjectPart
+part1, err := multipartSvc.UploadPart(ctx, "my-bucket", "large-file.txt",
+    uploadID, 1, part1Data, partSize)
+parts = append(parts, part1)
+
+part2, err := multipartSvc.UploadPart(ctx, "my-bucket", "large-file.txt",
+    uploadID, 2, part2Data, partSize)
+parts = append(parts, part2)
+
+// 3. Complete multipart upload
+uploadInfo, err := multipartSvc.CompleteMultipartUpload(ctx, "my-bucket",
+    "large-file.txt", uploadID, parts)
+
+// 4. Abort multipart upload (if needed)
+err = multipartSvc.AbortMultipartUpload(ctx, "my-bucket", "large-file.txt", uploadID)
 ```
+
+> 📖 **完整示例**: 查看 [examples/rustfs/multipart.go](examples/rustfs/multipart.go)
 
 ### 🔐 Presigned URLs
 
-```go
-// Generate presigned GET URL (valid for 1 hour)
-presignedURL, err := client.PresignedGetObject(ctx, "my-bucket",
-    "my-object.txt", time.Hour, url.Values{})
+> **⏳ 待实现**: 预签名 URL 功能计划在后续版本中提供。
 
-// Generate presigned PUT URL
-presignedPutURL, err := client.PresignedPutObject(ctx, "my-bucket",
-    "upload.txt", time.Hour)
-
-// Generate presigned POST URL
-policy := rustfs.NewPostPolicy()
-policy.SetExpires(time.Now().Add(time.Hour))
-policy.SetCondition("$eq", "bucket", "my-bucket")
-policy.SetCondition("$eq", "key", "post-object.txt")
-policy.SetCondition("$eq", "Content-Type", "text/plain")
-
-postURL, formData, err := client.PresignedPostPolicy(ctx, policy)
-```
-
-### 🔄 Object Copy
-
-```go
-// Copy object
-copyInfo, err := client.CopyObject(ctx, "source-bucket", "source-object.txt",
-    "dest-bucket", "dest-object.txt", rustfs.CopyObjectOptions{
-        ContentType: "text/plain",
-    })
-```
 
 ### 🏷️ Object Tagging
 
-```go
-// Set object tags
-err := client.SetObjectTagging(ctx, "my-bucket", "my-object.txt",
-    map[string]string{
-        "environment": "production",
-        "project":     "rustfs-go",
-    })
-
-// Get object tags
-tags, err := client.GetObjectTagging(ctx, "my-bucket", "my-object.txt")
-
-// Remove object tags
-err = client.RemoveObjectTagging(ctx, "my-bucket", "my-object.txt")
-```
+> **⏳ 待实现**: 对象标签功能计划在后续版本中提供。
 
 ## 🔑 Credentials Management
 
@@ -248,11 +237,27 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 📝 Examples
 
-More example code can be found in the [examples](examples/) directory:
+More example code can be found in the [examples/rustfs](examples/rustfs/) directory:
 
-- [Bucket Operations](examples/rustfs/bucketops.go)
-- [Object Operations](examples/rustfs/objectops.go)
-- [Presigned URLs](examples/rustfs/presigned.go)
+- [Bucket Operations](examples/rustfs/bucketops.go) - 存储桶操作示例
+- [Object Operations](examples/rustfs/objectops.go) - 对象操作示例
+- [Multipart Upload](examples/rustfs/multipart.go) - 分片上传示例
+
+### 运行示例
+
+```bash
+cd examples/rustfs
+
+# 运行示例
+go run -tags example bucketops.go
+go run -tags example objectops.go
+go run -tags example multipart.go
+```
+
+> **💡 提示**: 运行示例前，请确保：
+> - RustFS 服务器正在运行（默认 `127.0.0.1:9000`）
+> - 更新示例代码中的访问密钥
+> - 创建示例中使用的存储桶
 
 ## 📖 API Documentation
 

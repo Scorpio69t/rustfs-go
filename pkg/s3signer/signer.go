@@ -116,7 +116,7 @@ func buildCanonicalRequest(req *http.Request) string {
 	payloadHash := "UNSIGNED-PAYLOAD"
 
 	// Build canonical request
-	canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s%s\n%s\n%s",
+	canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s%s\n%s\n",
 		method,
 		uri,
 		queryString,
@@ -259,7 +259,7 @@ func buildCanonicalRequestPresigned(req *http.Request) string {
 	signedHeaders := strings.Join(headerKeys, ";")
 	payloadHash := "UNSIGNED-PAYLOAD"
 
-	canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s%s\n%s\n%s",
+	canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s%s\n%s\n",
 		method,
 		uri,
 		queryString,

@@ -167,6 +167,11 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 	// 设置 Content-Length
 	httpReq.ContentLength = meta.ContentLength
 
+	// 设置 Content-SHA256 头（AWS Signature V4 必需）
+	if meta.ContentSHA256Hex != "" {
+		httpReq.Header.Set("X-Amz-Content-Sha256", meta.ContentSHA256Hex)
+	}
+
 	// 签名请求
 	if err := e.signRequest(httpReq, meta, location); err != nil {
 		return nil, err

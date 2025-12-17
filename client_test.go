@@ -2,10 +2,6 @@
 package rustfs
 
 import (
-	"context"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
@@ -126,93 +122,6 @@ func TestClientMethods(t *testing.T) {
 		}
 		if client.appInfo.appVersion != "1.0.0" {
 			t.Errorf("SetAppInfo() appVersion = %s, want 1.0.0", client.appInfo.appVersion)
-		}
-	})
-}
-
-func TestBackwardCompatibility(t *testing.T) {
-	// 创建测试服务器
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPut && strings.Contains(r.URL.Path, "test-bucket"):
-			// MakeBucket
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && strings.Contains(r.URL.Path, "test-bucket"):
-			// RemoveBucket
-			w.WriteHeader(http.StatusNoContent)
-		case r.Method == http.MethodHead && strings.Contains(r.URL.Path, "test-bucket"):
-			// BucketExists
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/":
-			// ListBuckets
-			w.Header().Set("Content-Type", "application/xml")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
-<ListAllMyBucketsResult>
-    <Buckets>
-        <Bucket>
-            <Name>test-bucket</Name>
-            <CreationDate>2023-01-01T00:00:00Z</CreationDate>
-        </Bucket>
-    </Buckets>
-</ListAllMyBucketsResult>`))
-		case r.Method == http.MethodGet && strings.Contains(r.URL.Query().Get("location"), ""):
-			// GetBucketLocation
-			w.Header().Set("Content-Type", "application/xml")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
-<LocationConstraint>us-east-1</LocationConstraint>`))
-		default:
-			w.WriteHeader(http.StatusNotImplemented)
-		}
-	}))
-	defer server.Close()
-
-	// 创建客户端（使用完整的 URL）
-	client, err := New(server.URL, &Options{
-		Credentials: credentials.NewStaticV4("access-key", "secret-key", ""),
-		Secure:      false,
-		Transport:   server.Client().Transport,
-	})
-	if err != nil {
-		t.Fatalf("Failed to create client: %v", err)
-	}
-
-	ctx := context.Background()
-
-	t.Run("MakeBucket", func(t *testing.T) {
-		err := client.MakeBucket(ctx, "test-bucket", MakeBucketOptions{
-			Region: "us-east-1",
-		})
-		if err != nil {
-			t.Errorf("MakeBucket() error = %v", err)
-		}
-	})
-
-	t.Run("BucketExists", func(t *testing.T) {
-		exists, err := client.BucketExists(ctx, "test-bucket")
-		if err != nil {
-			t.Errorf("BucketExists() error = %v", err)
-		}
-		if !exists {
-			t.Error("BucketExists() = false, want true")
-		}
-	})
-
-	t.Run("ListBuckets", func(t *testing.T) {
-		buckets, err := client.ListBuckets(ctx)
-		if err != nil {
-			t.Errorf("ListBuckets() error = %v", err)
-		}
-		if len(buckets) == 0 {
-			t.Error("ListBuckets() returned empty list")
-		}
-	})
-
-	t.Run("RemoveBucket", func(t *testing.T) {
-		err := client.RemoveBucket(ctx, "test-bucket")
-		if err != nil {
-			t.Errorf("RemoveBucket() error = %v", err)
 		}
 	})
 }

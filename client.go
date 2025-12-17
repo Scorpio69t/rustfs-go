@@ -2,8 +2,6 @@
 package rustfs
 
 import (
-	"context"
-	"io"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
@@ -246,99 +244,4 @@ func isIPAddress(host string) bool {
 
 	// 检查是否是 IP 地址
 	return net.ParseIP(hostOnly) != nil
-}
-
-// --- 向后兼容的快捷方法 ---
-// 以下方法保持与旧 API 的兼容性，但标记为 Deprecated
-
-// MakeBucket 创建存储桶
-//
-// Deprecated: 使用 client.Bucket().Create() 代替
-func (c *Client) MakeBucket(ctx context.Context, bucketName string, opts MakeBucketOptions) error {
-	return c.bucketService.Create(ctx, bucketName,
-		bucket.WithRegion(opts.Region),
-		bucket.WithObjectLocking(opts.ObjectLocking),
-	)
-}
-
-// RemoveBucket 删除存储桶
-//
-// Deprecated: 使用 client.Bucket().Delete() 代替
-func (c *Client) RemoveBucket(ctx context.Context, bucketName string) error {
-	return c.bucketService.Delete(ctx, bucketName)
-}
-
-// BucketExists 检查存储桶是否存在
-//
-// Deprecated: 使用 client.Bucket().Exists() 代替
-func (c *Client) BucketExists(ctx context.Context, bucketName string) (bool, error) {
-	return c.bucketService.Exists(ctx, bucketName)
-}
-
-// ListBuckets 列出所有存储桶
-//
-// Deprecated: 使用 client.Bucket().List() 代替
-func (c *Client) ListBuckets(ctx context.Context) ([]types.BucketInfo, error) {
-	return c.bucketService.List(ctx)
-}
-
-// GetBucketLocation 获取存储桶位置
-//
-// Deprecated: 使用 client.Bucket().GetLocation() 代替
-func (c *Client) GetBucketLocation(ctx context.Context, bucketName string) (string, error) {
-	return c.bucketService.GetLocation(ctx, bucketName)
-}
-
-// PutObject 上传对象
-//
-// Deprecated: 使用 client.Object().Put() 代替
-func (c *Client) PutObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts PutObjectOptions) (types.UploadInfo, error) {
-	return c.objectService.Put(ctx, bucketName, objectName, reader, objectSize,
-		convertPutOptions(opts)...,
-	)
-}
-
-// GetObject 下载对象
-//
-// Deprecated: 使用 client.Object().Get() 代替
-func (c *Client) GetObject(ctx context.Context, bucketName, objectName string, opts GetObjectOptions) (io.ReadCloser, types.ObjectInfo, error) {
-	return c.objectService.Get(ctx, bucketName, objectName,
-		convertGetOptions(opts)...,
-	)
-}
-
-// StatObject 获取对象信息
-//
-// Deprecated: 使用 client.Object().Stat() 代替
-func (c *Client) StatObject(ctx context.Context, bucketName, objectName string, opts StatObjectOptions) (types.ObjectInfo, error) {
-	return c.objectService.Stat(ctx, bucketName, objectName,
-		convertStatOptions(opts)...,
-	)
-}
-
-// RemoveObject 删除对象
-//
-// Deprecated: 使用 client.Object().Delete() 代替
-func (c *Client) RemoveObject(ctx context.Context, bucketName, objectName string, opts RemoveObjectOptions) error {
-	return c.objectService.Delete(ctx, bucketName, objectName,
-		convertDeleteOptions(opts)...,
-	)
-}
-
-// ListObjects 列出对象
-//
-// Deprecated: 使用 client.Object().List() 代替
-func (c *Client) ListObjects(ctx context.Context, bucketName string, opts ListObjectsOptions) <-chan types.ObjectInfo {
-	return c.objectService.List(ctx, bucketName,
-		convertListOptions(opts)...,
-	)
-}
-
-// CopyObject 复制对象
-//
-// Deprecated: 使用 client.Object().Copy() 代替
-func (c *Client) CopyObject(ctx context.Context, destBucket, destObject, sourceBucket, sourceObject string, opts CopyObjectOptions) (types.CopyInfo, error) {
-	return c.objectService.Copy(ctx, destBucket, destObject, sourceBucket, sourceObject,
-		convertCopyOptions(opts)...,
-	)
 }

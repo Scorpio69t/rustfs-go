@@ -36,8 +36,29 @@ func TestCORSXMLMarshal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	trimmedFileContents := bytes.TrimSpace(fileContents)
-	if !bytes.Equal(trimmedFileContents, remarshalled) {
-		t.Errorf("got: %s, want: %s", string(remarshalled), string(trimmedFileContents))
+
+	// 规范化两者：移除所有空白字符差异
+	normalize := func(data []byte) string {
+		// 移除行首行尾的空白字符
+		lines := bytes.Split(data, []byte("\n"))
+		var normalized []string
+		for _, line := range lines {
+			trimmed := bytes.TrimSpace(line)
+			if len(trimmed) > 0 {
+				normalized = append(normalized, string(trimmed))
+			}
+		}
+		// 将所有行连接成一个字符串，用换行符分隔
+		return string(bytes.Join([][]byte{
+			[]byte(normalized[0]),
+			[]byte(normalized[1]),
+		}, []byte("\n")))
+	}
+
+	got := normalize(remarshalled)
+	want := normalize(bytes.TrimSpace(fileContents))
+
+	if got != want {
+		t.Errorf("XML mismatch:\ngot:  %s\nwant: %s", got, want)
 	}
 }

@@ -6,6 +6,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+
+	// "fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -46,6 +48,12 @@ func (s *V4Signer) Sign(req *http.Request, accessKey, secretKey, sessionToken, r
 	// 设置 session token
 	if sessionToken != "" {
 		req.Header.Set("X-Amz-Security-Token", sessionToken)
+	}
+
+	// 设置 Content-SHA256 头（AWS Signature V4 必需）
+	// 如果没有设置，使用 UNSIGNED-PAYLOAD
+	if req.Header.Get("X-Amz-Content-Sha256") == "" {
+		req.Header.Set("X-Amz-Content-Sha256", UnsignedPayload)
 	}
 
 	// 确保有 Host 头
@@ -123,6 +131,15 @@ func (s *V4Signer) getCredential(accessKeyID, region string, t time.Time) string
 func (s *V4Signer) calculateSignature(req *http.Request, accessKey, secretKey, region string, t time.Time) string {
 	// 1. 创建规范请求
 	canonicalRequest := s.createCanonicalRequest(req)
+
+	// 调试输出
+	// fmt.Printf("=== V4 Signature Debug ===\n")
+	// fmt.Printf("Method: %s\n", req.Method)
+	// fmt.Printf("URL: %s\n", req.URL.String())
+	// fmt.Printf("Host Header: %s\n", req.Header.Get("Host"))
+	// fmt.Printf("X-Amz-Content-Sha256: %s\n", req.Header.Get("X-Amz-Content-Sha256"))
+	// fmt.Printf("Canonical Request:\n%s\n", canonicalRequest)
+	// fmt.Printf("=========================\n")
 
 	// 2. 创建待签名字符串
 	stringToSign := s.createStringToSign(canonicalRequest, region, t)
