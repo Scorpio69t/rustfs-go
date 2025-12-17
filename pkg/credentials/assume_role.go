@@ -20,7 +20,6 @@ package credentials
 
 import (
 	"bytes"
-	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/xml"
@@ -28,10 +27,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Scorpio69t/rustfs-go/pkg/signer"
 )
 
 // AssumeRoleResponse contains the result of successful AssumeRole request.
@@ -190,7 +190,7 @@ func getAssumeRoleCredentials(clnt *http.Client, endpoint string, opts STSAssume
 	if opts.SessionToken != "" {
 		req.Header.Set("X-Amz-Security-Token", opts.SessionToken)
 	}
-	req = signV4STS(*req, opts.AccessKey, opts.SecretKey, opts.Location)
+	req = signer.SignV4STS(*req, opts.AccessKey, opts.SecretKey, opts.Location)
 
 	resp, err := clnt.Do(req)
 	if err != nil {
@@ -267,128 +267,4 @@ func (m *STSAssumeRole) RetrieveWithCredContext(cc *CredContext) (Value, error) 
 // Error will be returned if the request fails.
 func (m *STSAssumeRole) Retrieve() (Value, error) {
 	return m.RetrieveWithCredContext(nil)
-}
-
-// 以下是 STS V4 签名的本地实现，避免循环依赖
-
-const (
-	signV4Algorithm   = "AWS4-HMAC-SHA256"
-	iso8601DateFormat = "20060102T150405Z"
-	yyyymmdd          = "20060102"
-)
-
-// signV4STS 为 STS 请求签名
-func signV4STS(req http.Request, accessKeyID, secretAccessKey, location string) *http.Request {
-	if accessKeyID == "" || secretAccessKey == "" {
-		return &req
-	}
-
-	t := time.Now().UTC()
-	req.Header.Set("X-Amz-Date", t.Format(iso8601DateFormat))
-
-	if req.Header.Get("Host") == "" {
-		req.Header.Set("Host", req.URL.Host)
-	}
-
-	region := location
-	if region == "" {
-		region = "us-east-1"
-	}
-
-	scope := buildCredentialScope(t, region)
-	canonicalRequest := buildCanonicalRequest(&req)
-	stringToSign := buildStringToSign(canonicalRequest, t, scope)
-	signingKey := deriveSigningKey(secretAccessKey, t, region)
-	signature := hex.EncodeToString(hmacSHA256(signingKey, []byte(stringToSign)))
-
-	signedHeaders := getSignedHeaders(req.Header)
-	authorization := signV4Algorithm + " " +
-		"Credential=" + accessKeyID + "/" + scope + ", " +
-		"SignedHeaders=" + signedHeaders + ", " +
-		"Signature=" + signature
-
-	req.Header.Set("Authorization", authorization)
-
-	return &req
-}
-
-func buildCredentialScope(t time.Time, region string) string {
-	return strings.Join([]string{
-		t.Format(yyyymmdd),
-		region,
-		"sts",
-		"aws4_request",
-	}, "/")
-}
-
-func buildCanonicalRequest(req *http.Request) string {
-	var canonicalHeaders, signedHeaders strings.Builder
-
-	headers := make([]string, 0, len(req.Header))
-	for k := range req.Header {
-		headers = append(headers, strings.ToLower(k))
-	}
-	sort.Strings(headers)
-
-	for i, k := range headers {
-		if i > 0 {
-			signedHeaders.WriteString(";")
-		}
-		signedHeaders.WriteString(k)
-
-		canonicalHeaders.WriteString(k)
-		canonicalHeaders.WriteString(":")
-		canonicalHeaders.WriteString(strings.TrimSpace(req.Header.Get(k)))
-		canonicalHeaders.WriteString("\n")
-	}
-
-	encodedPath := req.URL.EscapedPath()
-	if encodedPath == "" {
-		encodedPath = "/"
-	}
-
-	canonicalQuery := req.URL.Query().Encode()
-
-	return strings.Join([]string{
-		req.Method,
-		encodedPath,
-		canonicalQuery,
-		canonicalHeaders.String(),
-		signedHeaders.String(),
-		req.Header.Get("X-Amz-Content-Sha256"),
-	}, "\n")
-}
-
-func buildStringToSign(canonicalRequest string, t time.Time, scope string) string {
-	hash := sha256.Sum256([]byte(canonicalRequest))
-	return strings.Join([]string{
-		signV4Algorithm,
-		t.Format(iso8601DateFormat),
-		scope,
-		hex.EncodeToString(hash[:]),
-	}, "\n")
-}
-
-func deriveSigningKey(secretAccessKey string, t time.Time, region string) []byte {
-	kSecret := []byte("AWS4" + secretAccessKey)
-	kDate := hmacSHA256(kSecret, []byte(t.Format(yyyymmdd)))
-	kRegion := hmacSHA256(kDate, []byte(region))
-	kService := hmacSHA256(kRegion, []byte("sts"))
-	kSigning := hmacSHA256(kService, []byte("aws4_request"))
-	return kSigning
-}
-
-func hmacSHA256(key, data []byte) []byte {
-	h := hmac.New(sha256.New, key)
-	h.Write(data)
-	return h.Sum(nil)
-}
-
-func getSignedHeaders(header http.Header) string {
-	headers := make([]string, 0, len(header))
-	for k := range header {
-		headers = append(headers, strings.ToLower(k))
-	}
-	sort.Strings(headers)
-	return strings.Join(headers, ";")
 }

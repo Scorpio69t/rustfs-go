@@ -9,24 +9,48 @@
 
 ## 主要成果
 
-### 1. 删除的包（3个）
-- ✅ `pkg/signer` - 已被 `internal/signer` 完全替代
+### 1. 删除的包（2个）
 - ✅ `pkg/s3utils` - 已被 `internal/signer/utils.go` 完全替代
 - ✅ `pkg/set` - 项目中未使用
 
-### 2. 保留并重构的包（1个）
+### 2. 新创建的公共 API 包（1个）
+- ✅ `pkg/signer` - **AWS 签名功能公共 API**
+  - 提供 `SignV4` 和 `SignV4STS` 函数
+  - 作为公共 API 供其他包使用
+  - 完整的单元测试覆盖
+  - 清晰的文档和使用示例
+
+### 3. 保留并重构的包（1个）
 - ✅ `pkg/credentials` - 核心凭证管理包
   - 更新了所有 23 个文件的版权声明
   - 保持了公共 API 不变
   - 所有测试通过
-  - 解决了循环依赖问题
+  - 使用 `pkg/signer` 解决循环依赖问题
 
-### 3. 关键技术决策
+### 4. 关键技术决策
 
-#### 循环依赖解决方案
-**问题**: `pkg/credentials/assume_role.go` 需要使用签名功能，但 `internal/signer` 导入了 `pkg/credentials`，形成循环依赖。
+#### 架构优化：将签名功能提升为公共 API
+**问题**:
+1. `pkg/credentials/assume_role.go` 需要使用签名功能
+2. `internal/signer` 导入了 `pkg/credentials`，形成循环依赖
+3. 初始方案在 `assume_role.go` 中实现本地签名导致代码重复
 
-**解决方案**: 在 `assume_role.go` 中实现了独立的 STS V4 签名函数，避免导入 `internal/signer`。
+**最终方案**: 将签名功能从 `internal/signer` 提升到 `pkg/signer` 作为公共 API
+- ✅ `pkg/signer` 不依赖任何其他 pkg 包
+- ✅ `pkg/credentials` 可以直接使用 `pkg/signer`
+- ✅ `internal/signer` 作为内部便捷包装层
+- ✅ 消除了代码重复，便于维护
+- ✅ 更好的模块化设计
+
+**架构改进**:
+```
+之前: internal/signer <-> pkg/credentials (循环依赖)
+
+现在: pkg/signer (基础层)
+       ↑
+       ├─ pkg/credentials (使用签名)
+       └─ internal/signer (内部包装)
+```
 
 #### STS 功能保留
 保留了所有 STS（Security Token Service）功能：
@@ -79,6 +103,13 @@ go build -tags example examples/rustfs/bucketops.go
 | STS 文件 | 6 | ✅ 已更新 |
 | 测试文件 | 6 | ✅ 已更新 |
 
+### pkg/signer (3个新文件) ✨
+| 文件类型 | 数量 | 状态 |
+|---------|------|------|
+| 实现文件 | 1 | ✨ 新创建 |
+| 测试文件 | 1 | ✨ 新创建 |
+| 文档文件 | 1 | ✨ 新创建 |
+
 ### 新版权声明格式
 ```go
 /*
@@ -93,16 +124,20 @@ go build -tags example examples/rustfs/bucketops.go
 ## 代码变更摘要
 
 ### 新增文件
-- `internal/signer/sts.go` - STS 签名辅助函数（后续简化为在 assume_role.go 中实现）
+- `pkg/signer/v4.go` - AWS Signature V4 公共 API
+- `pkg/signer/v4_test.go` - 签名功能测试
+- `pkg/signer/doc.go` - 包文档
 
 ### 修改的文件
-- `pkg/credentials/*.go` - 所有文件的版权声明
-- `pkg/credentials/assume_role.go` - 添加了本地 V4 签名实现
+- `pkg/credentials/*.go` - 所有 23 个文件的版权声明
+- `pkg/credentials/assume_role.go` - 使用 `pkg/signer.SignV4STS`
+- `internal/signer/signer.go` - 移除对 `pkg/credentials` 的依赖
+- `internal/core/executor.go` - 直接使用签名器接口
 
 ### 删除的文件
-- `pkg/signer/*` - 11 个文件
-- `pkg/s3utils/*` - 2 个文件
-- `pkg/set/*` - 3 个文件
+- `pkg/s3utils/*` - 2 个文件（功能已在 internal/signer 实现）
+- `pkg/set/*` - 3 个文件（未使用）
+- `internal/signer/sts.go` - 1 个文件（功能移至 pkg/signer）
 
 ## 性能影响
 

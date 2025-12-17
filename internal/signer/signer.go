@@ -1,11 +1,10 @@
 // Package signer internal/signer/signer.go
+// 提供内部签名器接口和实现
 package signer
 
 import (
 	"net/http"
 	"time"
-
-	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
 // Signer 签名器接口
@@ -35,23 +34,6 @@ func NewSigner(signerType SignerType) Signer {
 		return &AnonymousSigner{}
 	default:
 		return &V4Signer{}
-	}
-}
-
-// SignRequest 签名请求的便捷函数
-func SignRequest(req *http.Request, creds credentials.Value, region string) *http.Request {
-	signer := NewSigner(getSignerType(creds.SignerType))
-	return signer.Sign(req, creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, region)
-}
-
-func getSignerType(st credentials.SignatureType) SignerType {
-	switch st {
-	case credentials.SignatureV2:
-		return SignerV2
-	case credentials.SignatureAnonymous:
-		return SignerAnonymous
-	default:
-		return SignerV4
 	}
 }
 
