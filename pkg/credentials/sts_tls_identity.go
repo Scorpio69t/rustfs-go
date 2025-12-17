@@ -53,17 +53,17 @@ func CertificateIdentityWithExpiry(livetime time.Duration) CertificateIdentityOp
 	return CertificateIdentityOption(func(i *STSCertificateIdentity) { i.S3CredentialLivetime = livetime })
 }
 
-// A STSCertificateIdentity retrieves S3 credentials from the MinIO STS API and
+// A STSCertificateIdentity retrieves S3 credentials from the RustFS STS API and
 // rotates those credentials once they expire.
 type STSCertificateIdentity struct {
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service.
+	// Optional http Client to use when connecting to RustFS STS service.
 	// (overrides default client in CredContext)
 	Client *http.Client
 
 	// STSEndpoint is the base URL endpoint of the STS API.
-	// For example, https://minio.local:9000
+	// For example, https://rustfs.local:9000
 	STSEndpoint string
 
 	// S3CredentialLivetime is the duration temp. S3 access

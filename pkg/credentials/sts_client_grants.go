@@ -46,7 +46,7 @@ type AssumeRoleWithClientGrantsResponse struct {
 }
 
 // ClientGrantsResult - Contains the response to a successful AssumeRoleWithClientGrants
-// request, including temporary credentials that can be used to make MinIO API requests.
+// request, including temporary credentials that can be used to make RustFS API requests.
 type ClientGrantsResult struct {
 	AssumedRoleUser AssumedRoleUser `xml:",omitempty"`
 	Audience        string          `xml:",omitempty"`
@@ -67,16 +67,16 @@ type ClientGrantsToken struct {
 	Expiry int
 }
 
-// A STSClientGrants retrieves credentials from MinIO service, and keeps track if
+// A STSClientGrants retrieves credentials from RustFS service, and keeps track if
 // those credentials are expired.
 type STSClientGrants struct {
 	Expiry
 
-	// Optional http Client to use when connecting to MinIO STS service.
+	// Optional http Client to use when connecting to RustFS STS service.
 	// (overrides default client in CredContext)
 	Client *http.Client
 
-	// MinIO endpoint to fetch STS credentials.
+	// RustFS endpoint to fetch STS credentials.
 	STSEndpoint string
 
 	// getClientGrantsTokenExpiry function to retrieve tokens
@@ -196,7 +196,7 @@ func (m *STSClientGrants) RetrieveWithCredContext(cc *CredContext) (Value, error
 	}, nil
 }
 
-// Retrieve retrieves credentials from the MinIO service.
+// Retrieve retrieves credentials from the RustFS service.
 // Error will be returned if the request fails.
 func (m *STSClientGrants) Retrieve() (Value, error) {
 	return m.RetrieveWithCredContext(nil)

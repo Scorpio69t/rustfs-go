@@ -1,6 +1,8 @@
 //go:build example
 // +build example
 
+// presigned.go - 预签名 URL 示例（使用旧 API）
+// 注意：预签名 URL 功能暂未迁移到新 API，此示例仍使用旧 API
 package main
 
 import (
@@ -15,16 +17,16 @@ import (
 
 func main() {
 	const (
-		YOURACCESSKEYID     = "4UYIdunFNM0viXm1w6eg"
-		YOURSECRETACCESSKEY = "WBINTZ41oP8pic5QjOEbMh09Ynx3ymfU2JvKARSw"
+		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
+		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
 	)
 
 	// 初始化客户端
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
-		Creds:  credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
-		Secure: false,
+		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
+		Secure:      false,
 	})
 	if err != nil {
 		log.Fatalln(err)
