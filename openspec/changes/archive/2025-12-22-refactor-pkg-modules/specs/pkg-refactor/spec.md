@@ -1,6 +1,6 @@
 # pkg 包模块重构规范
 
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: pkg/signer 公共 API 包
 系统 SHALL 提供 `pkg/signer` 包作为 AWS 签名功能的公共 API，供其他包使用。
@@ -19,8 +19,6 @@
 - **WHEN** 检查 `pkg/signer` 的依赖关系
 - **THEN** 该包仅依赖标准库和内部包
 - **AND** 不导入任何其他 `pkg/` 目录下的包
-
-## MODIFIED Requirements
 
 ### Requirement: pkg/credentials 包版权声明
 `pkg/credentials` 包的所有文件 SHALL 使用 RustFS 版权声明，移除 MinIO 版权信息。

@@ -39,3 +39,4 @@ TBD - created by archiving change refactor-pkg-modules. Update Purpose after arc
 - **WHEN** 检查 `pkg/signer` 的依赖关系
 - **THEN** 该包仅依赖标准库和内部包
 - **AND** 不导入任何其他 `pkg/` 目录下的包
+
