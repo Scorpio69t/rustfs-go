@@ -13,9 +13,9 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// Put 上传对象（实现 - 简单上传，不使用分片）
+// Put uploads an object (implementation - simple upload, not using multipart)
 func (s *objectService) Put(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts ...PutOption) (types.UploadInfo, error) {
-	// 验证参数
+	// Validate parameters
 	if err := validateBucketName(bucketName); err != nil {
 		return types.UploadInfo{}, err
 	}
@@ -26,10 +26,10 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		return types.UploadInfo{}, ErrInvalidObjectName
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyPutOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:    bucketName,
 		ObjectName:    objectName,
@@ -38,49 +38,49 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		CustomHeader:  make(http.Header),
 	}
 
-	// 设置 Content-Type
+	// Set Content-Type
 	if options.ContentType != "" {
 		meta.CustomHeader.Set("Content-Type", options.ContentType)
 	}
 
-	// 设置 Content-Encoding
+	// Set Content-Encoding
 	if options.ContentEncoding != "" {
 		meta.CustomHeader.Set("Content-Encoding", options.ContentEncoding)
 	}
 
-	// 设置 Content-Disposition
+	// Set Content-Disposition
 	if options.ContentDisposition != "" {
 		meta.CustomHeader.Set("Content-Disposition", options.ContentDisposition)
 	}
 
-	// 设置 Content-Language
+	// Set Content-Language
 	if options.ContentLanguage != "" {
 		meta.CustomHeader.Set("Content-Language", options.ContentLanguage)
 	}
 
-	// 设置 Cache-Control
+	// Set Cache-Control
 	if options.CacheControl != "" {
 		meta.CustomHeader.Set("Cache-Control", options.CacheControl)
 	}
 
-	// 设置 Expires
+	// Set Expires
 	if !options.Expires.IsZero() {
 		meta.CustomHeader.Set("Expires", options.Expires.Format(http.TimeFormat))
 	}
 
-	// 设置存储类
+	// Set storage class
 	if options.StorageClass != "" {
 		meta.CustomHeader.Set("x-amz-storage-class", options.StorageClass)
 	}
 
-	// 设置用户元数据
+	// Set user metadata
 	if options.UserMetadata != nil {
 		for k, v := range options.UserMetadata {
 			meta.CustomHeader.Set("x-amz-meta-"+k, v)
 		}
 	}
 
-	// 设置用户标签
+	// Set user tags
 	if options.UserTags != nil {
 		tags := ""
 		first := true
@@ -96,10 +96,10 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		}
 	}
 
-	// 计算 MD5（如果需要）
+	// Calculate MD5 (if needed)
 	if options.SendContentMD5 && objectSize > 0 {
-		// 注意：实际实现中需要能够重新读取 reader，这里简化处理
-		// 生产环境应该使用 io.TeeReader 或类似机制
+		// Note: In actual implementation, we need to be able to re-read the reader, simplified here
+		// Production environment should use io.TeeReader or similar mechanism
 		md5Hash := md5.New()
 		if _, err := io.Copy(md5Hash, reader); err != nil {
 			return types.UploadInfo{}, err
@@ -108,36 +108,36 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		meta.CustomHeader.Set("Content-MD5", base64.StdEncoding.EncodeToString(md5Sum))
 	}
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 PUT 请求
+	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return types.UploadInfo{}, err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return types.UploadInfo{}, parseErrorResponse(resp, bucketName, objectName)
 	}
 
-	// 解析上传信息
+	// Parse upload info
 	parser := core.NewResponseParser()
 	uploadInfo, err := parser.ParseUploadInfo(resp, bucketName, objectName)
 	if err != nil {
 		return types.UploadInfo{}, err
 	}
 
-	// 获取对象大小（如果响应中有）
+	// Get object size (if present in response)
 	if contentLength := resp.Header.Get("Content-Length"); contentLength != "" {
 		if size, err := strconv.ParseInt(contentLength, 10, 64); err == nil {
 			uploadInfo.Size = size

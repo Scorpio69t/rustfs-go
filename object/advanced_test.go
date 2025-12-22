@@ -1,4 +1,4 @@
-// Package object object/advanced_test.go - 高级功能测试
+// Package object object/advanced_test.go - advanced feature tests
 package object
 
 import (
@@ -159,7 +159,7 @@ func TestCopy(t *testing.T) {
 				if r.Method != http.MethodPut {
 					t.Errorf("Expected PUT request, got %s", r.Method)
 				}
-				// 验证复制源头
+				// verify copy source header
 				copySource := r.Header.Get("x-amz-copy-source")
 				if copySource == "" && !tt.wantErr {
 					t.Error("x-amz-copy-source header not set")
@@ -416,7 +416,7 @@ func TestAbortMultipartUpload(t *testing.T) {
 	}
 }
 
-// createAdvancedTestService 创建测试用的服务实例
+// createAdvancedTestService creates a service instance for testing
 func createAdvancedTestService(t *testing.T, server *httptest.Server) *objectService {
 	t.Helper()
 

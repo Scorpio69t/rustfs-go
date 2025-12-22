@@ -6,13 +6,13 @@ import (
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// objectService Object 服务实现
+// objectService implements Object service
 type objectService struct {
 	executor      *core.Executor
 	locationCache *cache.LocationCache
 }
 
-// NewService 创建 Object 服务
+// NewService creates a new Object service
 func NewService(executor *core.Executor, locationCache *cache.LocationCache) Service {
 	return &objectService{
 		executor:      executor,
@@ -20,19 +20,19 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 	}
 }
 
-// Put, Get, Stat, Delete, List, Copy 方法已在独立文件中实现
-// - put.go: Put 方法
-// - get.go: Get 方法
-// - stat.go: Stat 方法
-// - delete.go: Delete 方法
-// - list.go: List 方法
-// - copy.go: Copy 方法
-// - multipart.go: InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload 方法
+// Put, Get, Stat, Delete, List, Copy are implemented in separate files
+// - put.go: Put method
+// - get.go: Get method
+// - stat.go: Stat method
+// - delete.go: Delete method
+// - list.go: List method
+// - copy.go: Copy method
+// - multipart.go: InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload methods
 
-// applyPutOptions 应用上传选项
+// applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {
 	options := PutOptions{
-		ContentType: "application/octet-stream", // 默认内容类型
+		ContentType: "application/octet-stream", // default content type
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -40,7 +40,7 @@ func applyPutOptions(opts []PutOption) PutOptions {
 	return options
 }
 
-// applyGetOptions 应用下载选项
+// applyGetOptions applies download options
 func applyGetOptions(opts []GetOption) GetOptions {
 	options := GetOptions{}
 	for _, opt := range opts {
@@ -49,7 +49,7 @@ func applyGetOptions(opts []GetOption) GetOptions {
 	return options
 }
 
-// applyStatOptions 应用获取对象信息选项
+// applyStatOptions applies stat options
 func applyStatOptions(opts []StatOption) StatOptions {
 	options := StatOptions{}
 	for _, opt := range opts {
@@ -58,7 +58,7 @@ func applyStatOptions(opts []StatOption) StatOptions {
 	return options
 }
 
-// applyDeleteOptions 应用删除选项
+// applyDeleteOptions applies delete options
 func applyDeleteOptions(opts []DeleteOption) DeleteOptions {
 	options := DeleteOptions{}
 	for _, opt := range opts {
@@ -67,10 +67,10 @@ func applyDeleteOptions(opts []DeleteOption) DeleteOptions {
 	return options
 }
 
-// applyListOptions 应用列出对象选项
+// applyListOptions applies list options
 func applyListOptions(opts []ListOption) ListOptions {
 	options := ListOptions{
-		MaxKeys: 1000, // 默认最大键数
+		MaxKeys: 1000, // default max keys
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -78,7 +78,7 @@ func applyListOptions(opts []ListOption) ListOptions {
 	return options
 }
 
-// applyCopyOptions 应用复制选项
+// applyCopyOptions applies copy options
 func applyCopyOptions(opts []CopyOption) CopyOptions {
 	options := CopyOptions{}
 	for _, opt := range opts {
@@ -87,7 +87,7 @@ func applyCopyOptions(opts []CopyOption) CopyOptions {
 	return options
 }
 
-// validateBucketName 验证桶名
+// validateBucketName validates bucket name
 func validateBucketName(bucketName string) error {
 	if bucketName == "" {
 		return ErrInvalidBucketName
@@ -98,7 +98,7 @@ func validateBucketName(bucketName string) error {
 	return nil
 }
 
-// validateObjectName 验证对象名
+// validateObjectName validates object name
 func validateObjectName(objectName string) error {
 	if objectName == "" {
 		return ErrInvalidObjectName

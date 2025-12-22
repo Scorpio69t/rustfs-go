@@ -64,11 +64,11 @@ func TestPut(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// 验证请求方法
+				// verify request method
 				if r.Method != http.MethodPut {
 					t.Errorf("Expected PUT request, got %s", r.Method)
 				}
-				// 验证 Content-Type
+				// verify Content-Type
 				if len(tt.opts) > 0 {
 					contentType := r.Header.Get("Content-Type")
 					if contentType == "" {
@@ -129,11 +129,11 @@ func TestGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// 验证请求方法
+				// verify request method
 				if r.Method != http.MethodGet {
 					t.Errorf("Expected GET request, got %s", r.Method)
 				}
-				// 验证 Range 头
+				// verify Range header
 				if len(tt.opts) > 0 {
 					rangeHeader := r.Header.Get("Range")
 					if rangeHeader == "" {
@@ -201,7 +201,7 @@ func TestStat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// 验证请求方法
+				// verify request method
 				if r.Method != http.MethodHead {
 					t.Errorf("Expected HEAD request, got %s", r.Method)
 				}
@@ -271,7 +271,7 @@ func TestDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// 验证请求方法
+				// verify request method
 				if r.Method != http.MethodDelete {
 					t.Errorf("Expected DELETE request, got %s", r.Method)
 				}
@@ -356,7 +356,7 @@ func BenchmarkGet(b *testing.B) {
 	}
 }
 
-// createTestService 创建测试用的服务实例
+// createTestService creates a service instance for testing
 func createTestService(t *testing.T, server *httptest.Server) Service {
 	t.Helper()
 

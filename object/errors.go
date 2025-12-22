@@ -4,15 +4,15 @@ package object
 import "errors"
 
 var (
-	// ErrInvalidBucketName 无效的桶名
+	// ErrInvalidBucketName invalid bucket name
 	ErrInvalidBucketName = errors.New("invalid bucket name")
 
-	// ErrInvalidObjectName 无效的对象名
+	// ErrInvalidObjectName invalid object name
 	ErrInvalidObjectName = errors.New("invalid object name")
 
-	// ErrObjectNotFound 对象不存在
+	// ErrObjectNotFound object not found
 	ErrObjectNotFound = errors.New("object not found")
 
-	// ErrNotImplemented 功能未实现
+	// ErrNotImplemented feature not implemented
 	ErrNotImplemented = errors.New("not implemented yet")
 )

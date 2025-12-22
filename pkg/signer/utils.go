@@ -14,14 +14,14 @@ const (
 	UnsignedPayload = "UNSIGNED-PAYLOAD"
 )
 
-// sum256 计算 SHA256 哈希
+// sum256 computes SHA256 hash
 func sum256(data []byte) []byte {
 	hash := sha256.New()
 	hash.Write(data)
 	return hash.Sum(nil)
 }
 
-// getHostAddr 返回 host header，如果不存在则返回 URL 中的 host
+// getHostAddr returns host header, or URL host if missing
 func getHostAddr(req *http.Request) string {
 	host := req.Header.Get("Host")
 	if host != "" && req.Host != host {
@@ -33,23 +33,23 @@ func getHostAddr(req *http.Request) string {
 	return req.URL.Host
 }
 
-// signV4TrimAll 压缩连续空格为一个空格（按照 AWS Signature V4 规范）
+// signV4TrimAll collapses consecutive spaces to one (per AWS SigV4 spec)
 // http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
 func signV4TrimAll(input string) string {
-	// 使用 strings.Fields 会自动 trim 并压缩空格
+	// strings.Fields auto trims and collapses spaces
 	return strings.Join(strings.Fields(input), " ")
 }
 
-// encodePath URL 编码路径（保留 /）
+// encodePath URL-encodes path (preserves /)
 func encodePath(pathName string) string {
 	if pathName == "" {
 		return "/"
 	}
 
-	// 保留尾部斜杠
+	// Preserve trailing slash
 	trailingSlash := strings.HasSuffix(pathName, "/")
 
-	// S3 要求保留路径中的斜杠，但编码其他特殊字符
+	// S3 requires keeping slashes while encoding other special chars
 	var encodedPathname strings.Builder
 	for _, s := range strings.Split(pathName, "/") {
 		if len(s) == 0 {
@@ -64,7 +64,7 @@ func encodePath(pathName string) string {
 		path = "/"
 	}
 
-	// 如果原路径有尾部斜杠且不是根路径，保留它
+	// Keep trailing slash if original path had it and not root
 	if trailingSlash && path != "/" {
 		path += "/"
 	}
@@ -72,9 +72,9 @@ func encodePath(pathName string) string {
 	return path
 }
 
-// queryEncode 编码查询参数（用于预签名 URL）
+// queryEncode encodes query params (for presigned URLs)
 func queryEncode(query url.Values) string {
-	// 对查询参数按键排序
+	// Sort query parameters by key
 	keys := make([]string, 0, len(query))
 	for k := range query {
 		keys = append(keys, k)
@@ -97,7 +97,7 @@ func queryEncode(query url.Values) string {
 	return buf.String()
 }
 
-// headerExists 检查 header 是否存在
+// headerExists checks if header exists
 func headerExists(key string, headers []string) bool {
 	for _, k := range headers {
 		if k == key {
