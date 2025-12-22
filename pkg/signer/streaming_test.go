@@ -18,7 +18,7 @@ func TestNewStreamingReader(t *testing.T) {
 		"secretKey",
 		"",
 		"us-east-1",
-		9, // "test data" 长度
+		9, // length of "test data"
 		time.Now(),
 		"seed-signature",
 	)
@@ -37,12 +37,12 @@ func TestNewStreamingReader(t *testing.T) {
 }
 
 func TestStreamingReader_Read(t *testing.T) {
-	// 创建测试数据
+	// Create test data
 	testData := "Hello, World!"
 	data := strings.NewReader(testData)
 	reader := io.NopCloser(data)
 
-	// 创建流式 reader
+	// Create streaming reader
 	streamReader := NewStreamingReader(
 		reader,
 		"AKIAIOSFODNN7EXAMPLE",
@@ -54,27 +54,27 @@ func TestStreamingReader_Read(t *testing.T) {
 		"4f232c4386841ef735655705268965c44a0e4690baa4adea153f7db9fa80a0a9",
 	)
 
-	// 读取所有数据
+	// Read all data
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, streamReader)
 	if err != nil {
 		t.Fatalf("Failed to read from streaming reader: %v", err)
 	}
 
-	// 验证输出包含签名分块格式
+	// Verify output contains signed chunk format
 	output := buf.String()
 
-	// 应该包含 chunk-signature
+	// Should contain chunk-signature
 	if !strings.Contains(output, "chunk-signature=") {
 		t.Error("Expected output to contain 'chunk-signature='")
 	}
 
-	// 应该包含原始数据
+	// Should contain original data
 	if !strings.Contains(output, testData) {
 		t.Error("Expected output to contain original data")
 	}
 
-	// 应该以空分块结束 (0;chunk-signature=...)
+	// Should end with empty chunk (0;chunk-signature=...)
 	if !strings.Contains(output, "0;chunk-signature=") {
 		t.Error("Expected output to contain final empty chunk")
 	}
@@ -83,7 +83,7 @@ func TestStreamingReader_Read(t *testing.T) {
 }
 
 func TestStreamingReader_LargeData(t *testing.T) {
-	// 创建大于一个分块的数据
+	// Create data larger than one chunk
 	testData := strings.Repeat("A", PayloadChunkSize+1000)
 	data := strings.NewReader(testData)
 	reader := io.NopCloser(data)
@@ -99,17 +99,17 @@ func TestStreamingReader_LargeData(t *testing.T) {
 		"4f232c4386841ef735655705268965c44a0e4690baa4adea153f7db9fa80a0a9",
 	)
 
-	// 读取所有数据
+	// Read all data
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, streamReader)
 	if err != nil {
 		t.Fatalf("Failed to read from streaming reader: %v", err)
 	}
 
-	// 验证输出
+	// Verify output
 	output := buf.String()
 
-	// 应该有多个分块签名
+	// Should have multiple chunk signatures
 	chunkCount := strings.Count(output, "chunk-signature=")
 	if chunkCount < 2 {
 		t.Errorf("Expected at least 2 chunks, got %d", chunkCount)
@@ -133,14 +133,14 @@ func TestStreamingReader_EmptyData(t *testing.T) {
 		"seed-signature",
 	)
 
-	// 读取数据
+	// Read data
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, streamReader)
 	if err != nil {
 		t.Fatalf("Failed to read from streaming reader: %v", err)
 	}
 
-	// 应该只有一个空分块
+	// Should contain only one empty chunk
 	output := buf.String()
 	if !strings.Contains(output, "0;chunk-signature=") {
 		t.Error("Expected output to contain empty chunk")
@@ -152,7 +152,7 @@ func TestGetStreamLength(t *testing.T) {
 		name      string
 		dataLen   int64
 		chunkSize int64
-		minLen    int64 // 最小预期长度
+		minLen    int64 // minimum expected length
 	}{
 		{
 			name:      "Empty data",
@@ -193,7 +193,7 @@ func TestGetStreamLength(t *testing.T) {
 					t.Errorf("Expected length>=%d, got %d", tt.minLen, length)
 				}
 
-				// 流式长度应该大于原始数据长度（因为有签名开销）
+				// Streamed length should exceed original data length (signature overhead)
 				if length <= tt.dataLen {
 					t.Errorf("Expected stream length (%d) > data length (%d)", length, tt.dataLen)
 				}
@@ -217,7 +217,7 @@ func TestBuildChunkStringToSign(t *testing.T) {
 	chunkHash := "chunk-hash-value"
 	stringToSign := streamReader.buildChunkStringToSign(chunkHash)
 
-	// 验证格式
+	// Validate format
 	lines := strings.Split(stringToSign, "\n")
 	if len(lines) != 6 {
 		t.Errorf("Expected 6 lines, got %d", len(lines))

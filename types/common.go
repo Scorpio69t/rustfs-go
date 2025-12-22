@@ -3,19 +3,19 @@ package types
 
 import "time"
 
-// Owner 对象所有者信息
+// Owner contains object owner information
 type Owner struct {
 	DisplayName string `json:"displayName,omitempty"`
 	ID          string `json:"id,omitempty"`
 }
 
-// Grant ACL 授权
+// Grant represents ACL grant
 type Grant struct {
 	Grantee    Grantee
 	Permission string
 }
 
-// Grantee 授权对象
+// Grantee represents grantee information
 type Grantee struct {
 	Type        string
 	ID          string
@@ -23,13 +23,13 @@ type Grantee struct {
 	URI         string
 }
 
-// RestoreInfo 归档恢复信息
+// RestoreInfo contains archive restore information
 type RestoreInfo struct {
 	OngoingRestore bool
 	ExpiryTime     time.Time
 }
 
-// ChecksumType 校验和类型
+// ChecksumType represents checksum type
 type ChecksumType int
 
 const (
@@ -41,7 +41,7 @@ const (
 	ChecksumCRC64NVME
 )
 
-// String 返回校验和类型字符串
+// String returns the checksum type as a string
 func (c ChecksumType) String() string {
 	switch c {
 	case ChecksumCRC32:
@@ -59,7 +59,7 @@ func (c ChecksumType) String() string {
 	}
 }
 
-// RetentionMode 保留模式
+// RetentionMode represents retention mode
 type RetentionMode string
 
 const (
@@ -67,12 +67,12 @@ const (
 	RetentionCompliance RetentionMode = "COMPLIANCE"
 )
 
-// IsValid 验证保留模式是否有效
+// IsValid checks if the retention mode is valid
 func (r RetentionMode) IsValid() bool {
 	return r == RetentionGovernance || r == RetentionCompliance
 }
 
-// LegalHoldStatus 法律保留状态
+// LegalHoldStatus represents legal hold status
 type LegalHoldStatus string
 
 const (
@@ -80,12 +80,12 @@ const (
 	LegalHoldOff LegalHoldStatus = "OFF"
 )
 
-// IsValid 验证法律保留状态是否有效
+// IsValid checks if the legal hold status is valid
 func (l LegalHoldStatus) IsValid() bool {
 	return l == LegalHoldOn || l == LegalHoldOff
 }
 
-// ReplicationStatus 复制状态
+// ReplicationStatus represents replication status
 type ReplicationStatus string
 
 const (
@@ -95,8 +95,8 @@ const (
 	ReplicationReplica  ReplicationStatus = "REPLICA"
 )
 
-// StringMap 自定义字符串映射（用于 XML 解析）
+// StringMap is a custom string map (used for XML parsing)
 type StringMap map[string]string
 
-// URLMap URL 编码的映射
+// URLMap is a URL-encoded map
 type URLMap map[string]string

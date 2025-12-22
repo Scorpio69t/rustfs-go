@@ -1,71 +1,71 @@
-# 贡献指南
+# Contributing Guide
 
-感谢您对 RustFS Go SDK 项目的关注！我们欢迎所有形式的贡献。
+Thanks for your interest in the RustFS Go SDK! We welcome contributions of all kinds.
 
-## 如何贡献
+## How to Contribute
 
-### 报告问题
+### Report Issues
 
-如果您发现了 bug 或有功能建议，请通过 GitHub Issues 提交。
+If you find a bug or have a feature request, please file an issue on GitHub.
 
-### 提交代码
+### Submit Code
 
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m "feat: add amazing feature"`)
+4. Push to your branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### 代码规范
+### Code Style
 
-- 遵循 Go 官方代码规范
-- 使用 `gofmt` 格式化代码
-- 添加必要的注释和文档
-- 为新功能添加单元测试
+- Follow the official Go coding guidelines
+- Run `gofmt` to format code
+- Add clear comments and GoDoc for public APIs
+- Add unit tests for new functionality
 
-### 测试
+### Testing
 
-在提交 PR 之前，请确保：
+Before sending a PR, please run:
 
 ```bash
-# 运行所有测试
+# Run all tests
 go test ./...
 
-# 检查代码格式
+# Check code format
 gofmt -s -w .
 
-# 运行 linter
+# Run linter
 golangci-lint run
 ```
 
-### 提交信息规范
+### Commit Messages
 
-提交信息应该清晰描述更改内容：
+Commit messages should clearly describe the change. Examples:
 
-- `feat: 添加新功能`
-- `fix: 修复 bug`
-- `docs: 更新文档`
-- `test: 添加测试`
-- `refactor: 代码重构`
+- `feat: add new feature`
+- `fix: resolve panic when bucket name is empty`
+- `docs: update README`
+- `test: add health check tests`
+- `refactor: simplify signer options`
 
-## 开发环境设置
+## Development Environment
 
-1. 克隆仓库
+1. Clone the repository
 ```bash
 git clone https://github.com/Scorpio69t/rustfs-go.git
 cd rustfs-go
 ```
 
-2. 安装依赖
+2. Install dependencies
 ```bash
 go mod download
 ```
 
-3. 运行测试
+3. Run tests
 ```bash
 go test ./...
 ```
 
-## 许可证
+## License
 
-通过贡献代码，您同意您的贡献将在 Apache License 2.0 下授权。
+By contributing, you agree that your contributions will be licensed under the Apache License 2.0.

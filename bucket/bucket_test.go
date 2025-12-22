@@ -430,7 +430,7 @@ func TestApplyDeleteOptions(t *testing.T) {
 	}
 }
 
-// createTestService 创建测试用的服务实例
+// createTestService Create a test service instance
 func createTestService(t *testing.T, server *httptest.Server) Service {
 	t.Helper()
 

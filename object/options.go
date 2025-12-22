@@ -6,202 +6,202 @@ import (
 	"time"
 )
 
-// PutOptions 上传选项
+// PutOptions controls object upload behavior
 type PutOptions struct {
-	// 内容类型
+	// Content-Type
 	ContentType string
 
-	// 内容编码
+	// Content-Encoding
 	ContentEncoding string
 
-	// 内容处置
+	// Content-Disposition
 	ContentDisposition string
 
-	// 内容语言
+	// Content-Language
 	ContentLanguage string
 
-	// 缓存控制
+	// Cache-Control
 	CacheControl string
 
-	// 过期时间
+	// Expiration time
 	Expires time.Time
 
-	// 用户元数据
+	// User metadata
 	UserMetadata map[string]string
 
-	// 用户标签
+	// User tags
 	UserTags map[string]string
 
-	// 存储类
+	// Storage class
 	StorageClass string
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 
-	// 发送 Content-MD5
+	// Whether to send Content-MD5
 	SendContentMD5 bool
 
-	// 禁用 Content-SHA256
+	// Disable Content-SHA256
 	DisableContentSHA256 bool
 
-	// 分片大小
+	// Multipart part size
 	PartSize uint64
 
-	// 并发数
+	// Number of concurrent uploads
 	NumThreads uint
 }
 
-// GetOptions 下载选项
+// GetOptions controls object download behavior
 type GetOptions struct {
-	// Range 请求范围
+	// Range header
 	RangeStart int64
 	RangeEnd   int64
 	SetRange   bool
 
-	// 版本 ID
+	// Version ID
 	VersionID string
 
-	// 匹配条件
+	// Conditional headers
 	MatchETag     string
 	NotMatchETag  string
 	MatchModified time.Time
 	NotModified   time.Time
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 }
 
-// StatOptions 获取对象信息选项
+// StatOptions controls stat/metadata retrieval
 type StatOptions struct {
-	// 版本 ID
+	// Version ID
 	VersionID string
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 }
 
-// DeleteOptions 删除选项
+// DeleteOptions controls object deletion
 type DeleteOptions struct {
-	// 版本 ID
+	// Version ID
 	VersionID string
 
-	// 强制删除
+	// Force delete when possible
 	ForceDelete bool
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 }
 
-// ListOptions 列出对象选项
+// ListOptions controls object listing
 type ListOptions struct {
-	// 前缀
+	// Prefix filter
 	Prefix string
 
-	// 递归列出
+	// Recursive listing
 	Recursive bool
 
-	// 最大键数
+	// Max keys
 	MaxKeys int
 
-	// 起始位置
+	// Start token
 	StartAfter string
 
-	// 使用 V2 API
+	// Use ListObjectsV2
 	UseV2 bool
 
-	// 包含版本
+	// Include object versions
 	WithVersions bool
 
-	// 包含元数据
+	// Include object metadata
 	WithMetadata bool
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 }
 
-// CopyOptions 复制选项
+// CopyOptions controls server-side copy behavior
 type CopyOptions struct {
-	// 源版本 ID
+	// Source version ID
 	SourceVersionID string
 
-	// 目标元数据
+	// Destination metadata and tags
 	UserMetadata map[string]string
 	UserTags     map[string]string
 
-	// 替换元数据
+	// Replace metadata and/or tagging instead of copying existing
 	ReplaceMetadata bool
 	ReplaceTagging  bool
 
-	// 内容类型
+	// Object header overrides
 	ContentType        string
 	ContentEncoding    string
 	ContentDisposition string
 	CacheControl       string
 	Expires            time.Time
 
-	// 存储类
+	// Storage class
 	StorageClass string
 
-	// 匹配条件
+	// Conditional copy headers
 	MatchETag     string
 	NotMatchETag  string
 	MatchModified time.Time
 	NotModified   time.Time
 
-	// 自定义头
+	// Custom headers
 	CustomHeaders http.Header
 }
 
-// WithContentType 设置内容类型
+// WithContentType sets Content-Type
 func WithContentType(contentType string) PutOption {
 	return func(opts *PutOptions) {
 		opts.ContentType = contentType
 	}
 }
 
-// WithContentEncoding 设置内容编码
+// WithContentEncoding sets Content-Encoding
 func WithContentEncoding(encoding string) PutOption {
 	return func(opts *PutOptions) {
 		opts.ContentEncoding = encoding
 	}
 }
 
-// WithContentDisposition 设置内容处置
+// WithContentDisposition sets Content-Disposition
 func WithContentDisposition(disposition string) PutOption {
 	return func(opts *PutOptions) {
 		opts.ContentDisposition = disposition
 	}
 }
 
-// WithUserMetadata 设置用户元数据
+// WithUserMetadata sets user metadata
 func WithUserMetadata(metadata map[string]string) PutOption {
 	return func(opts *PutOptions) {
 		opts.UserMetadata = metadata
 	}
 }
 
-// WithUserTags 设置用户标签
+// WithUserTags sets object tags
 func WithUserTags(tags map[string]string) PutOption {
 	return func(opts *PutOptions) {
 		opts.UserTags = tags
 	}
 }
 
-// WithStorageClass 设置存储类
+// WithStorageClass sets storage class
 func WithStorageClass(class string) PutOption {
 	return func(opts *PutOptions) {
 		opts.StorageClass = class
 	}
 }
 
-// WithPartSize 设置分片大小
+// WithPartSize sets multipart part size
 func WithPartSize(size uint64) PutOption {
 	return func(opts *PutOptions) {
 		opts.PartSize = size
 	}
 }
 
-// WithGetRange 设置下载范围
+// WithGetRange sets byte range for downloads
 func WithGetRange(start, end int64) GetOption {
 	return func(opts *GetOptions) {
 		opts.RangeStart = start
@@ -210,7 +210,7 @@ func WithGetRange(start, end int64) GetOption {
 	}
 }
 
-// WithVersionID 设置版本 ID（用于 Get/Stat/Delete）
+// WithVersionID selects a specific object version (Get/Stat/Delete)
 func WithVersionID(versionID string) interface{} {
 	return struct {
 		GetOption
@@ -229,35 +229,35 @@ func WithVersionID(versionID string) interface{} {
 	}
 }
 
-// WithListPrefix 设置列出前缀
+// WithListPrefix sets listing prefix
 func WithListPrefix(prefix string) ListOption {
 	return func(opts *ListOptions) {
 		opts.Prefix = prefix
 	}
 }
 
-// WithListRecursive 设置递归列出
+// WithListRecursive toggles recursive listing
 func WithListRecursive(recursive bool) ListOption {
 	return func(opts *ListOptions) {
 		opts.Recursive = recursive
 	}
 }
 
-// WithListMaxKeys 设置最大键数
+// WithListMaxKeys sets the maximum keys to return
 func WithListMaxKeys(maxKeys int) ListOption {
 	return func(opts *ListOptions) {
 		opts.MaxKeys = maxKeys
 	}
 }
 
-// WithCopySourceVersionID 设置源版本 ID
+// WithCopySourceVersionID sets the source version ID for a copy
 func WithCopySourceVersionID(versionID string) CopyOption {
 	return func(opts *CopyOptions) {
 		opts.SourceVersionID = versionID
 	}
 }
 
-// WithCopyMetadata 设置复制元数据
+// WithCopyMetadata sets destination metadata for copy
 func WithCopyMetadata(metadata map[string]string, replace bool) CopyOption {
 	return func(opts *CopyOptions) {
 		opts.UserMetadata = metadata

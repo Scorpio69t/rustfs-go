@@ -10,47 +10,47 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// Options 客户端配置选项
+// Options contains client configuration options
 type Options struct {
-	// Credentials 凭证提供者
-	// 必需，用于签名请求
+	// Credentials is the credential provider
+	// Required, used for signing requests
 	Credentials *credentials.Credentials
 
-	// Secure 是否使用 HTTPS
-	// 默认: false
+	// Secure indicates whether to use HTTPS
+	// Default: false
 	Secure bool
 
-	// Region 区域
-	// 如果不设置，将自动检测
+	// Region is the region
+	// If not set, will be automatically detected
 	Region string
 
-	// Transport 自定义 HTTP 传输
-	// 如果不设置，使用默认传输
+	// Transport is a custom HTTP transport
+	// If not set, default transport will be used
 	Transport http.RoundTripper
 
-	// Trace HTTP 追踪客户端
+	// Trace is the HTTP trace client
 	Trace *httptrace.ClientTrace
 
-	// BucketLookup 桶查找类型
-	// 默认: BucketLookupAuto
+	// BucketLookup is the bucket lookup type
+	// Default: BucketLookupAuto
 	BucketLookup types.BucketLookupType
 
-	// CustomRegionViaURL 自定义区域查找函数
+	// CustomRegionViaURL is a custom region lookup function
 	CustomRegionViaURL func(u url.URL) string
 
-	// BucketLookupViaURL 自定义桶查找函数
+	// BucketLookupViaURL is a custom bucket lookup function
 	BucketLookupViaURL func(u url.URL, bucketName string) types.BucketLookupType
 
-	// TrailingHeaders 启用尾部头（用于流式上传）
-	// 需要服务器支持
+	// TrailingHeaders enables trailing headers (for streaming upload)
+	// Requires server support
 	TrailingHeaders bool
 
-	// MaxRetries 最大重试次数
-	// 默认: 10，设置为 1 禁用重试
+	// MaxRetries is the maximum number of retries
+	// Default: 10, set to 1 to disable retries
 	MaxRetries int
 }
 
-// validate 验证选项
+// validate validates options
 func (o *Options) validate() error {
 	if o == nil {
 		return errInvalidArgument("options cannot be nil")
@@ -61,7 +61,7 @@ func (o *Options) validate() error {
 	return nil
 }
 
-// setDefaults 设置默认值
+// setDefaults sets default values
 func (o *Options) setDefaults() {
 	if o.MaxRetries <= 0 {
 		o.MaxRetries = 10
@@ -71,17 +71,17 @@ func (o *Options) setDefaults() {
 	}
 }
 
-// errInvalidArgument 创建无效参数错误
+// errInvalidArgument creates an invalid argument error
 func errInvalidArgument(message string) error {
 	return &invalidArgumentError{message: message}
 }
 
-// invalidArgumentError 无效参数错误类型
+// invalidArgumentError represents an invalid argument error type
 type invalidArgumentError struct {
 	message string
 }
 
-// Error 返回错误消息
+// Error returns the error message
 func (e *invalidArgumentError) Error() string {
 	return e.message
 }

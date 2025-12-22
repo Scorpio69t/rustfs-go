@@ -441,7 +441,7 @@ func TestShouldRetryResponse(t *testing.T) {
 }
 
 func TestExecuteSuccess(t *testing.T) {
-	// 创建测试服务器
+	// Create test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("success"))
@@ -456,7 +456,7 @@ func TestExecuteSuccess(t *testing.T) {
 		EndpointURL:  serverURL,
 		Credentials:  creds,
 		MaxRetries:   3,
-		BucketLookup: int(types.BucketLookupPath), // 使用路径风格避免 DNS 查找
+		BucketLookup: int(types.BucketLookupPath), // use path style to avoid DNS lookup
 	})
 
 	req := NewRequest(context.Background(), http.MethodGet, RequestMetadata{
@@ -494,7 +494,7 @@ func TestExecuteRetry(t *testing.T) {
 		EndpointURL:  serverURL,
 		Credentials:  creds,
 		MaxRetries:   5,
-		BucketLookup: int(types.BucketLookupPath), // 使用路径风格避免 DNS 查找
+		BucketLookup: int(types.BucketLookupPath), // use path style to avoid DNS lookup
 	})
 
 	req := NewRequest(context.Background(), http.MethodGet, RequestMetadata{
@@ -543,9 +543,9 @@ func TestEncodePath(t *testing.T) {
 			want:  "folder/object%2Btest.txt",
 		},
 		{
-			name:  "Path with Chinese characters",
-			input: "文件夹/对象.txt",
-			want:  "%E6%96%87%E4%BB%B6%E5%A4%B9/%E5%AF%B9%E8%B1%A1.txt",
+			name:  "Path with unicode characters",
+			input: "folder/ü-object.txt",
+			want:  "folder/%C3%BC-object.txt",
 		},
 	}
 
@@ -559,7 +559,7 @@ func TestEncodePath(t *testing.T) {
 	}
 }
 
-// testNetError 模拟网络错误
+// testNetError simulates network error
 type testNetError struct {
 	msg     string
 	temp    bool

@@ -3,40 +3,40 @@ package types
 
 import "time"
 
-// BucketInfo 桶信息
+// BucketInfo contains bucket information
 type BucketInfo struct {
-	// 桶名称
+	// Bucket name
 	Name string `json:"name"`
-	// 创建时间
+	// Creation date
 	CreationDate time.Time `json:"creationDate"`
-	// 桶所在区域
+	// Bucket region
 	Region string `json:"region,omitempty"`
 }
 
-// BucketLookupType 桶查找类型
+// BucketLookupType represents bucket lookup type
 type BucketLookupType int
 
 const (
-	// BucketLookupAuto 自动检测
+	// BucketLookupAuto automatically detects
 	BucketLookupAuto BucketLookupType = iota
-	// BucketLookupDNS DNS 风格
+	// BucketLookupDNS uses DNS style
 	BucketLookupDNS
-	// BucketLookupPath 路径风格
+	// BucketLookupPath uses path style
 	BucketLookupPath
 )
 
-// VersioningConfig 版本控制配置
+// VersioningConfig contains versioning configuration
 type VersioningConfig struct {
 	Status    string // Enabled, Suspended
 	MFADelete string // Enabled, Disabled
 }
 
-// IsEnabled 检查版本控制是否启用
+// IsEnabled checks if versioning is enabled
 func (v VersioningConfig) IsEnabled() bool {
 	return v.Status == "Enabled"
 }
 
-// IsSuspended 检查版本控制是否暂停
+// IsSuspended checks if versioning is suspended
 func (v VersioningConfig) IsSuspended() bool {
 	return v.Status == "Suspended"
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// initiateMultipartUploadResult 初始化分片上传响应
+// initiateMultipartUploadResult represents the InitiateMultipartUpload response
 type initiateMultipartUploadResult struct {
 	XMLName  xml.Name `xml:"InitiateMultipartUploadResult"`
 	Bucket   string   `xml:"Bucket"`
@@ -24,7 +24,7 @@ type initiateMultipartUploadResult struct {
 	UploadID string   `xml:"UploadId"`
 }
 
-// completeMultipartUploadResult 完成分片上传响应
+// completeMultipartUploadResult represents the CompleteMultipartUpload response
 type completeMultipartUploadResult struct {
 	XMLName  xml.Name  `xml:"CompleteMultipartUploadResult"`
 	Location string    `xml:"Location"`
@@ -34,21 +34,21 @@ type completeMultipartUploadResult struct {
 	Modified time.Time `xml:"LastModified,omitempty"`
 }
 
-// completeMultipartUpload 完成分片上传请求
+// completeMultipartUpload wraps parts for completion
 type completeMultipartUpload struct {
 	XMLName xml.Name       `xml:"CompleteMultipartUpload"`
 	Parts   []completePart `xml:"Part"`
 }
 
-// completePart 完成的分片信息
+// completePart represents a completed part
 type completePart struct {
 	PartNumber int    `xml:"PartNumber"`
 	ETag       string `xml:"ETag"`
 }
 
-// InitiateMultipartUpload 初始化分片上传
+// InitiateMultipartUpload starts a multipart upload
 func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName, objectName string, opts ...PutOption) (string, error) {
-	// 验证参数
+	// Validate inputs
 	if err := validateBucketName(bucketName); err != nil {
 		return "", err
 	}
@@ -56,10 +56,10 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 		return "", err
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyPutOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:   bucketName,
 		ObjectName:   objectName,
@@ -67,37 +67,37 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 		CustomHeader: make(http.Header),
 	}
 
-	// 设置 uploads 查询参数
+	// Add uploads query parameter
 	meta.QueryValues.Set("uploads", "")
 
-	// 设置 Content-Type
+	// Set Content-Type
 	if options.ContentType != "" {
 		meta.CustomHeader.Set("Content-Type", options.ContentType)
 	}
 
-	// 设置 Content-Encoding
+	// Set Content-Encoding
 	if options.ContentEncoding != "" {
 		meta.CustomHeader.Set("Content-Encoding", options.ContentEncoding)
 	}
 
-	// 设置 Content-Disposition
+	// Set Content-Disposition
 	if options.ContentDisposition != "" {
 		meta.CustomHeader.Set("Content-Disposition", options.ContentDisposition)
 	}
 
-	// 设置存储类
+	// Set storage class
 	if options.StorageClass != "" {
 		meta.CustomHeader.Set("x-amz-storage-class", options.StorageClass)
 	}
 
-	// 设置用户元数据
+	// Set user metadata
 	if options.UserMetadata != nil {
 		for k, v := range options.UserMetadata {
 			meta.CustomHeader.Set("x-amz-meta-"+k, v)
 		}
 	}
 
-	// 设置用户标签
+	// Set user tags
 	if options.UserTags != nil {
 		tags := ""
 		first := true
@@ -113,29 +113,29 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 		}
 	}
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 POST 请求
+	// Create POST request
 	req := core.NewRequest(ctx, http.MethodPost, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return "", err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return "", parseErrorResponse(resp, bucketName, objectName)
 	}
 
-	// 解析响应
+	// Parse response
 	var result initiateMultipartUploadResult
 	decoder := xml.NewDecoder(resp.Body)
 	if err := decoder.Decode(&result); err != nil {
@@ -145,9 +145,9 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 	return result.UploadID, nil
 }
 
-// UploadPart 上传分片
+// UploadPart uploads a single part
 func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, uploadID string, partNumber int, reader io.Reader, partSize int64, opts ...PutOption) (types.ObjectPart, error) {
-	// 验证参数
+	// Validate inputs
 	if err := validateBucketName(bucketName); err != nil {
 		return types.ObjectPart{}, err
 	}
@@ -164,10 +164,10 @@ func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, 
 		return types.ObjectPart{}, fmt.Errorf("reader cannot be nil")
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyPutOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:    bucketName,
 		ObjectName:    objectName,
@@ -177,40 +177,40 @@ func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, 
 		CustomHeader:  make(http.Header),
 	}
 
-	// 设置查询参数
+	// Set query parameters
 	meta.QueryValues.Set("uploadId", uploadID)
 	meta.QueryValues.Set("partNumber", strconv.Itoa(partNumber))
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 PUT 请求
+	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return types.ObjectPart{}, err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return types.ObjectPart{}, parseErrorResponse(resp, bucketName, objectName)
 	}
 
-	// 构建分片信息
+	// Build part info
 	part := types.ObjectPart{
 		PartNumber: partNumber,
 		ETag:       trimETag(resp.Header.Get("ETag")),
 		Size:       partSize,
 	}
 
-	// 解析校验和
+	// Parse checksum headers
 	if checksumCRC32 := resp.Header.Get("x-amz-checksum-crc32"); checksumCRC32 != "" {
 		part.ChecksumCRC32 = checksumCRC32
 	}
@@ -227,9 +227,9 @@ func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, 
 	return part, nil
 }
 
-// CompleteMultipartUpload 完成分片上传
+// CompleteMultipartUpload finalizes a multipart upload
 func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName, objectName, uploadID string, parts []types.ObjectPart, opts ...PutOption) (types.UploadInfo, error) {
-	// 验证参数
+	// Validate inputs
 	if err := validateBucketName(bucketName); err != nil {
 		return types.UploadInfo{}, err
 	}
@@ -243,10 +243,10 @@ func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName,
 		return types.UploadInfo{}, fmt.Errorf("parts cannot be empty")
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyPutOptions(opts)
 
-	// 构建完成分片上传请求
+	// Build completion payload
 	completeParts := make([]completePart, len(parts))
 	for i, part := range parts {
 		completeParts[i] = completePart{
@@ -259,60 +259,60 @@ func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName,
 		Parts: completeParts,
 	}
 
-	// XML 编码
+	// Encode XML payload
 	xmlData, err := xml.Marshal(completeUpload)
 	if err != nil {
 		return types.UploadInfo{}, fmt.Errorf("failed to marshal complete multipart upload: %w", err)
 	}
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:    bucketName,
 		ObjectName:    objectName,
-		ContentBody:   nil, // 将在后面设置
+		ContentBody:   nil, // set below
 		ContentLength: int64(len(xmlData)),
 		QueryValues:   url.Values{},
 		CustomHeader:  make(http.Header),
 	}
 
-	// 设置查询参数
+	// Set query parameters
 	meta.QueryValues.Set("uploadId", uploadID)
 
-	// 设置 Content-Type
+	// Set Content-Type
 	meta.CustomHeader.Set("Content-Type", "application/xml")
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 POST 请求（使用 XML 数据作为 body）
+	// Create POST request with XML payload
 	meta.ContentBody = bytes.NewReader(xmlData)
 
 	req := core.NewRequest(ctx, http.MethodPost, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return types.UploadInfo{}, err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return types.UploadInfo{}, parseErrorResponse(resp, bucketName, objectName)
 	}
 
-	// 解析响应
+	// Parse response
 	var result completeMultipartUploadResult
 	decoder := xml.NewDecoder(resp.Body)
 	if err := decoder.Decode(&result); err != nil {
 		return types.UploadInfo{}, fmt.Errorf("failed to decode complete multipart upload response: %w", err)
 	}
 
-	// 构建上传信息
+	// Build upload info
 	uploadInfo := types.UploadInfo{
 		Bucket:       result.Bucket,
 		Key:          result.Key,
@@ -321,14 +321,14 @@ func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName,
 		LastModified: result.Modified,
 	}
 
-	// 计算总大小
+	// Sum total size
 	var totalSize int64
 	for _, part := range parts {
 		totalSize += part.Size
 	}
 	uploadInfo.Size = totalSize
 
-	// 解析校验和
+	// Parse checksum headers
 	if checksumCRC32 := resp.Header.Get("x-amz-checksum-crc32"); checksumCRC32 != "" {
 		uploadInfo.ChecksumCRC32 = checksumCRC32
 	}
@@ -345,9 +345,9 @@ func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName,
 	return uploadInfo, nil
 }
 
-// AbortMultipartUpload 取消分片上传
+// AbortMultipartUpload aborts an in-progress multipart upload
 func (s *objectService) AbortMultipartUpload(ctx context.Context, bucketName, objectName, uploadID string) error {
-	// 验证参数
+	// Validate inputs
 	if err := validateBucketName(bucketName); err != nil {
 		return err
 	}
@@ -358,27 +358,27 @@ func (s *objectService) AbortMultipartUpload(ctx context.Context, bucketName, ob
 		return fmt.Errorf("upload ID cannot be empty")
 	}
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:  bucketName,
 		ObjectName:  objectName,
 		QueryValues: url.Values{},
 	}
 
-	// 设置查询参数
+	// Set query parameters
 	meta.QueryValues.Set("uploadId", uploadID)
 
-	// 创建 DELETE 请求
+	// Create DELETE request
 	req := core.NewRequest(ctx, http.MethodDelete, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应（204 No Content）
+	// Check response (expect 204 No Content)
 	if resp.StatusCode != http.StatusNoContent {
 		return parseErrorResponse(resp, bucketName, objectName)
 	}

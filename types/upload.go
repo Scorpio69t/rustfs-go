@@ -3,28 +3,28 @@ package types
 
 import "time"
 
-// UploadInfo 上传结果信息
+// UploadInfo contains upload result information
 type UploadInfo struct {
-	// 桶名称
+	// Bucket name
 	Bucket string `json:"bucket"`
-	// 对象键
+	// Object key
 	Key string `json:"key"`
 	// ETag
 	ETag string `json:"etag"`
-	// 大小
+	// Size
 	Size int64 `json:"size"`
-	// 最后修改时间
+	// Last modified time
 	LastModified time.Time `json:"lastModified"`
-	// 位置
+	// Location
 	Location string `json:"location,omitempty"`
-	// 版本 ID
+	// Version ID
 	VersionID string `json:"versionId,omitempty"`
 
-	// 生命周期过期信息
+	// Lifecycle expiration information
 	Expiration       time.Time `json:"expiration,omitempty"`
 	ExpirationRuleID string    `json:"expirationRuleId,omitempty"`
 
-	// 校验和
+	// Checksums
 	ChecksumCRC32     string `json:"checksumCRC32,omitempty"`
 	ChecksumCRC32C    string `json:"checksumCRC32C,omitempty"`
 	ChecksumSHA1      string `json:"checksumSHA1,omitempty"`
@@ -33,41 +33,41 @@ type UploadInfo struct {
 	ChecksumMode      string `json:"checksumMode,omitempty"`
 }
 
-// MultipartInfo 分片上传信息
+// MultipartInfo contains multipart upload information
 type MultipartInfo struct {
-	// 上传 ID
+	// Upload ID
 	UploadID string `json:"uploadId"`
-	// 对象键
+	// Object key
 	Key string `json:"key"`
-	// 发起时间
+	// Initiated time
 	Initiated time.Time `json:"initiated"`
-	// 发起者
+	// Initiator
 	Initiator struct {
 		ID          string
 		DisplayName string
 	} `json:"initiator,omitempty"`
-	// 所有者
+	// Owner
 	Owner Owner `json:"owner,omitempty"`
-	// 存储类
+	// Storage class
 	StorageClass string `json:"storageClass,omitempty"`
-	// 大小（聚合）
+	// Size (aggregated)
 	Size int64 `json:"size,omitempty"`
-	// 错误
+	// Error
 	Err error `json:"-"`
 }
 
-// PartInfo 分片信息
+// PartInfo contains part information
 type PartInfo struct {
-	// 分片号
+	// Part number
 	PartNumber int `json:"partNumber"`
 	// ETag
 	ETag string `json:"etag"`
-	// 大小
+	// Size
 	Size int64 `json:"size"`
-	// 最后修改时间
+	// Last modified time
 	LastModified time.Time `json:"lastModified"`
 
-	// 校验和
+	// Checksums
 	ChecksumCRC32     string `json:"checksumCRC32,omitempty"`
 	ChecksumCRC32C    string `json:"checksumCRC32C,omitempty"`
 	ChecksumSHA1      string `json:"checksumSHA1,omitempty"`
@@ -75,7 +75,7 @@ type PartInfo struct {
 	ChecksumCRC64NVME string `json:"checksumCRC64NVME,omitempty"`
 }
 
-// CompletePart 完成分片信息
+// CompletePart contains completed part information
 type CompletePart struct {
 	PartNumber        int
 	ETag              string

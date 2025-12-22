@@ -12,15 +12,15 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// ResponseParser 响应解析器
+// ResponseParser parses HTTP responses
 type ResponseParser struct{}
 
-// NewResponseParser 创建响应解析器
+// NewResponseParser creates a ResponseParser
 func NewResponseParser() *ResponseParser {
 	return &ResponseParser{}
 }
 
-// ParseXML 解析 XML 响应
+// ParseXML decodes XML response
 func (p *ResponseParser) ParseXML(resp *http.Response, v interface{}) error {
 	if resp.Body == nil {
 		return errors.NewAPIError(errors.ErrCodeInternalError, "empty response body", resp.StatusCode)
@@ -28,14 +28,14 @@ func (p *ResponseParser) ParseXML(resp *http.Response, v interface{}) error {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			// 记录日志或处理关闭错误
+			// Optionally log or handle close error
 		}
 	}(resp.Body)
 
 	return xml.NewDecoder(resp.Body).Decode(v)
 }
 
-// ParseObjectInfo 从响应头解析对象信息
+// ParseObjectInfo parses object info from response headers
 func (p *ResponseParser) ParseObjectInfo(resp *http.Response, bucketName, objectName string) (types.ObjectInfo, error) {
 	header := resp.Header
 
@@ -45,31 +45,31 @@ func (p *ResponseParser) ParseObjectInfo(resp *http.Response, bucketName, object
 		ETag:        trimETag(header.Get("ETag")),
 	}
 
-	// 解析 Content-Length
+	// Parse Content-Length
 	if cl := header.Get("Content-Length"); cl != "" {
 		if size, err := strconv.ParseInt(cl, 10, 64); err == nil {
 			info.Size = size
 		}
 	}
 
-	// 解析 Last-Modified
+	// Parse Last-Modified
 	if lm := header.Get("Last-Modified"); lm != "" {
 		if t, err := time.Parse(http.TimeFormat, lm); err == nil {
 			info.LastModified = t
 		}
 	}
 
-	// 解析版本信息
+	// Parse version info
 	info.VersionID = header.Get("x-amz-version-id")
 	info.IsDeleteMarker = header.Get("x-amz-delete-marker") == "true"
 
-	// 解析存储类
+	// Parse storage class
 	info.StorageClass = header.Get("x-amz-storage-class")
 
-	// 解析复制状态
+	// Parse replication status
 	info.ReplicationStatus = header.Get("x-amz-replication-status")
 
-	// 解析用户元数据
+	// Parse user metadata
 	info.UserMetadata = make(types.StringMap)
 	for k, v := range header {
 		if len(k) > len("X-Amz-Meta-") && k[:len("X-Amz-Meta-")] == "X-Amz-Meta-" {
@@ -77,14 +77,14 @@ func (p *ResponseParser) ParseObjectInfo(resp *http.Response, bucketName, object
 		}
 	}
 
-	// 解析标签数量
+	// Parse tag count
 	if tc := header.Get("x-amz-tagging-count"); tc != "" {
 		if count, err := strconv.Atoi(tc); err == nil {
 			info.UserTagCount = count
 		}
 	}
 
-	// 解析校验和
+	// Parse checksums
 	info.ChecksumCRC32 = header.Get("x-amz-checksum-crc32")
 	info.ChecksumCRC32C = header.Get("x-amz-checksum-crc32c")
 	info.ChecksumSHA1 = header.Get("x-amz-checksum-sha1")
@@ -94,7 +94,7 @@ func (p *ResponseParser) ParseObjectInfo(resp *http.Response, bucketName, object
 	return info, nil
 }
 
-// ParseUploadInfo 从响应解析上传信息
+// ParseUploadInfo parses upload info from response
 func (p *ResponseParser) ParseUploadInfo(resp *http.Response, bucketName, objectName string) (types.UploadInfo, error) {
 	header := resp.Header
 
@@ -105,7 +105,7 @@ func (p *ResponseParser) ParseUploadInfo(resp *http.Response, bucketName, object
 		VersionID: header.Get("x-amz-version-id"),
 	}
 
-	// 解析校验和
+	// Parse checksums
 	info.ChecksumCRC32 = header.Get("x-amz-checksum-crc32")
 	info.ChecksumCRC32C = header.Get("x-amz-checksum-crc32c")
 	info.ChecksumSHA1 = header.Get("x-amz-checksum-sha1")
@@ -115,12 +115,12 @@ func (p *ResponseParser) ParseUploadInfo(resp *http.Response, bucketName, object
 	return info, nil
 }
 
-// ParseError 解析错误响应
+// ParseError parses error response
 func (p *ResponseParser) ParseError(resp *http.Response, bucketName, objectName string) error {
 	return errors.ParseErrorResponse(resp, bucketName, objectName)
 }
 
-// trimETag 去除 ETag 的引号
+// trimETag removes quotes around ETag
 func trimETag(etag string) string {
 	if len(etag) > 2 && etag[0] == '"' && etag[len(etag)-1] == '"' {
 		return etag[1 : len(etag)-1]

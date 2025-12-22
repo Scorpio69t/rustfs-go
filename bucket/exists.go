@@ -9,25 +9,25 @@ import (
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// Exists 检查桶是否存在
+// Exists checks if a bucket exists.
 func (s *bucketService) Exists(ctx context.Context, bucketName string) (bool, error) {
-	// 验证桶名
+	// validate bucket name
 	if err := validateBucketName(bucketName); err != nil {
 		return false, err
 	}
 
-	// 构建请求元数据
+	// prepare request metadata
 	meta := core.RequestMetadata{
 		BucketName: bucketName,
 	}
 
-	// 创建 HEAD 请求
+	// create request
 	req := core.NewRequest(ctx, http.MethodHead, meta)
 
-	// 执行请求
+	// execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
-		// 检查是否为 NoSuchBucket 错误
+		// check if error is NoSuchBucket
 		if apiErr, ok := err.(*errors.APIError); ok {
 			if apiErr.Code() == errors.ErrCodeNoSuchBucket {
 				return false, nil
@@ -37,14 +37,14 @@ func (s *bucketService) Exists(ctx context.Context, bucketName string) (bool, er
 	}
 	defer closeResponse(resp)
 
-	// 检查响应状态
+	// check response status code
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err := parseErrorResponse(resp, bucketName, "")
-		// 检查是否为 NoSuchBucket 错误
+		// check if error is NoSuchBucket
 		if apiErr, ok := err.(*errors.APIError); ok {
 			if apiErr.Code() == errors.ErrCodeNoSuchBucket {
 				return false, nil

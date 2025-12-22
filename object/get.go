@@ -12,9 +12,9 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// Get 下载对象（实现）
+// Get downloads an object (implementation)
 func (s *objectService) Get(ctx context.Context, bucketName, objectName string, opts ...GetOption) (io.ReadCloser, types.ObjectInfo, error) {
-	// 验证参数
+	// Validate parameters
 	if err := validateBucketName(bucketName); err != nil {
 		return nil, types.ObjectInfo{}, err
 	}
@@ -22,17 +22,17 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		return nil, types.ObjectInfo{}, err
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyGetOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:   bucketName,
 		ObjectName:   objectName,
 		CustomHeader: make(http.Header),
 	}
 
-	// 设置 Range 头
+	// Set Range header
 	if options.SetRange {
 		rangeHeader := "bytes=" + strconv.FormatInt(options.RangeStart, 10) + "-"
 		if options.RangeEnd > 0 {
@@ -41,7 +41,7 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		meta.CustomHeader.Set("Range", rangeHeader)
 	}
 
-	// 设置条件匹配头
+	// Set conditional match headers
 	if options.MatchETag != "" {
 		meta.CustomHeader.Set("If-Match", options.MatchETag)
 	}
@@ -55,35 +55,35 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		meta.CustomHeader.Set("If-Unmodified-Since", options.NotModified.Format(http.TimeFormat))
 	}
 
-	// 添加版本 ID 查询参数
+	// Add version ID query parameter
 	if options.VersionID != "" {
 		meta.QueryValues = url.Values{}
 		meta.QueryValues.Set("versionId", options.VersionID)
 	}
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 GET 请求
+	// Create GET request
 	req := core.NewRequest(ctx, http.MethodGet, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return nil, types.ObjectInfo{}, err
 	}
 
-	// 检查响应（200 OK 或 206 Partial Content）
+	// Check response (200 OK or 206 Partial Content)
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPartialContent {
 		closeResponse(resp)
 		return nil, types.ObjectInfo{}, parseErrorResponse(resp, bucketName, objectName)
 	}
 
-	// 解析对象信息
+	// Parse object info
 	parser := core.NewResponseParser()
 	objectInfo, err := parser.ParseObjectInfo(resp, bucketName, objectName)
 	if err != nil {
@@ -91,7 +91,7 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		return nil, types.ObjectInfo{}, err
 	}
 
-	// 返回响应体和对象信息
-	// 注意：调用者负责关闭 Body
+	// Return response body and object info
+	// Note: Caller is responsible for closing Body
 	return resp.Body, objectInfo, nil
 }

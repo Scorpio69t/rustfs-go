@@ -35,7 +35,7 @@ func TestDefaultTransport(t *testing.T) {
 				t.Fatal("DefaultTransport() returned nil")
 			}
 
-			// 验证基本配置
+			// Verify basic config
 			if tr.MaxIdleConns != 256 {
 				t.Errorf("MaxIdleConns = %d, want 256", tr.MaxIdleConns)
 			}
@@ -64,7 +64,7 @@ func TestDefaultTransport(t *testing.T) {
 				t.Error("DisableCompression should be true")
 			}
 
-			// 验证 TLS 配置
+			// Verify TLS config
 			if tt.secure {
 				if tr.TLSClientConfig == nil {
 					t.Error("TLSClientConfig should not be nil for secure transport")
@@ -75,7 +75,7 @@ func TestDefaultTransport(t *testing.T) {
 				}
 			}
 
-			// 验证代理配置
+			// Verify proxy config
 			if tr.Proxy == nil {
 				t.Error("Proxy should not be nil")
 			}
@@ -219,7 +219,7 @@ func TestNewTransportWithProxy(t *testing.T) {
 		t.Fatal("Proxy should not be nil")
 	}
 
-	// 测试代理函数
+	// Test proxy function
 	req, _ := http.NewRequest("GET", "https://example.com", nil)
 	gotProxyURL, err := tr.Proxy(req)
 	if err != nil {

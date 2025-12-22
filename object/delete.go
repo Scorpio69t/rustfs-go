@@ -9,9 +9,9 @@ import (
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// Delete 删除对象（实现）
+// Delete deletes an object (implementation)
 func (s *objectService) Delete(ctx context.Context, bucketName, objectName string, opts ...DeleteOption) error {
-	// 验证参数
+	// Validate parameters
 	if err := validateBucketName(bucketName); err != nil {
 		return err
 	}
@@ -19,45 +19,45 @@ func (s *objectService) Delete(ctx context.Context, bucketName, objectName strin
 		return err
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyDeleteOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:   bucketName,
 		ObjectName:   objectName,
 		CustomHeader: make(http.Header),
 	}
 
-	// 添加版本 ID 查询参数
+	// Add version ID query parameter
 	if options.VersionID != "" {
 		meta.QueryValues = url.Values{}
 		meta.QueryValues.Set("versionId", options.VersionID)
 	}
 
-	// 设置强制删除头（如果支持）
+	// Set force delete header (if supported)
 	if options.ForceDelete {
 		meta.CustomHeader.Set("x-rustfs-force-delete", "true")
 	}
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 DELETE 请求
+	// Create DELETE request
 	req := core.NewRequest(ctx, http.MethodDelete, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应（204 No Content 或 200 OK）
+	// Check response (204 No Content or 200 OK)
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return parseErrorResponse(resp, bucketName, objectName)
 	}

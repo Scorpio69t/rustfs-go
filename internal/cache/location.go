@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// LocationCache 桶位置缓存
+// LocationCache cache for bucket locations
 type LocationCache struct {
 	mu      sync.RWMutex
 	entries map[string]locationEntry
@@ -18,7 +18,7 @@ type locationEntry struct {
 	expiresAt time.Time
 }
 
-// NewLocationCache 创建位置缓存
+// NewLocationCache creates a new LocationCache with the specified TTL.
 func NewLocationCache(ttl time.Duration) *LocationCache {
 	if ttl <= 0 {
 		ttl = 5 * time.Minute
@@ -29,7 +29,7 @@ func NewLocationCache(ttl time.Duration) *LocationCache {
 	}
 }
 
-// Get 获取桶位置
+// Get bucket location
 func (c *LocationCache) Get(bucketName string) (string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -46,7 +46,7 @@ func (c *LocationCache) Get(bucketName string) (string, bool) {
 	return entry.location, true
 }
 
-// Set 设置桶位置
+// Set bucket location
 func (c *LocationCache) Set(bucketName, location string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -57,7 +57,7 @@ func (c *LocationCache) Set(bucketName, location string) {
 	}
 }
 
-// Delete 删除桶位置
+// Delete bucket location
 func (c *LocationCache) Delete(bucketName string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -65,7 +65,7 @@ func (c *LocationCache) Delete(bucketName string) {
 	delete(c.entries, bucketName)
 }
 
-// Clear 清空缓存
+// Clear all cache entries
 func (c *LocationCache) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()

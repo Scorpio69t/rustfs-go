@@ -5,46 +5,51 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/Scorpio69t/rustfs-go/errors"
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// Delete 删除桶
+// Delete bucket
 func (s *bucketService) Delete(ctx context.Context, bucketName string, opts ...DeleteOption) error {
-	// 验证桶名
+	// validate bucket name
 	if err := validateBucketName(bucketName); err != nil {
 		return err
 	}
 
-	// 应用选项
+	// apply options
 	options := applyDeleteOptions(opts)
 
-	// 构建请求元数据
+	// prepare request metadata
 	meta := core.RequestMetadata{
 		BucketName:   bucketName,
 		CustomHeader: make(http.Header),
 	}
 
-	// 设置强制删除头（如果支持）
+	// set force delete header if needed
 	if options.ForceDelete {
 		meta.CustomHeader.Set("x-rustfs-force-delete", "true")
 	}
 
-	// 创建请求
+	// create request
 	req := core.NewRequest(ctx, http.MethodDelete, meta)
 
-	// 执行请求
+	// execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	if resp == nil {
+		return errors.ErrNilResponse
+	}
+
+	// check response status
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return parseErrorResponse(resp, bucketName, "")
 	}
 
-	// 成功后从缓存中删除
+	// delete location cache if exists
 	if s.locationCache != nil {
 		s.locationCache.Delete(bucketName)
 	}

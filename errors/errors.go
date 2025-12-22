@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// Error RustFS 错误接口
+// Error RustFSGo error interface
 type Error interface {
 	error
 	Code() RustfsGoErrorCode
@@ -18,7 +18,7 @@ type Error interface {
 	Resource() string
 }
 
-// APIError S3 API 错误
+// APIError S3 API error
 type APIError struct {
 	XMLName         xml.Name `xml:"Error"`
 	ErrorCode       string   `xml:"Code"`
@@ -30,32 +30,32 @@ type APIError struct {
 	Region          string   `xml:"Region"`
 }
 
-// Code 返回错误码
+// Code returns the error code
 func (e *APIError) Code() RustfsGoErrorCode {
 	return RustfsGoErrorCode(e.ErrorCode)
 }
 
-// Message 返回错误消息
+// Message returns the error message
 func (e *APIError) Message() string {
 	return e.ErrorMessage
 }
 
-// StatusCode 返回 HTTP 状态码
+// StatusCode returns the HTTP status code
 func (e *APIError) StatusCode() int {
 	return e.ErrorStatusCode
 }
 
-// RequestID 返回请求 ID
+// RequestID returns the request ID
 func (e *APIError) RequestID() string {
 	return e.ErrorRequestID
 }
 
-// Resource 返回资源
+// Resource returns the resource
 func (e *APIError) Resource() string {
 	return e.ErrorResource
 }
 
-// NewAPIError 创建新的 API 错误
+// NewAPIError creates a new APIError
 func NewAPIError(code RustfsGoErrorCode, message string, statusCode int) *APIError {
 	return &APIError{
 		ErrorCode:       code.Error(),
@@ -64,7 +64,7 @@ func NewAPIError(code RustfsGoErrorCode, message string, statusCode int) *APIErr
 	}
 }
 
-// Error 实现 error 接口
+// Error implements the error interface
 func (e *APIError) Error() string {
 	if e.ErrorRequestID != "" {
 		return fmt.Sprintf("%s: %s (RequestID: %s)", e.ErrorCode, e.ErrorMessage, e.ErrorRequestID)
@@ -72,37 +72,37 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("%s: %s", e.ErrorCode, e.ErrorMessage)
 }
 
-// WithRequestID 设置请求 ID
+// WithRequestID sets the request ID
 func (e *APIError) WithRequestID(id string) *APIError {
 	e.ErrorRequestID = id
 	return e
 }
 
-// WithResource 设置资源
+// WithResource sets the resource
 func (e *APIError) WithResource(resource string) *APIError {
 	e.ErrorResource = resource
 	return e
 }
 
-// WithRegion 设置区域
+// WithRegion sets the region
 func (e *APIError) WithRegion(region string) *APIError {
 	e.Region = region
 	return e
 }
 
-// ParseErrorResponse 从 HTTP 响应解析错误
+// ParseErrorResponse parses an error response from the server
 func ParseErrorResponse(resp *http.Response, bucketName, objectName string) error {
 	if resp == nil {
 		return NewAPIError(ErrCodeInternalError, "empty response", 500)
 	}
 
-	// 读取响应体
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20)) // 最大 1MB
+	// read response body
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20)) // Maxsize 1MB
 	if err != nil {
 		return NewAPIError(ErrCodeInternalError, "failed to read response body", resp.StatusCode)
 	}
 
-	// 尝试解析 XML 错误响应
+	// try to unmarshal XML error
 	apiErr := &APIError{ErrorStatusCode: resp.StatusCode}
 	if len(body) > 0 {
 		if xmlErr := xml.Unmarshal(body, apiErr); xmlErr == nil {
@@ -111,7 +111,7 @@ func ParseErrorResponse(resp *http.Response, bucketName, objectName string) erro
 		}
 	}
 
-	// 使用状态码生成错误
+	// create generic error
 	code := httpStatusToCode[resp.StatusCode]
 	if code == "" {
 		code = ErrCodeInternalError

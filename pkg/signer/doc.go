@@ -16,11 +16,11 @@
  *
  */
 
-// Package signer 提供 AWS Signature Version 4 和 Version 2 的签名实现。
+// Package signer provides AWS Signature Version 4 and Version 2 signing implementations.
 //
-// 这个包提供了用于 S3 兼容存储服务的 HTTP 请求签名功能。
+// This package provides HTTP request signing functionality for S3-compatible storage services.
 //
-// 使用示例：
+// Example usage:
 //
 //	req, _ := http.NewRequest("GET", "https://s3.amazonaws.com/bucket/key", nil)
 //	signedReq := signer.SignV4(req, "access-key", "secret-key", "", "us-east-1", "s3")

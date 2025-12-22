@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-// TraceInfo 包含 HTTP 请求的追踪信息
+// TraceInfo contains HTTP request trace information
 type TraceInfo struct {
 	// DNS lookup
-	DNSStart      time.Time
-	DNSDone       time.Time
-	DNSError      error
-	DNSAddresses  []string
+	DNSStart     time.Time
+	DNSDone      time.Time
+	DNSError     error
+	DNSAddresses []string
 
 	// Connection
 	ConnectStart time.Time
@@ -30,21 +30,21 @@ type TraceInfo struct {
 	TLSServerName     string
 
 	// Request/Response
-	WroteHeaders      time.Time
-	WroteRequest      time.Time
-	GotFirstResponse  time.Time
-	GotConn           time.Time
+	WroteHeaders     time.Time
+	WroteRequest     time.Time
+	GotFirstResponse time.Time
+	GotConn          time.Time
 
 	// Connection reuse
-	ConnReused bool
-	ConnWasIdle bool
+	ConnReused   bool
+	ConnWasIdle  bool
 	ConnIdleTime time.Duration
 }
 
-// TraceHook 是一个用于记录 HTTP 追踪信息的回调函数
+// TraceHook is a callback used to record HTTP trace info
 type TraceHook func(TraceInfo)
 
-// NewTraceContext 创建一个带有 HTTP 追踪的 context
+// NewTraceContext creates a context with HTTP tracing
 func NewTraceContext(ctx context.Context, hook TraceHook) context.Context {
 	if hook == nil {
 		return ctx
@@ -110,7 +110,7 @@ func NewTraceContext(ctx context.Context, hook TraceHook) context.Context {
 			trace.ConnWasIdle = info.WasIdle
 			trace.ConnIdleTime = info.IdleTime
 
-			// 调用 hook，传递追踪信息
+			// Call hook to pass trace info
 			if hook != nil {
 				hook(*trace)
 			}
@@ -120,7 +120,7 @@ func NewTraceContext(ctx context.Context, hook TraceHook) context.Context {
 	return httptrace.WithClientTrace(ctx, clientTrace)
 }
 
-// GetTimings 返回各个阶段的耗时
+// GetTimings returns durations for each stage
 func (t *TraceInfo) GetTimings() map[string]time.Duration {
 	timings := make(map[string]time.Duration)
 
@@ -151,15 +151,15 @@ func (t *TraceInfo) GetTimings() map[string]time.Duration {
 	return timings
 }
 
-// TotalDuration 返回从开始连接到收到第一个字节的总时长
+// TotalDuration returns total time from connection start to first byte
 func (t *TraceInfo) TotalDuration() time.Duration {
 	if t.ConnReused {
-		// 如果连接被复用，计算从 GotConn 到 GotFirstResponse
+		// For reused connections, measure from GotConn to GotFirstResponse
 		if !t.GotConn.IsZero() && !t.GotFirstResponse.IsZero() {
 			return t.GotFirstResponse.Sub(t.GotConn)
 		}
 	} else {
-		// 新连接，计算从 DNSStart 或 ConnectStart 到 GotFirstResponse
+		// For new connection, measure from DNSStart or ConnectStart to GotFirstResponse
 		start := t.DNSStart
 		if start.IsZero() {
 			start = t.ConnectStart

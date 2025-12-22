@@ -13,7 +13,7 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// ListBucketV2Result 列出存储桶 V2 响应结果
+// ListBucketV2Result represents bucket listing V2 response
 type ListBucketV2Result struct {
 	XMLName               xml.Name           `xml:"ListBucketResult"`
 	Name                  string             `xml:"Name"`
@@ -29,41 +29,41 @@ type ListBucketV2Result struct {
 	StartAfter            string             `xml:"StartAfter"`
 }
 
-// CommonPrefix 公共前缀
+// CommonPrefix represents common prefix entry
 type CommonPrefix struct {
 	Prefix string `xml:"Prefix"`
 }
 
-// List 列出对象（实现）
+// List lists objects (implementation)
 func (s *objectService) List(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo {
-	// 创建对象信息通道
+	// Create object info channel
 	objectCh := make(chan types.ObjectInfo)
 
-	// 启动后台 goroutine 进行列表操作
+	// Start background goroutine for listing
 	go func() {
 		defer close(objectCh)
 
-		// 验证参数
+		// Validate parameters
 		if err := validateBucketName(bucketName); err != nil {
 			objectCh <- types.ObjectInfo{Err: err}
 			return
 		}
 
-		// 应用选项
+		// Apply options
 		options := applyListOptions(opts)
 
-		// 设置分隔符
+		// Set delimiter
 		delimiter := "/"
 		if options.Recursive {
-			// 递归列出，不使用分隔符
+			// Recursive listing, no delimiter
 			delimiter = ""
 		}
 
-		// 保存 ContinuationToken 用于下一次请求
+		// Save ContinuationToken for next request
 		var continuationToken string
 
 		for {
-			// 检查上下文是否已取消
+			// Check if context canceled
 			select {
 			case <-ctx.Done():
 				objectCh <- types.ObjectInfo{Err: ctx.Err()}
@@ -71,16 +71,16 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 			default:
 			}
 
-			// 查询对象列表（最多 1000 个）
+			// Query object list (up to 1000)
 			result, err := s.listObjectsV2Query(ctx, bucketName, &options, delimiter, continuationToken)
 			if err != nil {
 				objectCh <- types.ObjectInfo{Err: err}
 				return
 			}
 
-			// 发送内容对象
+			// Send content objects
 			for _, object := range result.Contents {
-				// 移除 ETag 引号
+				// Remove ETag quotes
 				object.ETag = trimETag(object.ETag)
 
 				select {
@@ -91,7 +91,7 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 				}
 			}
 
-			// 发送公共前缀（仅在使用分隔符时）
+			// Send common prefixes (when using delimiter)
 			for _, prefix := range result.CommonPrefixes {
 				select {
 				case objectCh <- types.ObjectInfo{Key: prefix.Prefix}:
@@ -101,17 +101,17 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 				}
 			}
 
-			// 如果有下一个 ContinuationToken，保存它
+			// Save next ContinuationToken if present
 			if result.NextContinuationToken != "" {
 				continuationToken = result.NextContinuationToken
 			}
 
-			// 如果列表未截断，结束
+			// End if list not truncated
 			if !result.IsTruncated {
 				return
 			}
 
-			// 防止无限循环（某些 S3 实现可能有 bug）
+			// Prevent infinite loop (some S3 implementations may bug)
 			if continuationToken == "" {
 				objectCh <- types.ObjectInfo{
 					Err: fmt.Errorf("list is truncated without continuation token"),
@@ -124,89 +124,89 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 	return objectCh
 }
 
-// listObjectsV2Query 查询对象列表 V2
+// listObjectsV2Query queries object list V2
 func (s *objectService) listObjectsV2Query(ctx context.Context, bucketName string, options *ListOptions, delimiter, continuationToken string) (ListBucketV2Result, error) {
-	// 构建查询参数
+	// Build query parameters
 	queryValues := url.Values{}
 
-	// 设置 list-type=2 (V2)
+	// Set list-type=2 (V2)
 	queryValues.Set("list-type", "2")
 
-	// 设置 encoding-type
+	// Set encoding-type
 	queryValues.Set("encoding-type", "url")
 
-	// 设置前缀
+	// Set prefix
 	if options.Prefix != "" {
 		queryValues.Set("prefix", options.Prefix)
 	}
 
-	// 设置分隔符
+	// Set delimiter
 	if delimiter != "" {
 		queryValues.Set("delimiter", delimiter)
 	}
 
-	// 设置 start-after
+	// Set start-after
 	if options.StartAfter != "" {
 		queryValues.Set("start-after", options.StartAfter)
 	}
 
-	// 设置 continuation-token
+	// Set continuation-token
 	if continuationToken != "" {
 		queryValues.Set("continuation-token", continuationToken)
 	}
 
-	// 设置 max-keys
+	// Set max-keys
 	maxKeys := options.MaxKeys
 	if maxKeys <= 0 {
-		maxKeys = 1000 // 默认最大值
+		maxKeys = 1000 // default max
 	}
 	queryValues.Set("max-keys", strconv.Itoa(maxKeys))
 
-	// 设置 fetch-owner
+	// Set fetch-owner
 	queryValues.Set("fetch-owner", "true")
 
-	// 设置 metadata
+	// Set metadata
 	if options.WithMetadata {
 		queryValues.Set("metadata", "true")
 	}
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:   bucketName,
 		QueryValues:  queryValues,
 		CustomHeader: options.CustomHeaders,
 	}
 
-	// 创建 GET 请求
+	// Create GET request
 	req := core.NewRequest(ctx, http.MethodGet, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return ListBucketV2Result{}, err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return ListBucketV2Result{}, parseErrorResponse(resp, bucketName, "")
 	}
 
-	// 解析 XML 响应
+	// Decode XML response
 	var result ListBucketV2Result
 	decoder := xml.NewDecoder(resp.Body)
 	if err := decoder.Decode(&result); err != nil {
 		return ListBucketV2Result{}, fmt.Errorf("failed to decode list objects response: %w", err)
 	}
 
-	// URL 解码对象名称（因为使用了 encoding-type=url）
+	// URL decode object names (due to encoding-type=url)
 	for i := range result.Contents {
 		if decodedKey, err := url.QueryUnescape(result.Contents[i].Key); err == nil {
 			result.Contents[i].Key = decodedKey
 		}
 	}
 
-	// URL 解码公共前缀
+	// URL decode common prefixes
 	for i := range result.CommonPrefixes {
 		if decodedPrefix, err := url.QueryUnescape(result.CommonPrefixes[i].Prefix); err == nil {
 			result.CommonPrefixes[i].Prefix = decodedPrefix
@@ -216,7 +216,7 @@ func (s *objectService) listObjectsV2Query(ctx context.Context, bucketName strin
 	return result, nil
 }
 
-// trimETag 移除 ETag 的引号
+// trimETag removes quotes from ETag
 func trimETag(etag string) string {
 	if len(etag) >= 2 && etag[0] == '"' && etag[len(etag)-1] == '"' {
 		return etag[1 : len(etag)-1]

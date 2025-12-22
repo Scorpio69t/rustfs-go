@@ -4,15 +4,15 @@ package bucket
 import "errors"
 
 var (
-	// ErrInvalidBucketName 无效的桶名
+	// ErrInvalidBucketName invalid bucket name
 	ErrInvalidBucketName = errors.New("invalid bucket name")
 
-	// ErrBucketNotFound 桶不存在
+	// ErrBucketNotFound not found bucket
 	ErrBucketNotFound = errors.New("bucket not found")
 
-	// ErrBucketAlreadyExists 桶已存在
+	// ErrBucketAlreadyExists bucket already exists
 	ErrBucketAlreadyExists = errors.New("bucket already exists")
 
-	// ErrBucketNotEmpty 桶不为空
+	// ErrBucketNotEmpty bucket not empty
 	ErrBucketNotEmpty = errors.New("bucket not empty")
 )

@@ -12,16 +12,16 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// copyObjectResult 复制对象结果（XML 响应）
+// copyObjectResult represents copy object result (XML response)
 type copyObjectResult struct {
 	XMLName      xml.Name  `xml:"CopyObjectResult"`
 	ETag         string    `xml:"ETag"`
 	LastModified time.Time `xml:"LastModified"`
 }
 
-// Copy 复制对象（实现）
+// Copy copies an object (implementation)
 func (s *objectService) Copy(ctx context.Context, destBucket, destObject, sourceBucket, sourceObject string, opts ...CopyOption) (types.CopyInfo, error) {
-	// 验证参数
+	// Validate parameters
 	if err := validateBucketName(destBucket); err != nil {
 		return types.CopyInfo{}, err
 	}
@@ -35,28 +35,28 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		return types.CopyInfo{}, err
 	}
 
-	// 应用选项
+	// Apply options
 	options := applyCopyOptions(opts)
 
-	// 构建请求元数据
+	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:   destBucket,
 		ObjectName:   destObject,
 		CustomHeader: make(http.Header),
 	}
 
-	// 设置复制源头
+	// Set copy source
 	copySource := fmt.Sprintf("%s/%s", sourceBucket, sourceObject)
 	if options.SourceVersionID != "" {
 		copySource += "?versionId=" + options.SourceVersionID
 	}
 	meta.CustomHeader.Set("x-amz-copy-source", copySource)
 
-	// 设置元数据指令
+	// Set metadata directive
 	if options.ReplaceMetadata {
 		meta.CustomHeader.Set("x-amz-metadata-directive", "REPLACE")
 
-		// 设置新的元数据
+		// Set new metadata
 		if options.ContentType != "" {
 			meta.CustomHeader.Set("Content-Type", options.ContentType)
 		}
@@ -73,7 +73,7 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 			meta.CustomHeader.Set("Expires", options.Expires.Format(http.TimeFormat))
 		}
 
-		// 设置用户元数据
+		// Set user metadata
 		if options.UserMetadata != nil {
 			for k, v := range options.UserMetadata {
 				meta.CustomHeader.Set("x-amz-meta-"+k, v)
@@ -83,11 +83,11 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		meta.CustomHeader.Set("x-amz-metadata-directive", "COPY")
 	}
 
-	// 设置标签指令
+	// Set tagging directive
 	if options.ReplaceTagging {
 		meta.CustomHeader.Set("x-amz-tagging-directive", "REPLACE")
 
-		// 设置新的标签
+		// Set new tags
 		if options.UserTags != nil {
 			tags := ""
 			first := true
@@ -106,7 +106,7 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		meta.CustomHeader.Set("x-amz-tagging-directive", "COPY")
 	}
 
-	// 设置条件匹配头（源对象）
+	// Set conditional match headers (source object)
 	if options.MatchETag != "" {
 		meta.CustomHeader.Set("x-amz-copy-source-if-match", options.MatchETag)
 	}
@@ -120,41 +120,41 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		meta.CustomHeader.Set("x-amz-copy-source-if-unmodified-since", options.NotModified.Format(http.TimeFormat))
 	}
 
-	// 设置存储类
+	// Set storage class
 	if options.StorageClass != "" {
 		meta.CustomHeader.Set("x-amz-storage-class", options.StorageClass)
 	}
 
-	// 合并自定义头
+	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {
 			meta.CustomHeader[k] = v
 		}
 	}
 
-	// 创建 PUT 请求（复制使用 PUT 方法）
+	// Create PUT request (copy uses PUT method)
 	req := core.NewRequest(ctx, http.MethodPut, meta)
 
-	// 执行请求
+	// Execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return types.CopyInfo{}, err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return types.CopyInfo{}, parseErrorResponse(resp, destBucket, destObject)
 	}
 
-	// 解析复制结果
+	// Parse copy result
 	var cpResult copyObjectResult
 	decoder := xml.NewDecoder(resp.Body)
 	if err := decoder.Decode(&cpResult); err != nil {
 		return types.CopyInfo{}, fmt.Errorf("failed to decode copy object response: %w", err)
 	}
 
-	// 构建复制信息
+	// Build copy info
 	copyInfo := types.CopyInfo{
 		Bucket:          destBucket,
 		Key:             destObject,
@@ -164,7 +164,7 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		SourceVersionID: options.SourceVersionID,
 	}
 
-	// 解析校验和
+	// Parse checksums
 	if checksumCRC32 := resp.Header.Get("x-amz-checksum-crc32"); checksumCRC32 != "" {
 		copyInfo.ChecksumCRC32 = checksumCRC32
 	}
