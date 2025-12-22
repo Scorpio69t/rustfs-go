@@ -23,72 +23,72 @@ const (
 	serviceTypeS3     = "s3"
 )
 
-// v4IgnoredHeaders 签名时忽略的头部
-// 参考: https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
+// v4IgnoredHeaders are skipped during signing
+// Reference: https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
 var v4IgnoredHeaders = map[string]bool{
 	"Accept-Encoding": true,
 	"Authorization":   true,
 	"User-Agent":      true,
 }
 
-// V4Signer AWS Signature Version 4 签名器
+// V4Signer AWS Signature Version 4 signer
 type V4Signer struct{}
 
-// Sign 使用 V4 算法签名请求
+// Sign signs a request with Signature V4
 func (s *V4Signer) Sign(req *http.Request, accessKey, secretKey, sessionToken, region string) *http.Request {
-	// Presign 不需要签名
+	// Skip signing when credentials are empty
 	if accessKey == "" || secretKey == "" {
 		return req
 	}
 
-	// 设置时间
+	// Set timestamp
 	t := time.Now().UTC()
 	req.Header.Set("X-Amz-Date", t.Format(iso8601DateFormat))
 
-	// 设置 session token
+	// Attach session token
 	if sessionToken != "" {
 		req.Header.Set("X-Amz-Security-Token", sessionToken)
 	}
 
-	// 设置 Content-SHA256 头（AWS Signature V4 必需）
-	// 如果没有设置，使用 UNSIGNED-PAYLOAD
+	// Set Content-SHA256 header (required by SigV4)
+	// Use UNSIGNED-PAYLOAD when it is not provided
 	if req.Header.Get("X-Amz-Content-Sha256") == "" {
 		req.Header.Set("X-Amz-Content-Sha256", UnsignedPayload)
 	}
 
-	// 确保有 Host 头
+	// Ensure Host header is present
 	if req.Header.Get("Host") == "" {
 		req.Header.Set("Host", getHostAddr(req))
 	}
 
-	// 计算签名
+	// Calculate signature
 	signature := s.calculateSignature(req, accessKey, secretKey, region, t)
 
-	// 构建 Authorization 头
+	// Build Authorization header
 	auth := s.buildAuthorizationHeader(req, accessKey, region, signature, t)
 	req.Header.Set("Authorization", auth)
 
 	return req
 }
 
-// Presign 使用 V4 算法预签名请求
-// 参考: http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
+// Presign generates a Signature V4 presigned request
+// Reference: http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
 func (s *V4Signer) Presign(req *http.Request, accessKey, secretKey, sessionToken, region string, expires time.Duration) *http.Request {
-	// Presign 不需要签名
+	// Skip signing when credentials are empty
 	if accessKey == "" || secretKey == "" {
 		return req
 	}
 
-	// 初始化时间
+	// Initialize timestamp
 	t := time.Now().UTC()
 
-	// 获取凭证字符串
+	// Build credential string
 	credential := s.getCredential(accessKey, region, t)
 
-	// 获取所有签名头
+	// Collect signed headers
 	signedHeaders := s.getSignedHeaders(req.Header)
 
-	// 设置 URL 查询参数
+	// Set query parameters
 	query := req.URL.Query()
 	query.Set("X-Amz-Algorithm", signV4Algorithm)
 	query.Set("X-Amz-Date", t.Format(iso8601DateFormat))
@@ -96,43 +96,43 @@ func (s *V4Signer) Presign(req *http.Request, accessKey, secretKey, sessionToken
 	query.Set("X-Amz-SignedHeaders", signedHeaders)
 	query.Set("X-Amz-Credential", credential)
 
-	// 设置 session token（如果有）
+	// Include session token when present
 	if sessionToken != "" {
 		query.Set("X-Amz-Security-Token", sessionToken)
 	}
 
 	req.URL.RawQuery = query.Encode()
 
-	// 获取规范请求
+	// Build canonical request
 	canonicalRequest := s.createCanonicalRequest(req)
 
-	// 获取待签名字符串
+	// Build string to sign
 	stringToSign := s.createStringToSign(canonicalRequest, region, t)
 
-	// 获取签名密钥
+	// Derive signing key
 	signingKey := s.deriveSigningKey(secretKey, region, t)
 
-	// 计算签名
+	// Compute signature
 	signature := hex.EncodeToString(hmacSHA256(signingKey, []byte(stringToSign)))
 
-	// 将签名添加到查询参数
+	// Append signature to query params
 	req.URL.RawQuery += "&X-Amz-Signature=" + signature
 
 	return req
 }
 
-// getCredential 生成凭证字符串
+// getCredential builds the credential string
 func (s *V4Signer) getCredential(accessKeyID, region string, t time.Time) string {
 	scope := s.credentialScope(region, t)
 	return accessKeyID + "/" + scope
 }
 
-// calculateSignature 计算签名
+// calculateSignature computes the signature
 func (s *V4Signer) calculateSignature(req *http.Request, accessKey, secretKey, region string, t time.Time) string {
-	// 1. 创建规范请求
+	// 1. Create canonical request
 	canonicalRequest := s.createCanonicalRequest(req)
 
-	// 调试输出
+	// Debug output
 	// fmt.Printf("=== V4 Signature Debug ===\n")
 	// fmt.Printf("Method: %s\n", req.Method)
 	// fmt.Printf("URL: %s\n", req.URL.String())
@@ -141,29 +141,29 @@ func (s *V4Signer) calculateSignature(req *http.Request, accessKey, secretKey, r
 	// fmt.Printf("Canonical Request:\n%s\n", canonicalRequest)
 	// fmt.Printf("=========================\n")
 
-	// 2. 创建待签名字符串
+	// 2. Build string to sign
 	stringToSign := s.createStringToSign(canonicalRequest, region, t)
 
-	// 3. 计算签名
+	// 3. Compute signature
 	signingKey := s.deriveSigningKey(secretKey, region, t)
 	signature := hmacSHA256(signingKey, []byte(stringToSign))
 
 	return hex.EncodeToString(signature)
 }
 
-// createCanonicalRequest 创建规范请求
-// 格式: <HTTPMethod>\n<CanonicalURI>\n<CanonicalQueryString>\n<CanonicalHeaders>\n<SignedHeaders>\n<HashedPayload>
+// createCanonicalRequest builds the canonical request
+// Format: <HTTPMethod>\n<CanonicalURI>\n<CanonicalQueryString>\n<CanonicalHeaders>\n<SignedHeaders>\n<HashedPayload>
 func (s *V4Signer) createCanonicalRequest(req *http.Request) string {
 	// HTTP Method
 	method := req.Method
 
-	// Canonical URI - URL 编码路径
+	// Canonical URI - URL-encode the path
 	uri := encodePath(req.URL.Path)
 	if uri == "" {
 		uri = "/"
 	}
 
-	// Canonical Query String - 替换 + 为 %20
+	// Canonical Query String - replace + with %20
 	req.URL.RawQuery = strings.ReplaceAll(req.URL.Query().Encode(), "+", "%20")
 
 	// Canonical Headers
@@ -185,38 +185,38 @@ func (s *V4Signer) createCanonicalRequest(req *http.Request) string {
 	}, "\n")
 }
 
-// getHashedPayload 获取请求负载的哈希值
+// getHashedPayload returns the payload hash
 func (s *V4Signer) getHashedPayload(req *http.Request) string {
 	hashedPayload := req.Header.Get("X-Amz-Content-Sha256")
 	if hashedPayload == "" {
-		// Presign 没有 payload，使用 S3 推荐值
+		// Presign has no payload; use the S3 recommended value
 		hashedPayload = UnsignedPayload
 	}
 	return hashedPayload
 }
 
-// getCanonicalHeaders 生成规范头部列表
+// getCanonicalHeaders builds canonical headers
 func (s *V4Signer) getCanonicalHeaders(req *http.Request) string {
 	var headers []string
 	vals := make(map[string][]string)
 
 	for k, vv := range req.Header {
 		if _, ok := v4IgnoredHeaders[http.CanonicalHeaderKey(k)]; ok {
-			continue // 忽略的头部
+			continue // header is ignored for signing
 		}
 		lowerKey := strings.ToLower(k)
 		headers = append(headers, lowerKey)
 		vals[lowerKey] = vv
 	}
 
-	// 确保包含 host 头
+	// Ensure Host header is included
 	if !headerExists("host", headers) {
 		headers = append(headers, "host")
 	}
 	sort.Strings(headers)
 
 	var buf bytes.Buffer
-	// 保存所有头部为规范格式 <header>:<value> 每个头部换行分隔
+	// Write headers as <header>:<value> separated by newlines
 	for _, k := range headers {
 		buf.WriteString(k)
 		buf.WriteByte(':')
@@ -237,13 +237,13 @@ func (s *V4Signer) getCanonicalHeaders(req *http.Request) string {
 	return buf.String()
 }
 
-// getSignedHeaders 生成所有签名请求头
-// 返回按字典序排序、分号分隔的小写请求头名称列表
+// getSignedHeaders collects signed headers
+// Returns lowercase header names sorted and joined by semicolons
 func (s *V4Signer) getSignedHeaders(header http.Header) string {
 	var headers []string
 	for k := range header {
 		if _, ok := v4IgnoredHeaders[http.CanonicalHeaderKey(k)]; ok {
-			continue // 忽略的头部
+			continue // header is ignored for signing
 		}
 		headers = append(headers, strings.ToLower(k))
 	}
@@ -254,7 +254,7 @@ func (s *V4Signer) getSignedHeaders(header http.Header) string {
 	return strings.Join(headers, ";")
 }
 
-// createStringToSign 创建待签名字符串
+// createStringToSign builds the string to sign
 func (s *V4Signer) createStringToSign(canonicalRequest, region string, t time.Time) string {
 	scope := s.credentialScope(region, t)
 	hash := sha256.Sum256([]byte(canonicalRequest))
@@ -266,7 +266,7 @@ func (s *V4Signer) createStringToSign(canonicalRequest, region string, t time.Ti
 	}, "\n")
 }
 
-// credentialScope 创建凭证范围
+// credentialScope builds the credential scope
 func (s *V4Signer) credentialScope(region string, t time.Time) string {
 	return strings.Join([]string{
 		t.Format("20060102"),
@@ -276,7 +276,7 @@ func (s *V4Signer) credentialScope(region string, t time.Time) string {
 	}, "/")
 }
 
-// deriveSigningKey 派生签名密钥
+// deriveSigningKey derives the signing key
 func (s *V4Signer) deriveSigningKey(secretKey, region string, t time.Time) []byte {
 	dateKey := hmacSHA256([]byte("AWS4"+secretKey), []byte(t.Format("20060102")))
 	regionKey := hmacSHA256(dateKey, []byte(region))
@@ -285,7 +285,7 @@ func (s *V4Signer) deriveSigningKey(secretKey, region string, t time.Time) []byt
 	return signingKey
 }
 
-// buildAuthorizationHeader 构建 Authorization 头
+// buildAuthorizationHeader builds the Authorization header
 func (s *V4Signer) buildAuthorizationHeader(req *http.Request, accessKey, region, signature string, t time.Time) string {
 	signedHeaders := s.getSignedHeaders(req.Header)
 	scope := s.credentialScope(region, t)
@@ -296,15 +296,15 @@ func (s *V4Signer) buildAuthorizationHeader(req *http.Request, accessKey, region
 		"Signature=" + signature
 }
 
-// hmacSHA256 计算 HMAC-SHA256
+// hmacSHA256 computes HMAC-SHA256
 func hmacSHA256(key, data []byte) []byte {
 	h := hmac.New(sha256.New, key)
 	h.Write(data)
 	return h.Sum(nil)
 }
 
-// SignV4STS 为 STS 请求签名（用于 AssumeRole 等操作）
-// 这是一个便捷函数，专门用于 STS 服务
+// SignV4STS signs STS requests (e.g., AssumeRole)
+// Convenience helper dedicated to STS
 func SignV4STS(req http.Request, accessKeyID, secretAccessKey, location string) *http.Request {
 	region := location
 	if region == "" {
@@ -315,21 +315,21 @@ func SignV4STS(req http.Request, accessKeyID, secretAccessKey, location string) 
 		return &req
 	}
 
-	// 设置时间
+	// Set timestamp
 	t := time.Now().UTC()
 	req.Header.Set("X-Amz-Date", t.Format(iso8601DateFormat))
 
-	// 确保有 Host 头
+	// Ensure Host header exists
 	if req.Header.Get("Host") == "" {
 		req.Header.Set("Host", req.URL.Host)
 	}
 
-	// 设置 Content-SHA256 头（如果未设置）
+	// Set Content-SHA256 header if missing
 	if req.Header.Get("X-Amz-Content-Sha256") == "" {
 		req.Header.Set("X-Amz-Content-Sha256", UnsignedPayload)
 	}
 
-	// 使用 V4Signer 进行签名（STS 服务）
+	// Use V4Signer to sign for the STS service
 	signer := &V4Signer{}
 	signature := signer.calculateSignature(&req, accessKeyID, secretAccessKey, region, t)
 	auth := signer.buildAuthorizationHeader(&req, accessKeyID, region, signature, t)
