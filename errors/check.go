@@ -1,97 +1,97 @@
 // Package errors/check.go
 package errors
 
-import "errors"
+import (
+	"errors"
+)
 
-// IsNotFound 检查是否为未找到错误
+// IsNotFound checks if the error indicates that a resource was not found
 func IsNotFound(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeNoSuchBucket ||
-			apiErr.Code() == ErrCodeNoSuchKey ||
-			apiErr.Code() == ErrCodeNoSuchUpload
+		return errors.Is(apiErr.Code(), ErrCodeNoSuchBucket) ||
+			errors.Is(apiErr.Code(), ErrCodeNoSuchKey) ||
+			errors.Is(apiErr.Code(), ErrCodeNoSuchUpload)
 	}
 	return false
 }
 
-// IsBucketNotFound 检查桶是否不存在
+// IsBucketNotFound checks if the bucket does not exist
 func IsBucketNotFound(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeNoSuchBucket
+		return errors.Is(apiErr.Code(), ErrCodeNoSuchBucket)
 	}
 	return false
 }
 
-// IsObjectNotFound 检查对象是否不存在
+// IsObjectNotFound checks if the object does not exist
 func IsObjectNotFound(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeNoSuchKey
+		return errors.Is(apiErr.Code(), ErrCodeNoSuchKey)
 	}
 	return false
 }
 
-// IsAccessDenied 检查是否为访问拒绝错误
+// IsAccessDenied checks if access is denied
 func IsAccessDenied(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeAccessDenied
+		return errors.Is(apiErr.Code(), ErrCodeAccessDenied)
 	}
 	return false
 }
 
-// IsBucketExists 检查桶是否已存在
+// IsBucketExists checks if the bucket already exists
 func IsBucketExists(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeBucketAlreadyExists ||
-			apiErr.Code() == ErrCodeBucketAlreadyOwnedByYou
+		return errors.Is(apiErr.Code(), ErrCodeBucketAlreadyExists) ||
+			errors.Is(apiErr.Code(), ErrCodeBucketAlreadyOwnedByYou)
 	}
 	return false
 }
 
-// IsBucketNotEmpty 检查桶是否非空
+// IsBucketNotEmpty checks if the bucket is not empty
 func IsBucketNotEmpty(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeBucketNotEmpty
+		return errors.Is(apiErr.Code(), ErrCodeBucketNotEmpty)
 	}
 	return false
 }
 
-// IsInvalidArgument 检查是否为无效参数错误
+// IsInvalidArgument checks if the error is due to an invalid argument
 func IsInvalidArgument(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeInvalidArgument
+		return errors.Is(apiErr.Code(), ErrCodeInvalidArgument)
 	}
 	return false
 }
 
-// IsServiceUnavailable 检查服务是否不可用
+// IsServiceUnavailable checks if the service is unavailable
 func IsServiceUnavailable(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		return apiErr.Code() == ErrCodeServiceUnavailable ||
-			apiErr.Code() == ErrCodeSlowDown
+		return errors.Is(apiErr.Code(), ErrCodeServiceUnavailable) ||
+			errors.Is(apiErr.Code(), ErrCodeSlowDown)
 	}
 	return false
 }
 
-// IsRetryable 检查错误是否可重试
+// IsRetryable checks if the error is retryable
 func IsRetryable(err error) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		switch apiErr.Code() {
-		case ErrCodeServiceUnavailable,
-			ErrCodeSlowDown,
-			ErrCodeInternalError,
-			"RequestTimeout",
-			"RequestTimeTooSkewed":
+		switch err := apiErr.Code(); {
+		case errors.Is(err, ErrCodeServiceUnavailable), errors.Is(err, ErrCodeSlowDown),
+			errors.Is(err, ErrCodeInternalError), errors.Is(err, ErrRequestTimeout),
+			errors.Is(err, ErrRequestTimeTooSkewed):
 			return true
 		}
-		// 5xx 错误通常可重试
+		// 5xx errors usually indicate server-side issues
 		if apiErr.StatusCode() >= 500 {
 			return true
 		}
@@ -99,7 +99,7 @@ func IsRetryable(err error) bool {
 	return false
 }
 
-// ToAPIError 将错误转换为 APIError
+// ToAPIError converts a generic error to an APIError if possible
 func ToAPIError(err error) *APIError {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {

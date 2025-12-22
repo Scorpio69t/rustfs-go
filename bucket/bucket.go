@@ -6,13 +6,13 @@ import (
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// bucketService Bucket 服务实现
+// bucketService Bucket Service struct
 type bucketService struct {
 	executor      *core.Executor
 	locationCache *cache.LocationCache
 }
 
-// NewService 创建 Bucket 服务
+// NewService Create a new Bucket Service
 func NewService(executor *core.Executor, locationCache *cache.LocationCache) Service {
 	return &bucketService{
 		executor:      executor,
@@ -20,10 +20,10 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 	}
 }
 
-// applyCreateOptions 应用创建选项
+// applyCreateOptions apply to create options
 func applyCreateOptions(opts []CreateOption) CreateOptions {
 	options := CreateOptions{
-		Region: "us-east-1", // 默认区域
+		Region: "us-east-1", // default region
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -31,7 +31,7 @@ func applyCreateOptions(opts []CreateOption) CreateOptions {
 	return options
 }
 
-// applyDeleteOptions 应用删除选项
+// applyDeleteOptions apply delete options
 func applyDeleteOptions(opts []DeleteOption) DeleteOptions {
 	options := DeleteOptions{}
 	for _, opt := range opts {
@@ -40,12 +40,13 @@ func applyDeleteOptions(opts []DeleteOption) DeleteOptions {
 	return options
 }
 
-// validateBucketName 验证桶名
+// validateBucketName validate bucket name
 func validateBucketName(bucketName string) error {
 	if bucketName == "" {
 		return ErrInvalidBucketName
 	}
-	// 桶名长度检查
+
+	// check length
 	if len(bucketName) < 3 || len(bucketName) > 63 {
 		return ErrInvalidBucketName
 	}

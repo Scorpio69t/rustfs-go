@@ -1,19 +1,19 @@
 // Package errors/codes.go
 package errors
 
-// RustfsGoErrorCode 定义了 RustfsGo 错误码的类型
+// RustfsGoErrorCode defines RustfsGo error codes
 type RustfsGoErrorCode string
 
-// S3 标准错误码
+// S3 standard error codes
 const (
-	// 桶相关
+	// bucket
 	ErrCodeNoSuchBucket            RustfsGoErrorCode = "NoSuchBucket"
 	ErrCodeBucketAlreadyExists     RustfsGoErrorCode = "BucketAlreadyExists"
 	ErrCodeBucketAlreadyOwnedByYou RustfsGoErrorCode = "BucketAlreadyOwnedByYou"
 	ErrCodeBucketNotEmpty          RustfsGoErrorCode = "BucketNotEmpty"
 	ErrCodeInvalidBucketName       RustfsGoErrorCode = "InvalidBucketName"
 
-	// 对象相关
+	// object
 	ErrCodeNoSuchKey         RustfsGoErrorCode = "NoSuchKey"
 	ErrCodeInvalidObjectName RustfsGoErrorCode = "XRustfsInvalidObjectName"
 	ErrCodeNoSuchUpload      RustfsGoErrorCode = "NoSuchUpload"
@@ -23,53 +23,59 @@ const (
 	ErrCodeEntityTooLarge    RustfsGoErrorCode = "EntityTooLarge"
 	ErrCodeEntityTooSmall    RustfsGoErrorCode = "EntityTooSmall"
 
-	// 访问控制
+	// access
 	ErrCodeAccessDenied          RustfsGoErrorCode = "AccessDenied"
 	ErrCodeAccountProblem        RustfsGoErrorCode = "AccountProblem"
 	ErrCodeInvalidAccessKeyId    RustfsGoErrorCode = "InvalidAccessKeyId"
 	ErrCodeSignatureDoesNotMatch RustfsGoErrorCode = "SignatureDoesNotMatch"
 
-	// 请求相关
+	// request
 	ErrCodeInvalidArgument      RustfsGoErrorCode = "InvalidArgument"
 	ErrCodeInvalidRequest       RustfsGoErrorCode = "InvalidRequest"
 	ErrCodeMalformedXML         RustfsGoErrorCode = "MalformedXML"
 	ErrCodeMissingContentLength RustfsGoErrorCode = "MissingContentLength"
 	ErrCodeMethodNotAllowed     RustfsGoErrorCode = "MethodNotAllowed"
+	ErrNilResponse              RustfsGoErrorCode = "NilResponse"
+	ErrRequestTimeout           RustfsGoErrorCode = "RequestTimeout"
+	ErrRequestTimeTooSkewed     RustfsGoErrorCode = "RequestTimeTooSkewed"
+	ErrMovedPermanently         RustfsGoErrorCode = "MovedPermanently"
+	ErrConflict                 RustfsGoErrorCode = "Conflict"
+	ErrInvalidRange             RustfsGoErrorCode = "InvalidRange"
 
-	// 区域相关
+	// region and authorization
 	ErrCodeInvalidRegion                RustfsGoErrorCode = "InvalidRegion"
 	ErrCodeAuthorizationHeaderMalformed RustfsGoErrorCode = "AuthorizationHeaderMalformed"
 
-	// 服务器
+	// server
 	ErrCodeInternalError      RustfsGoErrorCode = "InternalError"
 	ErrCodeServiceUnavailable RustfsGoErrorCode = "ServiceUnavailable"
 	ErrCodeSlowDown           RustfsGoErrorCode = "SlowDown"
 	ErrCodeNotImplemented     RustfsGoErrorCode = "NotImplemented"
 
-	// 条件请求
+	// preconditions
 	ErrCodePreconditionFailed RustfsGoErrorCode = "PreconditionFailed"
 	ErrCodeNotModified        RustfsGoErrorCode = "NotModified"
 
-	// 复制
+	// copy
 	ErrCodeInvalidCopySource RustfsGoErrorCode = "InvalidCopySource"
 )
 
-// Error 实现 error 接口
+// Error implements the error interface for RustfsGoErrorCode
 func (e RustfsGoErrorCode) Error() string {
 	return string(e)
 }
 
-// HTTP 状态码到错误码的映射
+// HTTP status code to RustfsGoErrorCode mapping
 var httpStatusToCode = map[int]RustfsGoErrorCode{
-	301: "MovedPermanently",
+	301: ErrMovedPermanently,
 	400: ErrCodeInvalidArgument,
 	403: ErrCodeAccessDenied,
 	404: ErrCodeNoSuchKey,
 	405: ErrCodeMethodNotAllowed,
-	409: "Conflict",
+	409: ErrConflict,
 	411: ErrCodeMissingContentLength,
 	412: ErrCodePreconditionFailed,
-	416: "InvalidRange",
+	416: ErrInvalidRange,
 	500: ErrCodeInternalError,
 	501: ErrCodeNotImplemented,
 	503: ErrCodeServiceUnavailable,

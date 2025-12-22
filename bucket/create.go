@@ -7,42 +7,43 @@ import (
 	"encoding/xml"
 	"net/http"
 
+	"github.com/Scorpio69t/rustfs-go/errors"
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 )
 
-// Create 创建桶
+// Create bucket
 func (s *bucketService) Create(ctx context.Context, bucketName string, opts ...CreateOption) error {
-	// 验证桶名
+	// validate name
 	if err := validateBucketName(bucketName); err != nil {
 		return err
 	}
 
-	// 应用选项
+	// apply options
 	options := applyCreateOptions(opts)
 
-	// 如果区域为空，使用默认区域
+	// if region is not set, use default region
 	if options.Region == "" {
 		options.Region = "us-east-1"
 	}
 
-	// 构建请求元数据
+	// prepare request metadata
 	meta := core.RequestMetadata{
 		BucketName:     bucketName,
 		BucketLocation: options.Region,
 		CustomHeader:   make(http.Header),
 	}
 
-	// 设置对象锁定头
+	// set object locking header
 	if options.ObjectLocking {
 		meta.CustomHeader.Set("x-amz-bucket-object-lock-enabled", "true")
 	}
 
-	// 设置强制创建头（RustFS 扩展）
+	// set force create header
 	if options.ForceCreate {
 		meta.CustomHeader.Set("x-rustfs-force-create", "true")
 	}
 
-	// 如果区域不是 us-east-1，需要发送 CreateBucketConfiguration
+	// if region is not us-east-1, set location constraint
 	if options.Region != "us-east-1" && options.Region != "" {
 		config := createBucketConfiguration{
 			Location: options.Region,
@@ -58,22 +59,26 @@ func (s *bucketService) Create(ctx context.Context, bucketName string, opts ...C
 		meta.ContentSHA256Hex = sumSHA256Hex(configBytes)
 	}
 
-	// 创建请求
+	// prepare request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
 
-	// 执行请求
+	// execute request
 	resp, err := s.executor.Execute(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer closeResponse(resp)
 
-	// 检查响应
+	if resp == nil {
+		return errors.ErrNilResponse
+	}
+
+	// check response status code
 	if resp.StatusCode != http.StatusOK {
 		return parseErrorResponse(resp, bucketName, "")
 	}
 
-	// 成功后缓存桶位置
+	// cache location
 	if s.locationCache != nil {
 		s.locationCache.Set(bucketName, options.Region)
 	}
@@ -81,7 +86,7 @@ func (s *bucketService) Create(ctx context.Context, bucketName string, opts ...C
 	return nil
 }
 
-// createBucketConfiguration 创建桶配置
+// createBucketConfiguration creates XML structure for bucket location constraint
 type createBucketConfiguration struct {
 	XMLName  xml.Name `xml:"CreateBucketConfiguration"`
 	Location string   `xml:"LocationConstraint"`

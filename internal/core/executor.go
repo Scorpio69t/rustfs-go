@@ -15,41 +15,41 @@ import (
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
-// Executor 请求执行器
+// Executor executes HTTP requests against RustFS/S3 endpoints
 type Executor struct {
-	// HTTP 客户端
+	// HTTP client used to perform requests
 	httpClient *http.Client
 
-	// 端点
+	// Endpoint information
 	endpointURL *url.URL
 
-	// 凭证
+	// Credentials provider
 	credentials *credentials.Credentials
 
-	// 区域
+	// Target region
 	region string
 
-	// 是否使用 HTTPS
+	// Whether to use HTTPS
 	secure bool
 
-	// 签名类型
+	// Signature type
 	signerType credentials.SignatureType
 
-	// 桶查找方式
+	// Bucket lookup style
 	bucketLookup int
 
-	// 最大重试次数
+	// Maximum retry attempts
 	maxRetries int
 
-	// 位置缓存
+	// Bucket location cache
 	locationCache LocationCache
 
-	// 调试选项
+	// Trace/debug options
 	traceEnabled bool
 	traceOutput  io.Writer
 }
 
-// ExecutorConfig 执行器配置
+// ExecutorConfig configures an Executor
 type ExecutorConfig struct {
 	HTTPClient    *http.Client
 	EndpointURL   *url.URL
@@ -61,7 +61,7 @@ type ExecutorConfig struct {
 	LocationCache LocationCache
 }
 
-// NewExecutor 创建新的执行器
+// NewExecutor creates a new Executor
 func NewExecutor(config ExecutorConfig) *Executor {
 	maxRetries := config.MaxRetries
 	if maxRetries <= 0 {
@@ -80,7 +80,7 @@ func NewExecutor(config ExecutorConfig) *Executor {
 	}
 }
 
-// Execute 执行请求
+// Execute performs the request with retries and signing
 func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, error) {
 	var (
 		resp    *http.Response
@@ -88,20 +88,20 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 		httpReq *http.Request
 	)
 
-	// 重试循环
+	// Retry loop
 	for attempt := 0; attempt < e.maxRetries; attempt++ {
-		// 检查上下文
+		// Check context cancellation
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
 
-		// 构建 HTTP 请求
+		// Build HTTP request
 		httpReq, err = e.buildHTTPRequest(ctx, req)
 		if err != nil {
 			return nil, err
 		}
 
-		// 执行请求
+		// Execute request
 		resp, err = e.httpClient.Do(httpReq)
 		if err != nil {
 			if e.shouldRetry(err, attempt) {
@@ -111,19 +111,19 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 			return nil, err
 		}
 
-		// 检查响应
+		// Validate response
 		if e.isSuccessStatus(resp.StatusCode, req.metadata.Expect200OKWithError) {
 			return resp, nil
 		}
 
-		// 检查是否需要重试
+		// Retry if the response warrants it
 		if e.shouldRetryResponse(resp, attempt) {
 			closeResponse(resp)
 			e.waitForRetry(ctx, attempt)
 			continue
 		}
 
-		// 返回错误响应
+		// Return error response (non-retryable)
 		return resp, nil
 	}
 
@@ -134,11 +134,11 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 	return resp, nil
 }
 
-// buildHTTPRequest 构建 HTTP 请求
+// buildHTTPRequest constructs and signs the outbound HTTP request
 func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Request, error) {
 	meta := req.Metadata()
 
-	// 获取桶位置
+	// Resolve bucket location
 	location := meta.BucketLocation
 	if location == "" && meta.BucketName != "" {
 		location = e.getBucketLocation(ctx, meta.BucketName)
@@ -147,32 +147,32 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 		location = e.region
 	}
 
-	// 构建 URL
+	// Build target URL
 	targetURL, err := e.makeTargetURL(meta.BucketName, meta.ObjectName, location, meta.QueryValues)
 	if err != nil {
 		return nil, err
 	}
 
-	// 创建请求
+	// Create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, req.Method(), targetURL.String(), meta.ContentBody)
 	if err != nil {
 		return nil, err
 	}
 
-	// 设置头部
+	// Set headers
 	for k, v := range meta.CustomHeader {
 		httpReq.Header[k] = v
 	}
 
-	// 设置 Content-Length
+	// Set Content-Length
 	httpReq.ContentLength = meta.ContentLength
 
-	// 设置 Content-SHA256 头（AWS Signature V4 必需）
+	// Set Content-SHA256 header (required for SigV4)
 	if meta.ContentSHA256Hex != "" {
 		httpReq.Header.Set("X-Amz-Content-Sha256", meta.ContentSHA256Hex)
 	}
 
-	// 签名请求
+	// Sign the request
 	if err := e.signRequest(httpReq, meta, location); err != nil {
 		return nil, err
 	}
@@ -180,17 +180,17 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 	return httpReq, nil
 }
 
-// makeTargetURL 构建目标 URL
+// makeTargetURL builds the final request URL
 func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryValues url.Values) (*url.URL, error) {
 	host := e.endpointURL.Host
 	scheme := e.endpointURL.Scheme
 
-	// 处理端口：去除 80 (http) 和 443 (https)
-	// 原因：浏览器和 curl 会自动移除这些端口，导致预签名 URL 签名不匹配
+	// Normalize default ports (strip :80 for HTTP and :443 for HTTPS)
+	// Reason: browsers/curl drop default ports, which would break presigned URLs
 	if h, p, err := net.SplitHostPort(host); err == nil {
 		if (scheme == "http" && p == "80") || (scheme == "https" && p == "443") {
 			host = h
-			// 如果是 IPv6 地址，需要加方括号
+			// Wrap IPv6 addresses in brackets
 			if ip := net.ParseIP(h); ip != nil && ip.To4() == nil {
 				host = "[" + h + "]"
 			}
@@ -199,19 +199,19 @@ func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryV
 
 	urlStr := scheme + "://" + host + "/"
 
-	// 如果有桶名，构建完整 URL
+	// Build full URL when bucket is present
 	if bucketName != "" {
-		// 判断是否使用虚拟主机风格
+		// Decide virtual-host vs path-style
 		isVirtualHost := e.isVirtualHostStyleRequest(bucketName)
 
 		if isVirtualHost {
-			// 虚拟主机风格: http://bucket.host/object
+			// Virtual-host style: http://bucket.host/object
 			urlStr = scheme + "://" + bucketName + "." + host + "/"
 			if objectName != "" {
 				urlStr += encodePath(objectName)
 			}
 		} else {
-			// 路径风格: http://host/bucket/object
+			// Path style: http://host/bucket/object
 			urlStr = urlStr + bucketName + "/"
 			if objectName != "" {
 				urlStr += encodePath(objectName)
@@ -219,7 +219,7 @@ func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryV
 		}
 	}
 
-	// 添加查询参数
+	// Append query parameters
 	if len(queryValues) > 0 {
 		urlStr = urlStr + "?" + queryEncode(queryValues)
 	}
@@ -227,7 +227,7 @@ func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryV
 	return url.Parse(urlStr)
 }
 
-// isVirtualHostStyleRequest 判断是否使用虚拟主机风格
+// isVirtualHostStyleRequest determines whether to use virtual-hosted style
 func (e *Executor) isVirtualHostStyleRequest(bucketName string) bool {
 	if bucketName == "" {
 		return false
@@ -241,45 +241,45 @@ func (e *Executor) isVirtualHostStyleRequest(bucketName string) bool {
 	case types.BucketLookupPath:
 		return false
 	case types.BucketLookupAuto:
-		// 自动检测：检查桶名是否符合 DNS 命名规范
+		// Auto-detect: ensure bucket is DNS compliant
 		return isValidVirtualHostBucket(bucketName, e.endpointURL.Scheme == "https")
 	}
 
 	return false
 }
 
-// isValidVirtualHostBucket 检查桶名是否符合虚拟主机 DNS 命名规范
+// isValidVirtualHostBucket checks whether a bucket name is DNS-compliant for virtual-host style
 func isValidVirtualHostBucket(bucketName string, https bool) bool {
 	if strings.Contains(bucketName, ".") {
-		// 包含点的桶名在 HTTPS 下会导致证书不匹配
+		// Buckets with dots break wildcard TLS certificates
 		if https {
 			return false
 		}
 	}
-	// 检查桶名长度（3-63 字符）
+	// Length must be 3-63 characters
 	if len(bucketName) < 3 || len(bucketName) > 63 {
 		return false
 	}
-	// 检查是否为 IP 地址格式
+	// Reject IP-style names
 	if net.ParseIP(bucketName) != nil {
 		return false
 	}
 	return true
 }
 
-// encodePath URL 编码路径（保留 /）
+// encodePath URL-encodes path segments while preserving slashes
 func encodePath(pathName string) string {
 	if pathName == "" {
 		return "/"
 	}
 
-	// S3 要求保留路径中的斜杠，但编码其他特殊字符（包括 +）
+	// Preserve slashes but encode other special characters (including '+')
 	var encodedPathname strings.Builder
 	for _, segment := range strings.Split(pathName, "/") {
 		if encodedPathname.Len() > 0 {
 			encodedPathname.WriteByte('/')
 		}
-		// url.PathEscape 不会编码 +，需要手动处理
+		// url.PathEscape does not encode '+', so handle manually
 		encoded := url.PathEscape(segment)
 		encoded = strings.ReplaceAll(encoded, "+", "%2B")
 		encodedPathname.WriteString(encoded)
@@ -292,20 +292,20 @@ func encodePath(pathName string) string {
 	return result
 }
 
-// queryEncode 编码查询参数
+// queryEncode encodes query parameters
 func queryEncode(v url.Values) string {
 	if v == nil {
 		return ""
 	}
-	// url.Values.Encode() 已经按字典序排序并编码
+	// url.Values.Encode() already sorts and encodes
 	return v.Encode()
 }
 
-// signRequest 签名请求
+// signRequest signs the request using the configured signer
 func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location string) error {
-	// 获取凭证
+	// Resolve credentials
 	if e.credentials == nil {
-		return nil // 匿名请求
+		return nil // anonymous request
 	}
 
 	creds, err := e.credentials.Get()
@@ -313,18 +313,18 @@ func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location
 		return err
 	}
 
-	// 如果是匿名凭证，不签名
+	// Skip signing for anonymous credentials
 	if creds.SignerType == credentials.SignatureAnonymous {
 		return nil
 	}
 
-	// 使用区域（优先使用桶位置）
+	// Prefer bucket location over default region
 	region := location
 	if region == "" {
 		region = e.region
 	}
 
-	// 如果是预签名请求
+	// Handle presign
 	if meta.PresignURL {
 		expires := time.Duration(meta.Expires) * time.Second
 		sn := signer.NewSigner(convertSignerType(creds.SignerType))
@@ -332,13 +332,13 @@ func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location
 		return nil
 	}
 
-	// 普通请求签名
+	// Sign standard requests
 	sn := signer.NewSigner(convertSignerType(creds.SignerType))
 	sn.Sign(req, creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, region)
 	return nil
 }
 
-// convertSignerType 转换签名类型
+// convertSignerType maps credentials.SignatureType to signer.SignerType
 func convertSignerType(st credentials.SignatureType) signer.SignerType {
 	switch st {
 	case credentials.SignatureV2:
@@ -350,7 +350,7 @@ func convertSignerType(st credentials.SignatureType) signer.SignerType {
 	}
 }
 
-// getBucketLocation 获取桶位置
+// getBucketLocation returns bucket location from cache or defaults
 func (e *Executor) getBucketLocation(ctx context.Context, bucketName string) string {
 	if e.locationCache != nil {
 		if loc, ok := e.locationCache.Get(bucketName); ok {
@@ -360,21 +360,21 @@ func (e *Executor) getBucketLocation(ctx context.Context, bucketName string) str
 	return e.region
 }
 
-// shouldRetry 判断是否应该重试
+// shouldRetry decides whether an error should be retried
 func (e *Executor) shouldRetry(err error, attempt int) bool {
 	if attempt >= e.maxRetries-1 {
 		return false
 	}
 
-	// 检查错误类型
+	// Check error string patterns
 	if err == nil {
 		return false
 	}
 
-	// 检查是否为网络错误
+	// Network error patterns
 	errStr := err.Error()
 
-	// 连接被拒绝、超时、临时错误等可重试
+	// Retry on connection refused/reset/timeouts and temporary failures
 	if strings.Contains(errStr, "connection refused") ||
 		strings.Contains(errStr, "connection reset") ||
 		strings.Contains(errStr, "broken pipe") ||
@@ -386,16 +386,16 @@ func (e *Executor) shouldRetry(err error, attempt int) bool {
 		return true
 	}
 
-	// 检查 url.Error
+	// Inspect url.Error
 	if urlErr, ok := err.(*url.Error); ok {
 		if urlErr.Temporary() || urlErr.Timeout() {
 			return true
 		}
-		// 递归检查内部错误
+		// Recursively inspect wrapped error
 		return e.shouldRetry(urlErr.Err, attempt)
 	}
 
-	// 检查 net.Error
+	// Inspect net.Error
 	if netErr, ok := err.(net.Error); ok {
 		return netErr.Temporary() || netErr.Timeout()
 	}
@@ -403,12 +403,12 @@ func (e *Executor) shouldRetry(err error, attempt int) bool {
 	return false
 }
 
-// shouldRetryResponse 判断响应是否应该重试
+// shouldRetryResponse decides whether to retry based on HTTP response
 func (e *Executor) shouldRetryResponse(resp *http.Response, attempt int) bool {
 	if attempt >= e.maxRetries-1 {
 		return false
 	}
-	// 5xx 错误可重试
+	// Retry on 5xx
 	if resp.StatusCode >= 500 {
 		return true
 	}
@@ -419,9 +419,9 @@ func (e *Executor) shouldRetryResponse(resp *http.Response, attempt int) bool {
 	return false
 }
 
-// waitForRetry 等待重试
+// waitForRetry pauses using exponential backoff
 func (e *Executor) waitForRetry(ctx context.Context, attempt int) {
-	// 指数退避
+	// Exponential backoff
 	delay := time.Duration(1<<uint(attempt)) * 100 * time.Millisecond
 	if delay > 10*time.Second {
 		delay = 10 * time.Second
@@ -433,22 +433,22 @@ func (e *Executor) waitForRetry(ctx context.Context, attempt int) {
 	}
 }
 
-// isSuccessStatus 判断是否为成功状态
+// isSuccessStatus determines if the status code is considered success
 func (e *Executor) isSuccessStatus(statusCode int, expect200OKWithError bool) bool {
 	if expect200OKWithError {
-		return false // 需要检查响应体
+		return false // body must be inspected for errors
 	}
 	return statusCode >= 200 && statusCode < 300
 }
 
-// LocationCache 位置缓存接口
+// LocationCache caches bucket locations
 type LocationCache interface {
 	Get(bucketName string) (string, bool)
 	Set(bucketName, location string)
 	Delete(bucketName string)
 }
 
-// closeResponse 关闭响应
+// closeResponse drains and closes the response body
 func closeResponse(resp *http.Response) {
 	if resp != nil && resp.Body != nil {
 		_, _ = io.Copy(io.Discard, resp.Body)

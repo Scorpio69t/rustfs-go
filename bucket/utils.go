@@ -10,13 +10,13 @@ import (
 	"github.com/Scorpio69t/rustfs-go/errors"
 )
 
-// sumSHA256Hex 计算 SHA256 哈希并返回十六进制字符串
+// sumSHA256Hex computes the SHA256 hash of the given data and returns it as a hexadecimal string.
 func sumSHA256Hex(data []byte) string {
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
 }
 
-// closeResponse 关闭响应
+// closeResponse closes the HTTP response body safely.
 func closeResponse(resp *http.Response) {
 	if resp != nil && resp.Body != nil {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -24,7 +24,7 @@ func closeResponse(resp *http.Response) {
 	}
 }
 
-// parseErrorResponse 解析错误响应
+// parseErrorResponse parses the error response from an HTTP response and returns a structured error.
 func parseErrorResponse(resp *http.Response, bucketName, objectName string) error {
 	return errors.ParseErrorResponse(resp, bucketName, objectName)
 }

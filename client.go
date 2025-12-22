@@ -1,4 +1,4 @@
-// Package rustfs client.go - RustFS Go SDK 客户端入口
+// Package rustfs client.go - RustFS Go SDK client entrypoint
 package rustfs
 
 import (
@@ -17,38 +17,38 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-// Client RustFS 客户端
+// Client is the RustFS client
 type Client struct {
-	// 核心组件
+	// Core components
 	executor      *core.Executor
 	locationCache *cache.LocationCache
 
-	// 服务模块
+	// Service modules
 	bucketService bucket.Service
 	objectService object.Service
 
-	// 客户端信息
+	// Client info
 	endpointURL *url.URL
 	httpClient  *http.Client
 	secure      bool
 	region      string
 
-	// 应用信息
+	// Application info
 	appInfo struct {
 		appName    string
 		appVersion string
 	}
 }
 
-// New 创建新的 RustFS 客户端
+// New creates a new RustFS client
 //
 // Parameters:
-//   - endpoint: RustFS 服务器地址 (e.g., "localhost:9000", "rustfs.example.com")
-//   - opts: 客户端配置选项
+//   - endpoint: RustFS server address (e.g., "localhost:9000", "rustfs.example.com")
+//   - opts: client configuration options
 //
 // Returns:
-//   - *Client: 客户端实例
-//   - error: 错误信息
+//   - *Client: client instance
+//   - error: error details
 //
 // Example:
 //
@@ -57,26 +57,26 @@ type Client struct {
 //	    Secure:      false,
 //	})
 func New(endpoint string, opts *Options) (*Client, error) {
-	// 验证选项
+	// Validate options
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
 
-	// 设置默认值
+	// Apply defaults
 	opts.setDefaults()
 
-	// 解析 endpoint URL
+	// Parse endpoint URL
 	endpointURL, err := parseEndpointURL(endpoint, opts.Secure)
 	if err != nil {
 		return nil, err
 	}
 
-	// 如果 BucketLookup 是 Auto，且 endpoint 是 IP 地址，使用 Path 风格
+	// If BucketLookup is Auto and endpoint is an IP, force path-style
 	if opts.BucketLookup == types.BucketLookupAuto && isIPAddress(endpointURL.Host) {
 		opts.BucketLookup = types.BucketLookupPath
 	}
 
-	// 创建 HTTP Transport
+	// Create HTTP transport
 	var httpTransport http.RoundTripper
 	if opts.Transport != nil {
 		httpTransport = opts.Transport
@@ -89,7 +89,7 @@ func New(endpoint string, opts *Options) (*Client, error) {
 		})
 	}
 
-	// 创建 Cookie Jar
+	// Create cookie jar
 	jar, err := cookiejar.New(&cookiejar.Options{
 		PublicSuffixList: publicsuffix.List,
 	})
@@ -97,7 +97,7 @@ func New(endpoint string, opts *Options) (*Client, error) {
 		return nil, err
 	}
 
-	// 创建 HTTP 客户端
+	// Create HTTP client
 	httpClient := &http.Client{
 		Jar:       jar,
 		Transport: httpTransport,
@@ -106,16 +106,16 @@ func New(endpoint string, opts *Options) (*Client, error) {
 		},
 	}
 
-	// 确定区域
+	// Determine region
 	region := opts.Region
 	if region == "" {
 		region = detectRegion(endpointURL, opts.CustomRegionViaURL)
 	}
 
-	// 创建位置缓存
-	locationCache := cache.NewLocationCache(0) // 0 = 无超时
+	// Create location cache (0 = no expiration)
+	locationCache := cache.NewLocationCache(0)
 
-	// 创建核心执行器
+	// Create core executor
 	executor := core.NewExecutor(core.ExecutorConfig{
 		HTTPClient:   httpClient,
 		EndpointURL:  endpointURL,
@@ -125,11 +125,11 @@ func New(endpoint string, opts *Options) (*Client, error) {
 		MaxRetries:   opts.MaxRetries,
 	})
 
-	// 创建服务实例
+	// Create service instances
 	bucketService := bucket.NewService(executor, locationCache)
 	objectService := object.NewService(executor, locationCache)
 
-	// 创建客户端
+	// Construct client
 	client := &Client{
 		executor:      executor,
 		locationCache: locationCache,
@@ -144,7 +144,7 @@ func New(endpoint string, opts *Options) (*Client, error) {
 	return client, nil
 }
 
-// Bucket 返回 Bucket 服务接口
+// Bucket returns the Bucket service interface
 //
 // Example:
 //
@@ -153,7 +153,7 @@ func (c *Client) Bucket() bucket.Service {
 	return c.bucketService
 }
 
-// Object 返回 Object 服务接口
+// Object returns the Object service interface
 //
 // Example:
 //
@@ -162,29 +162,27 @@ func (c *Client) Object() object.Service {
 	return c.objectService
 }
 
-// EndpointURL 返回客户端使用的 Endpoint URL
+// EndpointURL returns the client's endpoint URL
 func (c *Client) EndpointURL() *url.URL {
-	endpoint := *c.endpointURL // 复制以防止修改内部状态
+	endpoint := *c.endpointURL // copy to avoid mutating internal state
 	return &endpoint
 }
 
-// Region 返回客户端使用的区域
+// Region returns the configured region
 func (c *Client) Region() string {
 	return c.region
 }
 
-// IsSecure 返回客户端是否使用 HTTPS
+// IsSecure reports whether HTTPS is used
 func (c *Client) IsSecure() bool {
 	return c.secure
 }
 
-// SetAppInfo 设置应用程序信息
-//
-// 这将添加到 User-Agent 头中，帮助在服务器日志中识别您的应用程序
+// SetAppInfo sets application info appended to the User-Agent header
 //
 // Parameters:
-//   - appName: 应用程序名称
-//   - appVersion: 应用程序版本
+//   - appName: application name
+//   - appVersion: application version
 func (c *Client) SetAppInfo(appName, appVersion string) {
 	if appName != "" && appVersion != "" {
 		c.appInfo.appName = appName
@@ -192,31 +190,30 @@ func (c *Client) SetAppInfo(appName, appVersion string) {
 	}
 }
 
-// parseEndpointURL 解析 endpoint URL
+// parseEndpointURL parses and normalizes the endpoint URL
 func parseEndpointURL(endpoint string, secure bool) (*url.URL, error) {
 	if endpoint == "" {
 		return nil, errInvalidArgument("endpoint cannot be empty")
 	}
 
-	// 如果没有协议，添加默认协议
+	// Add default scheme if missing
 	scheme := "http"
 	if secure {
 		scheme = "https"
 	}
 
-	// 检查是否已经有 scheme
+	// Prepend scheme when absent
 	if !strings.HasPrefix(endpoint, "http://") && !strings.HasPrefix(endpoint, "https://") {
-		// 没有 scheme，添加默认 scheme
 		endpoint = scheme + "://" + endpoint
 	}
 
-	// 解析 URL
+	// Parse URL
 	endpointURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	// 验证 scheme
+	// Validate scheme
 	if endpointURL.Scheme != "http" && endpointURL.Scheme != "https" {
 		return nil, errInvalidArgument("endpoint scheme must be http or https")
 	}
@@ -224,58 +221,54 @@ func parseEndpointURL(endpoint string, secure bool) (*url.URL, error) {
 	return endpointURL, nil
 }
 
-// detectRegion 检测区域
+// detectRegion infers region from endpoint or falls back to default
 func detectRegion(endpointURL *url.URL, customRegionFn func(url.URL) string) string {
 	if customRegionFn != nil {
 		return customRegionFn(*endpointURL)
 	}
 
-	// 默认区域
+	// Default region
 	return "us-east-1"
 }
 
-// isIPAddress 检查主机是否是 IP 地址（包括端口）
+// isIPAddress checks whether the host (with optional port) is an IP address
 func isIPAddress(host string) bool {
-	// 移除端口号
+	// Strip port if present
 	hostOnly := host
 	if colonIndex := strings.LastIndex(host, ":"); colonIndex != -1 {
 		hostOnly = host[:colonIndex]
 	}
 
-	// 检查是否是 IP 地址
+	// Check IP format
 	return net.ParseIP(hostOnly) != nil
 }
 
-// HealthCheck 执行服务健康检查
-//
-// 通过发送一个简单的 HEAD 请求来验证与 RustFS 服务器的连接是否正常
+// HealthCheck performs a simple HEAD request to verify connectivity
 //
 // Parameters:
-//   - opts: 健康检查选项（可以为 nil 使用默认值）
+//   - opts: health check options (nil uses defaults)
 //
 // Returns:
-//   - *core.HealthCheckResult: 健康检查结果
+//   - *core.HealthCheckResult: health check result
 //
 // Example:
 //
 //	result := client.HealthCheck(nil)
 //	if result.Healthy {
-//	    fmt.Printf("服务健康，响应时间: %v\n", result.ResponseTime)
+//	    fmt.Printf("Service healthy, response time: %v\n", result.ResponseTime)
 //	}
 func (c *Client) HealthCheck(opts *core.HealthCheckOptions) *core.HealthCheckResult {
 	return c.executor.HealthCheck(opts)
 }
 
-// HealthCheckWithRetry 执行带重试的健康检查
-//
-// 如果第一次检查失败，会自动重试指定次数
+// HealthCheckWithRetry performs a health check with retries
 //
 // Parameters:
-//   - opts: 健康检查选项
-//   - maxRetries: 最大重试次数（如果 <= 0，默认为 3）
+//   - opts: health check options
+//   - maxRetries: maximum retries (<= 0 defaults to 3)
 //
 // Returns:
-//   - *core.HealthCheckResult: 最终的健康检查结果
+//   - *core.HealthCheckResult: final health check result
 //
 // Example:
 //
