@@ -1,5 +1,4 @@
 //go:build example
-// +build example
 
 package main
 
@@ -19,58 +18,58 @@ func main() {
 		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
 		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
 		YOURENDPOINT        = "127.0.0.1:9000"
-		YOURBUCKET          = "mybucket" // 使用 'mc mb play/mybucket' 创建存储桶（如果不存在）
+		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化客户端
+	// Initialize RustFS client
 	client, err := rustfs.New("127.0.0.1:9000", &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalln("初始化客户端失败:", err)
+		log.Fatalln("Initialize RustFS client failed:", err)
 	}
 
 	ctx := context.Background()
 
-	// 示例 1: 基本健康检查
-	fmt.Println("=== 示例 1: 基本健康检查 ===")
+	// Example 1: Basic health check
+	fmt.Println("=== Example 1: Basic health check ===")
 	healthCheck(client)
 
-	// 示例 2: 带超时的健康检查
-	fmt.Println("\n=== 示例 2: 带超时的健康检查 ===")
+	// Example 2: Health check with timeout
+	fmt.Println("\n=== Example 2: Health check with timeout ===")
 	healthCheckWithTimeout(client)
 
-	// 示例 3: 检查特定存储桶
-	fmt.Println("\n=== 示例 3: 检查特定存储桶 ===")
+	// Example 3: Check specific bucket health
+	fmt.Println("\n=== Example 3: Check specific bucket health ===")
 	checkBucketHealth(client, ctx)
 
-	// 示例 4: 带重试的健康检查
-	fmt.Println("\n=== 示例 4: 带重试的健康检查 ===")
+	// Example 4: Health check with retries
+	fmt.Println("\n=== Example 4: Health check with retries ===")
 	healthCheckWithRetry(client)
 
-	// 示例 5: 定期健康检查
-	fmt.Println("\n=== 示例 5: 定期健康检查 (每 5 秒) ===")
+	// Example 5: Periodic health check
+	fmt.Println("\n=== Example 5: Periodic health check ===")
 	periodicHealthCheck(client)
 }
 
-// healthCheck 执行基本的健康检查
+// health check execute a basic health check
 func healthCheck(client *rustfs.Client) {
 	result := client.HealthCheck(nil)
 
 	if result.Healthy {
-		fmt.Printf("✅ 服务健康\n")
-		fmt.Printf("   端点: %s\n", result.Endpoint)
-		fmt.Printf("   区域: %s\n", result.Region)
-		fmt.Printf("   响应时间: %v\n", result.ResponseTime)
-		fmt.Printf("   状态码: %d\n", result.StatusCode)
+		fmt.Printf("✅ Service is healthy\n")
+		fmt.Printf("   Endpoint: %s\n", result.Endpoint)
+		fmt.Printf("   Region: %s\n", result.Region)
+		fmt.Printf("   ResponseTime: %v\n", result.ResponseTime)
+		fmt.Printf("   StatusCode: %d\n", result.StatusCode)
 	} else {
-		fmt.Printf("❌ 服务不健康\n")
-		fmt.Printf("   错误: %v\n", result.Error)
+		fmt.Printf("❌ Service is unhealthy\n")
+		fmt.Printf("   Error: %v\n", result.Error)
 	}
 }
 
-// healthCheckWithTimeout 带自定义超时的健康检查
+// healthCheckWithTimeout withTimeout performs a health check with a specified timeout
 func healthCheckWithTimeout(client *rustfs.Client) {
 	opts := &core.HealthCheckOptions{
 		Timeout: 2 * time.Second,
@@ -78,26 +77,26 @@ func healthCheckWithTimeout(client *rustfs.Client) {
 	}
 
 	result := client.HealthCheck(opts)
-	fmt.Printf("健康状态: %s\n", result.String())
+	fmt.Printf("Health status: %s\n", result.String())
 }
 
-// checkBucketHealth 检查特定存储桶的健康状态
+// checkBucketHealth checks the health of a specific bucket
 func checkBucketHealth(client *rustfs.Client, ctx context.Context) {
 	bucketName := "mybucket"
 
-	// 先创建存储桶（如果不存在）
+	// create the bucket if it does not exist
 	bucketSvc := client.Bucket()
 	exists, _ := bucketSvc.Exists(ctx, bucketName)
 
 	if !exists {
-		fmt.Printf("创建测试存储桶: %s\n", bucketName)
+		fmt.Printf("Creating bucket '%s'...\n", bucketName)
 		if err := bucketSvc.Create(ctx, bucketName); err != nil {
-			log.Printf("创建存储桶失败: %v\n", err)
+			log.Printf("Failed to create bucket '%s': %v\n", bucketName, err)
 			return
 		}
 	}
 
-	// 检查存储桶健康状态
+	// create health check options
 	opts := &core.HealthCheckOptions{
 		Timeout:    3 * time.Second,
 		BucketName: bucketName,
@@ -107,34 +106,39 @@ func checkBucketHealth(client *rustfs.Client, ctx context.Context) {
 	result := client.HealthCheck(opts)
 
 	if result.Healthy {
-		fmt.Printf("✅ 存储桶 '%s' 健康\n", bucketName)
-		fmt.Printf("   响应时间: %v\n", result.ResponseTime)
+		fmt.Printf("✅ Bucket '%s' is healthy\n", bucketName)
+		fmt.Printf("   ResponseTime: %v\n", result.ResponseTime)
 	} else {
-		fmt.Printf("❌ 存储桶 '%s' 不健康\n", bucketName)
-		fmt.Printf("   错误: %v\n", result.Error)
+		fmt.Printf("❌ Bucket '%s' is unhealthy\n", bucketName)
+		fmt.Printf("   Error: %v\n", result.Error)
 	}
 }
 
-// healthCheckWithRetry 带重试的健康检查
+// healthCheckWithRetry performs a health check with retries
 func healthCheckWithRetry(client *rustfs.Client) {
 	opts := &core.HealthCheckOptions{
 		Timeout: 3 * time.Second,
 		Context: context.Background(),
 	}
 
-	fmt.Println("执行健康检查（最多重试 3 次）...")
+	fmt.Println("Performing health check with retries...")
 	result := client.HealthCheckWithRetry(opts, 3)
 
+	if result == nil {
+		fmt.Println("❌ Health check failed after retries")
+		return
+	}
+
 	if result.Healthy {
-		fmt.Printf("✅ 服务健康（经过重试）\n")
-		fmt.Printf("   响应时间: %v\n", result.ResponseTime)
+		fmt.Printf("✅ Service is healthy\n")
+		fmt.Printf("   ResponseTime: %v\n", result.ResponseTime)
 	} else {
-		fmt.Printf("❌ 服务不健康（重试后仍失败）\n")
-		fmt.Printf("   错误: %v\n", result.Error)
+		fmt.Printf("❌ Service is unhealthy\n")
+		fmt.Printf("   Error: %v\n", result.Error)
 	}
 }
 
-// periodicHealthCheck 定期执行健康检查
+// periodicHealthCheck performs periodic health checks every 5 seconds
 func periodicHealthCheck(client *rustfs.Client) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -144,7 +148,7 @@ func periodicHealthCheck(client *rustfs.Client) {
 		Context: context.Background(),
 	}
 
-	// 执行 3 次检查后退出（演示用）
+	// Perform health checks 3 times
 	count := 0
 	for range ticker.C {
 		count++
@@ -152,13 +156,13 @@ func periodicHealthCheck(client *rustfs.Client) {
 
 		timestamp := time.Now().Format("15:04:05")
 		if result.Healthy {
-			fmt.Printf("[%s] ✅ 健康 - 响应时间: %v\n", timestamp, result.ResponseTime)
+			fmt.Printf("[%s] ✅ Healthy - ResponseTime: %v\n", timestamp, result.ResponseTime)
 		} else {
-			fmt.Printf("[%s] ❌ 不健康 - 错误: %v\n", timestamp, result.Error)
+			fmt.Printf("[%s] ❌ Unhealthy - Error: %v\n", timestamp, result.Error)
 		}
 
 		if count >= 3 {
-			fmt.Println("健康检查演示完成")
+			fmt.Println("Stopping periodic health checks.")
 			break
 		}
 	}

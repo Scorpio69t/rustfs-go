@@ -1,18 +1,18 @@
-// Package types types/multipart.go - 分片上传相关类型
+// Package types types/multipart.go - Multipart upload related types
 package types
 
-// ObjectPart 对象分片信息（用于分片上传）
+// ObjectPart contains object part information (used for multipart upload)
 type ObjectPart struct {
-	// PartNumber 分片编号（从 1 开始）
+	// PartNumber is the part number (starts from 1)
 	PartNumber int `xml:"PartNumber"`
-	// ETag 分片的 ETag
+	// ETag is the part's ETag
 	ETag string `xml:"ETag"`
-	// Size 分片大小
+	// Size is the part size
 	Size int64 `xml:"Size,omitempty"`
-	// LastModified 最后修改时间
+	// LastModified is the last modified time
 	LastModified string `xml:"LastModified,omitempty"`
 
-	// Checksums 校验和
+	// Checksums
 	ChecksumCRC32  string `xml:"ChecksumCRC32,omitempty"`
 	ChecksumCRC32C string `xml:"ChecksumCRC32C,omitempty"`
 	ChecksumSHA1   string `xml:"ChecksumSHA1,omitempty"`

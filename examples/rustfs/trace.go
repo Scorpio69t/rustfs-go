@@ -22,69 +22,69 @@ func main() {
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化客户端
+	// Initialize client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalln("初始化客户端失败:", err)
+		log.Fatalln("Failed to initialize client:", err)
 	}
 
 	ctx := context.Background()
 
-	// 示例 1: 基本的 HTTP 追踪
-	fmt.Println("=== 示例 1: 基本的 HTTP 请求追踪 ===")
+	// Example 1: Basic HTTP tracing
+	fmt.Println("=== Example 1: Basic HTTP request tracing ===")
 	traceBasicRequest(client, ctx, YOURBUCKET)
 
-	// 示例 2: 追踪上传操作的性能
-	fmt.Println("\n=== 示例 2: 追踪上传操作的性能 ===")
+	// Example 2: Trace upload operation performance
+	fmt.Println("\n=== Example 2: Trace upload operation performance ===")
 	traceUploadPerformance(client, ctx, YOURBUCKET)
 
-	// 示例 3: 追踪列表操作
-	fmt.Println("\n=== 示例 3: 追踪列表操作 ===")
+	// Example 3: Trace list operation
+	fmt.Println("\n=== Example 3: Trace list operation ===")
 	traceListOperation(client, ctx, YOURBUCKET)
 
-	// 示例 4: 分析连接复用
-	fmt.Println("\n=== 示例 4: 分析连接复用 ===")
+	// Example 4: Analyze connection reuse
+	fmt.Println("\n=== Example 4: Analyze connection reuse ===")
 	traceConnectionReuse(client, ctx, YOURBUCKET)
 }
 
-// traceBasicRequest 追踪基本请求
+// traceBasicRequest traces basic request
 func traceBasicRequest(client *rustfs.Client, ctx context.Context, bucketName string) {
 	var traceInfo *transport.TraceInfo
 
-	// 创建带追踪的 context
+	// Create context with tracing
 	hook := func(info transport.TraceInfo) {
-		// 保存追踪信息
+		// Save trace information
 		traceCopy := info
 		traceInfo = &traceCopy
 	}
 
 	traceCtx := transport.NewTraceContext(ctx, hook)
 
-	// 执行一个简单的桶存在性检查
+	// Execute a simple bucket existence check
 	bucketSvc := client.Bucket()
 	exists, err := bucketSvc.Exists(traceCtx, bucketName)
 	if err != nil {
-		log.Printf("检查存储桶失败: %v\n", err)
+		log.Printf("Failed to check bucket: %v\n", err)
 		return
 	}
 
-	fmt.Printf("存储桶 '%s' 存在: %v\n", bucketName, exists)
+	fmt.Printf("Bucket '%s' exists: %v\n", bucketName, exists)
 
 	if traceInfo != nil {
-		fmt.Println("\n📊 追踪信息:")
-		fmt.Printf("   连接复用: %v\n", traceInfo.ConnReused)
-		fmt.Printf("   连接空闲: %v\n", traceInfo.ConnWasIdle)
+		fmt.Println("\n📊 Trace information:")
+		fmt.Printf("   Connection reused: %v\n", traceInfo.ConnReused)
+		fmt.Printf("   Connection was idle: %v\n", traceInfo.ConnWasIdle)
 		if traceInfo.ConnIdleTime > 0 {
-			fmt.Printf("   空闲时长: %v\n", traceInfo.ConnIdleTime)
+			fmt.Printf("   Idle duration: %v\n", traceInfo.ConnIdleTime)
 		}
 
-		// 显示各阶段耗时
+		// Display timing for each stage
 		timings := traceInfo.GetTimings()
 		if len(timings) > 0 {
-			fmt.Println("\n⏱️  各阶段耗时:")
+			fmt.Println("\n⏱️  Stage timings:")
 			for stage, duration := range timings {
 				fmt.Printf("   %s: %v\n", stage, duration)
 			}
@@ -92,15 +92,15 @@ func traceBasicRequest(client *rustfs.Client, ctx context.Context, bucketName st
 
 		totalDuration := traceInfo.TotalDuration()
 		if totalDuration > 0 {
-			fmt.Printf("\n⏰ 总耗时: %v\n", totalDuration)
+			fmt.Printf("\n⏰ Total duration: %v\n", totalDuration)
 		}
 	}
 }
 
-// traceUploadPerformance 追踪上传性能
+// traceUploadPerformance traces upload performance
 func traceUploadPerformance(client *rustfs.Client, ctx context.Context, bucketName string) {
-	// 准备测试数据
-	testData := strings.Repeat("Hello, RustFS! ", 1000) // 约 15KB
+	// Prepare test data
+	testData := strings.Repeat("Hello, RustFS! ", 1000) // ~15KB
 	objectName := "trace-test-upload.txt"
 
 	var uploadTrace *transport.TraceInfo
@@ -112,42 +112,42 @@ func traceUploadPerformance(client *rustfs.Client, ctx context.Context, bucketNa
 
 	traceCtx := transport.NewTraceContext(ctx, hook)
 
-	// 上传对象
+	// Upload object
 	objectSvc := client.Object()
 	reader := strings.NewReader(testData)
 	uploadInfo, err := objectSvc.Put(traceCtx, bucketName, objectName,
 		reader, int64(len(testData)))
 	if err != nil {
-		log.Printf("上传失败: %v\n", err)
+		log.Printf("Upload failed: %v\n", err)
 		return
 	}
 
-	fmt.Printf("✅ 上传成功: %s (ETag: %s)\n", objectName, uploadInfo.ETag)
+	fmt.Printf("✅ Upload successful: %s (ETag: %s)\n", objectName, uploadInfo.ETag)
 
 	if uploadTrace != nil {
-		fmt.Println("\n📊 上传性能分析:")
-		fmt.Printf("   数据大小: %d 字节\n", len(testData))
-		fmt.Printf("   连接复用: %v\n", uploadTrace.ConnReused)
+		fmt.Println("\n📊 Upload performance analysis:")
+		fmt.Printf("   Data size: %d bytes\n", len(testData))
+		fmt.Printf("   Connection reused: %v\n", uploadTrace.ConnReused)
 
 		timings := uploadTrace.GetTimings()
 		if requestWrite, ok := timings["request_write"]; ok {
-			fmt.Printf("   写入请求耗时: %v\n", requestWrite)
+			fmt.Printf("   Request write duration: %v\n", requestWrite)
 		}
 		if serverProcessing, ok := timings["server_processing"]; ok {
-			fmt.Printf("   服务器处理耗时: %v\n", serverProcessing)
+			fmt.Printf("   Server processing duration: %v\n", serverProcessing)
 		}
 
 		totalDuration := uploadTrace.TotalDuration()
 		if totalDuration > 0 {
-			// 计算上传速度
+			// Calculate upload speed
 			speed := float64(len(testData)) / totalDuration.Seconds() / 1024 / 1024
-			fmt.Printf("   总耗时: %v\n", totalDuration)
-			fmt.Printf("   上传速度: %.2f MB/s\n", speed)
+			fmt.Printf("   Total duration: %v\n", totalDuration)
+			fmt.Printf("   Upload speed: %.2f MB/s\n", speed)
 		}
 	}
 }
 
-// traceListOperation 追踪列表操作
+// traceListOperation traces list operation
 func traceListOperation(client *rustfs.Client, ctx context.Context, bucketName string) {
 	var listTrace *transport.TraceInfo
 
@@ -158,51 +158,51 @@ func traceListOperation(client *rustfs.Client, ctx context.Context, bucketName s
 
 	traceCtx := transport.NewTraceContext(ctx, hook)
 
-	// 列出对象
+	// List objects
 	objectSvc := client.Object()
 	objectsCh := objectSvc.List(traceCtx, bucketName)
 
 	count := 0
 	for obj := range objectsCh {
 		if obj.Err != nil {
-			log.Printf("列表错误: %v\n", obj.Err)
+			log.Printf("List error: %v\n", obj.Err)
 			break
 		}
 		count++
-		if count <= 5 { // 只显示前 5 个
+		if count <= 5 { // Only show first 5
 			fmt.Printf("   - %s (%d bytes)\n", obj.Key, obj.Size)
 		}
 	}
 
 	if count > 5 {
-		fmt.Printf("   ... 还有 %d 个对象\n", count-5)
+		fmt.Printf("   ... %d more objects\n", count-5)
 	}
 
-	fmt.Printf("\n总共: %d 个对象\n", count)
+	fmt.Printf("\nTotal: %d objects\n", count)
 
 	if listTrace != nil {
-		fmt.Println("\n📊 列表操作性能:")
-		fmt.Printf("   连接复用: %v\n", listTrace.ConnReused)
+		fmt.Println("\n📊 List operation performance:")
+		fmt.Printf("   Connection reused: %v\n", listTrace.ConnReused)
 
 		timings := listTrace.GetTimings()
 		if serverProcessing, ok := timings["server_processing"]; ok {
-			fmt.Printf("   服务器处理耗时: %v\n", serverProcessing)
+			fmt.Printf("   Server processing duration: %v\n", serverProcessing)
 		}
 
 		totalDuration := listTrace.TotalDuration()
 		if totalDuration > 0 {
-			fmt.Printf("   总耗时: %v\n", totalDuration)
+			fmt.Printf("   Total duration: %v\n", totalDuration)
 			if count > 0 {
 				avgTime := totalDuration.Microseconds() / int64(count)
-				fmt.Printf("   平均每个对象: %d μs\n", avgTime)
+				fmt.Printf("   Average per object: %d μs\n", avgTime)
 			}
 		}
 	}
 }
 
-// traceConnectionReuse 分析连接复用
+// traceConnectionReuse analyzes connection reuse
 func traceConnectionReuse(client *rustfs.Client, ctx context.Context, bucketName string) {
-	fmt.Println("执行 5 次连续请求，观察连接复用情况...\n")
+	fmt.Println("Executing 5 consecutive requests to observe connection reuse...\n")
 
 	bucketSvc := client.Bucket()
 
@@ -216,40 +216,40 @@ func traceConnectionReuse(client *rustfs.Client, ctx context.Context, bucketName
 
 		traceCtx := transport.NewTraceContext(ctx, hook)
 
-		// 执行请求
+		// Execute request
 		_, err := bucketSvc.Exists(traceCtx, bucketName)
 		if err != nil {
-			log.Printf("请求 %d 失败: %v\n", i, err)
+			log.Printf("Request %d failed: %v\n", i, err)
 			continue
 		}
 
 		if traceInfo != nil {
-			status := "🆕 新连接"
+			status := "🆕 New connection"
 			if traceInfo.ConnReused {
-				status = "♻️  复用连接"
+				status = "♻️  Reused connection"
 				if traceInfo.ConnWasIdle {
-					status += fmt.Sprintf(" (空闲了 %v)", traceInfo.ConnIdleTime)
+					status += fmt.Sprintf(" (idle for %v)", traceInfo.ConnIdleTime)
 				}
 			}
 
 			totalDuration := traceInfo.TotalDuration()
-			fmt.Printf("请求 %d: %s - 耗时: %v\n", i, status, totalDuration)
+			fmt.Printf("Request %d: %s - Duration: %v\n", i, status, totalDuration)
 
-			// 第一次请求显示详细的建立连接时间
+			// First request shows detailed connection establishment time
 			if i == 1 && !traceInfo.ConnReused {
 				timings := traceInfo.GetTimings()
 				if dnsLookup, ok := timings["dns_lookup"]; ok {
-					fmt.Printf("         DNS 查询: %v\n", dnsLookup)
+					fmt.Printf("         DNS lookup: %v\n", dnsLookup)
 				}
 				if tcpConnect, ok := timings["tcp_connect"]; ok {
-					fmt.Printf("         TCP 连接: %v\n", tcpConnect)
+					fmt.Printf("         TCP connect: %v\n", tcpConnect)
 				}
 			}
 		}
 	}
 
-	fmt.Println("\n💡 提示:")
-	fmt.Println("   - 新连接需要 DNS 查询和 TCP 握手，耗时较长")
-	fmt.Println("   - 复用连接可以显著提高性能")
-	fmt.Println("   - SDK 自动管理连接池，无需手动处理")
+	fmt.Println("\n💡 Tips:")
+	fmt.Println("   - New connections require DNS lookup and TCP handshake, taking longer")
+	fmt.Println("   - Reusing connections can significantly improve performance")
+	fmt.Println("   - SDK automatically manages connection pool, no manual handling needed")
 }

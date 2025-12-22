@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// presigned.go - 预签名 URL 示例（使用旧 API）
-// 注意：预签名 URL 功能暂未迁移到新 API，此示例仍使用旧 API
+// presigned.go - Presigned URL example (using old API)
+// Note: Presigned URL functionality has not been migrated to new API yet, this example still uses old API
 package main
 
 import (
@@ -23,7 +23,7 @@ func main() {
 		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
 	)
 
-	// 初始化客户端
+	// Initialize client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
@@ -36,21 +36,21 @@ func main() {
 	bucketName := YOURBUCKET
 	objectName := "test-object.txt"
 
-	// 生成预签名 GET URL（1小时有效）
+	// Generate presigned GET URL (valid for 1 hour)
 	presignedURL, err := client.PresignedGetObject(ctx, bucketName, objectName, time.Hour, url.Values{})
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("预签名 GET URL (1小时有效):\n%s\n", presignedURL.String())
+	log.Printf("Presigned GET URL (valid for 1 hour):\n%s\n", presignedURL.String())
 
-	// 生成预签名 PUT URL（1小时有效）
+	// Generate presigned PUT URL (valid for 1 hour)
 	presignedPutURL, err := client.PresignedPutObject(ctx, bucketName, "upload-object.txt", time.Hour)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("预签名 PUT URL (1小时有效):\n%s\n", presignedPutURL.String())
+	log.Printf("Presigned PUT URL (valid for 1 hour):\n%s\n", presignedPutURL.String())
 
-	// 生成预签名 POST URL
+	// Generate presigned POST URL
 	policy := rustfs.NewPostPolicy()
 	err = policy.SetExpires(time.Now().Add(time.Hour))
 	if err != nil {
@@ -80,8 +80,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("预签名 POST URL:\n%s\n", postURL.String())
-	log.Println("表单数据:")
+	log.Printf("Presigned POST URL:\n%s\n", postURL.String())
+	log.Println("Form data:")
 	for k, v := range formData {
 		log.Printf("  %s: %s\n", k, v)
 	}
