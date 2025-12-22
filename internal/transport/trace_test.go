@@ -10,9 +10,9 @@ import (
 
 func TestNewTraceContext(t *testing.T) {
 	tests := []struct {
-		name     string
-		hook     TraceHook
-		wantNil  bool
+		name    string
+		hook    TraceHook
+		wantNil bool
 	}{
 		{
 			name: "With hook",
@@ -135,23 +135,23 @@ func TestTraceInfo_TotalDuration(t *testing.T) {
 }
 
 func TestTraceWithHTTPRequest(t *testing.T) {
-	// 创建测试服务器
+	// Create test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(10 * time.Millisecond) // 模拟处理时间
+		time.Sleep(10 * time.Millisecond) // simulate processing time
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}))
 	defer server.Close()
 
-	// 追踪信息（使用指针以便在 hook 中更新）
+	// Trace info (use pointer to update in hook)
 	var capturedTrace *TraceInfo
 	hook := func(info TraceInfo) {
-		// 保存追踪信息的副本
+		// Save a copy of trace info
 		trace := info
 		capturedTrace = &trace
 	}
 
-	// 创建带追踪的请求
+	// Create traced request
 	ctx := context.Background()
 	traceCtx := NewTraceContext(ctx, hook)
 
@@ -160,7 +160,7 @@ func TestTraceWithHTTPRequest(t *testing.T) {
 		t.Fatalf("Failed to create request: %v", err)
 	}
 
-	// 发送请求
+	// Send request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -168,7 +168,7 @@ func TestTraceWithHTTPRequest(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
-	// 验证追踪信息
+	// Validate trace info
 	if capturedTrace == nil {
 		t.Fatal("Expected trace to be captured")
 	}
@@ -177,8 +177,8 @@ func TestTraceWithHTTPRequest(t *testing.T) {
 		t.Error("Expected GotConn to be set")
 	}
 
-	// 注意：在 HTTP/1.1 本地连接中，某些追踪事件可能不会触发
-	// 所以我们只检查基本的连接信息
+	// Note: In HTTP/1.1 local connections some trace events may not fire
+	// so we only check basic connection info
 	t.Logf("Trace info: ConnReused=%v, WasIdle=%v",
 		capturedTrace.ConnReused, capturedTrace.ConnWasIdle)
 }

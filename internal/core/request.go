@@ -8,53 +8,53 @@ import (
 	"net/url"
 )
 
-// RequestMetadata 请求元数据
+// RequestMetadata holds request metadata
 type RequestMetadata struct {
-	// 桶和对象
+	// Bucket and object
 	BucketName string
 	ObjectName string
 
-	// 查询参数
+	// Query parameters
 	QueryValues url.Values
 
-	// 请求头
+	// Request headers
 	CustomHeader http.Header
 
-	// 请求体
+	// Request body
 	ContentBody   io.Reader
 	ContentLength int64
 
-	// 内容校验
+	// Content validation
 	ContentMD5Base64 string
 	ContentSHA256Hex string
 
-	// 签名选项
+	// Signing options
 	StreamSHA256 bool
 	PresignURL   bool
 	Expires      int64
 
-	// 预签名额外头
+	// Extra headers for presign
 	ExtraPresignHeader http.Header
 
-	// 位置
+	// Location
 	BucketLocation string
 
-	// Trailer (用于流式签名)
+	// Trailer (for streaming signature)
 	Trailer http.Header
 	AddCRC  bool
 
-	// 特殊处理
+	// Special handling
 	Expect200OKWithError bool
 }
 
-// Request 封装的 HTTP 请求
+// Request encapsulated HTTP request
 type Request struct {
 	ctx      context.Context
 	method   string
 	metadata RequestMetadata
 }
 
-// NewRequest 创建新请求
+// NewRequest creates a new Request
 func NewRequest(ctx context.Context, method string, metadata RequestMetadata) *Request {
 	return &Request{
 		ctx:      ctx,
@@ -63,17 +63,17 @@ func NewRequest(ctx context.Context, method string, metadata RequestMetadata) *R
 	}
 }
 
-// Context 返回请求上下文
+// Context returns request context
 func (r *Request) Context() context.Context {
 	return r.ctx
 }
 
-// Method 返回 HTTP 方法
+// Method returns HTTP method
 func (r *Request) Method() string {
 	return r.method
 }
 
-// Metadata 返回请求元数据
+// Metadata returns request metadata
 func (r *Request) Metadata() RequestMetadata {
 	return r.metadata
 }

@@ -86,7 +86,7 @@ func TestV4Signer_Sign(t *testing.T) {
 			signer := &V4Signer{}
 			signedReq := signer.Sign(req, tt.accessKey, tt.secretKey, tt.sessionToken, tt.region)
 
-			// 检查 Authorization 头
+			// Check Authorization header
 			if tt.wantAuthHeader {
 				authHeader := signedReq.Header.Get("Authorization")
 				if authHeader == "" {
@@ -110,20 +110,20 @@ func TestV4Signer_Sign(t *testing.T) {
 				}
 			}
 
-			// 检查 X-Amz-Date 头
+			// Check X-Amz-Date header
 			if tt.wantDateHeader {
 				dateHeader := signedReq.Header.Get("X-Amz-Date")
 				if dateHeader == "" {
 					t.Error("Expected X-Amz-Date header, got none")
 				}
-				// 验证日期格式
+				// Validate date format
 				_, err := time.Parse(iso8601DateFormat, dateHeader)
 				if err != nil {
 					t.Errorf("X-Amz-Date header has invalid format: %v", err)
 				}
 			}
 
-			// 检查 Session Token
+			// Check Session Token
 			if tt.sessionToken != "" {
 				tokenHeader := signedReq.Header.Get("X-Amz-Security-Token")
 				if tokenHeader != tt.sessionToken {
@@ -190,7 +190,7 @@ func TestV4Signer_Presign(t *testing.T) {
 			secretKey:  "",
 			region:     "us-east-1",
 			expires:    time.Hour,
-			wantParams: []string{}, // 不应该有任何签名参数
+			wantParams: []string{}, // should have no signing params
 		},
 	}
 
@@ -212,12 +212,12 @@ func TestV4Signer_Presign(t *testing.T) {
 				}
 			}
 
-			// 验证算法
+			// Validate algorithm
 			if tt.accessKey != "" && query.Get("X-Amz-Algorithm") != "AWS4-HMAC-SHA256" {
 				t.Errorf("Expected X-Amz-Algorithm=AWS4-HMAC-SHA256, got %s", query.Get("X-Amz-Algorithm"))
 			}
 
-			// 验证过期时间
+			// Validate expiration
 			if tt.accessKey != "" {
 				expiresParam := query.Get("X-Amz-Expires")
 				if expiresParam == "" {
@@ -225,7 +225,7 @@ func TestV4Signer_Presign(t *testing.T) {
 				}
 			}
 
-			// 验证 session token
+			// Validate session token
 			if tt.sessionToken != "" {
 				tokenParam := query.Get("X-Amz-Security-Token")
 				if tokenParam != tt.sessionToken {

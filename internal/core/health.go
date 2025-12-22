@@ -8,44 +8,44 @@ import (
 	"time"
 )
 
-// HealthCheckResult 健康检查结果
+// HealthCheckResult holds health check result
 type HealthCheckResult struct {
-	// 是否健康
+	// Whether healthy
 	Healthy bool
 
-	// 错误信息
+	// Error detail
 	Error error
 
-	// 响应时间
+	// Response time
 	ResponseTime time.Duration
 
-	// HTTP 状态码
+	// HTTP status code
 	StatusCode int
 
-	// 检查时间
+	// Checked time
 	CheckedAt time.Time
 
-	// 端点
+	// Endpoint
 	Endpoint string
 
-	// 区域
+	// Region
 	Region string
 }
 
-// HealthCheckOptions 健康检查选项
+// HealthCheckOptions health check options
 type HealthCheckOptions struct {
-	// 超时时间（默认 5 秒）
+	// Timeout (default 5 seconds)
 	Timeout time.Duration
 
-	// 自定义存储桶名（用于检查，默认不使用存储桶）
+	// Optional bucket name for check (default none)
 	BucketName string
 
-	// 上下文
+	// Context
 	Context context.Context
 }
 
-// HealthCheck 执行健康检查
-// 通过发送一个简单的 HEAD 请求到服务端点来验证连接
+// HealthCheck performs health check
+// Sends a simple HEAD request to the endpoint to verify connectivity
 func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 	result := &HealthCheckResult{
 		Endpoint:  e.endpointURL.String(),
@@ -54,7 +54,7 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 		Healthy:   false,
 	}
 
-	// 设置默认选项
+	// Set default options
 	if opts == nil {
 		opts = &HealthCheckOptions{}
 	}
@@ -65,34 +65,34 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 		opts.Context = context.Background()
 	}
 
-	// 创建带超时的 context
+	// Create context with timeout
 	ctx, cancel := context.WithTimeout(opts.Context, opts.Timeout)
 	defer cancel()
 
-	// 构建请求
+	// Build request URL
 	var reqURL string
 	if opts.BucketName != "" {
-		// 检查特定存储桶
+		// Check specific bucket
 		reqURL = e.endpointURL.String() + "/" + opts.BucketName
 	} else {
-		// 检查根端点
+		// Check root endpoint
 		reqURL = e.endpointURL.String() + "/"
 	}
 
-	// 先尝试 HEAD 请求
+	// Try HEAD request first
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, reqURL, nil)
 	if err != nil {
 		result.Error = fmt.Errorf("failed to create health check request: %w", err)
 		return result
 	}
 
-	// 记录开始时间
+	// Record start time
 	startTime := time.Now()
 
-	// 发送请求
+	// Send request
 	resp, err := e.httpClient.Do(req)
 
-	// 记录响应时间
+	// Record response time
 	result.ResponseTime = time.Since(startTime)
 
 	if err != nil {
@@ -102,9 +102,9 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 
 	result.StatusCode = resp.StatusCode
 
-	// 如果 HEAD 请求返回 501 (Not Implemented)，尝试使用 GET 请求
+	// If HEAD returns 501, fallback to GET
 	if resp.StatusCode == http.StatusNotImplemented {
-		resp.Body.Close() // 关闭第一个响应
+		resp.Body.Close() // close first response
 
 		req, err = http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 		if err != nil {
@@ -124,24 +124,24 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 		result.StatusCode = resp.StatusCode
 	}
 
-	// 确保响应体被关闭
+	// Ensure response body closed
 	defer resp.Body.Close()
 
-	// 判断是否健康
-	// 2xx 和 3xx 状态码认为是健康的
-	// 403 也认为是健康的（服务/存储桶可达，只是需要认证）
-	// 404 对于存储桶检查是不健康的（存储桶不存在）
+	// Determine health:
+	// 2xx/3xx considered healthy
+	// 403 considered healthy (reachable but requires auth)
+	// 404 is unhealthy for bucket checks (bucket missing)
 	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
 		result.Healthy = true
 	} else if resp.StatusCode == http.StatusForbidden {
-		// 403 表示资源存在但需要认证，认为是健康的
+		// 403 means resource exists but requires auth; treat as healthy
 		result.Healthy = true
 	}
 
 	return result
 }
 
-// HealthCheckWithRetry 执行带重试的健康检查
+// HealthCheckWithRetry performs health check with retries
 func (e *Executor) HealthCheckWithRetry(opts *HealthCheckOptions, maxRetries int) *HealthCheckResult {
 	if maxRetries <= 0 {
 		maxRetries = 3
@@ -158,7 +158,7 @@ func (e *Executor) HealthCheckWithRetry(opts *HealthCheckOptions, maxRetries int
 
 		lastResult = result
 
-		// 如果不是最后一次重试，等待一段时间
+		// Wait before next retry if not last
 		if i < maxRetries-1 {
 			time.Sleep(time.Duration(i+1) * time.Second)
 		}
@@ -167,7 +167,7 @@ func (e *Executor) HealthCheckWithRetry(opts *HealthCheckOptions, maxRetries int
 	return lastResult
 }
 
-// String 返回健康检查结果的字符串表示
+// String returns formatted health check result
 func (r *HealthCheckResult) String() string {
 	if r.Healthy {
 		return fmt.Sprintf("Healthy - Endpoint: %s, Region: %s, ResponseTime: %v, StatusCode: %d",

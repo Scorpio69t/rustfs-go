@@ -88,7 +88,7 @@ func TestV2Signer_Sign(t *testing.T) {
 			signer := &V2Signer{}
 			signedReq := signer.Sign(req, tt.accessKey, tt.secretKey, tt.sessionToken, tt.region)
 
-			// 检查 Authorization 头
+			// Check Authorization header
 			if tt.wantAuthHeader {
 				authHeader := signedReq.Header.Get("Authorization")
 				if authHeader == "" {
@@ -106,13 +106,13 @@ func TestV2Signer_Sign(t *testing.T) {
 				}
 			}
 
-			// 检查 Date 头
+			// Check Date header
 			if tt.wantDateHeader {
 				dateHeader := signedReq.Header.Get("Date")
 				if dateHeader == "" {
 					t.Error("Expected Date header, got none")
 				}
-				// 验证日期格式
+				// Validate date format
 				_, err := time.Parse(http.TimeFormat, dateHeader)
 				if err != nil {
 					t.Errorf("Date header has invalid format: %v", err)
@@ -170,7 +170,7 @@ func TestV2Signer_Presign(t *testing.T) {
 			secretKey:  "",
 			region:     "us-east-1",
 			expires:    time.Hour,
-			wantParams: []string{}, // 不应该有任何签名参数
+			wantParams: []string{}, // should have no signing params
 		},
 	}
 
@@ -192,7 +192,7 @@ func TestV2Signer_Presign(t *testing.T) {
 				}
 			}
 
-			// 验证 access key
+			// Validate access key
 			if tt.accessKey != "" {
 				accessKeyParam := query.Get("AWSAccessKeyId")
 				if accessKeyParam != tt.accessKey {
@@ -200,7 +200,7 @@ func TestV2Signer_Presign(t *testing.T) {
 				}
 			}
 
-			// 验证过期时间存在
+			// Validate Expires exists
 			if tt.accessKey != "" {
 				expiresParam := query.Get("Expires")
 				if expiresParam == "" {
@@ -208,7 +208,7 @@ func TestV2Signer_Presign(t *testing.T) {
 				}
 			}
 
-			// 验证签名存在
+			// Validate Signature exists
 			if tt.accessKey != "" {
 				signatureParam := query.Get("Signature")
 				if signatureParam == "" {
@@ -223,7 +223,7 @@ func TestV2Signer_WriteCanonicalizedHeaders(t *testing.T) {
 	tests := []struct {
 		name         string
 		headers      map[string]string
-		wantContains []string // 期望包含的头部
+		wantContains []string // expected headers to contain
 	}{
 		{
 			name: "No X-Amz headers",
@@ -231,7 +231,7 @@ func TestV2Signer_WriteCanonicalizedHeaders(t *testing.T) {
 				"Host":         "s3.amazonaws.com",
 				"Content-Type": "text/plain",
 			},
-			wantContains: []string{}, // 没有 x-amz 头部
+			wantContains: []string{}, // no x-amz headers
 		},
 		{
 			name: "Single X-Amz header",
@@ -265,7 +265,7 @@ func TestV2Signer_WriteCanonicalizedHeaders(t *testing.T) {
 			signer := &V2Signer{}
 			stringToSign := signer.stringToSignV2(req)
 
-			// 检查是否包含期望的头部
+			// Check if expected headers are contained
 			for _, want := range tt.wantContains {
 				if !strings.Contains(stringToSign, want) {
 					t.Errorf("stringToSign should contain %q, got: %s", want, stringToSign)
@@ -343,7 +343,7 @@ func TestV2Signer_WriteCanonicalizedResource(t *testing.T) {
 }
 
 func TestV2ResourceListSorting(t *testing.T) {
-	// 测试 v2ResourceList 是否已正确排序
+	// Test whether v2ResourceList is correctly sorted
 	sortedList := make([]string, len(v2ResourceList))
 	copy(sortedList, v2ResourceList)
 	sort.Strings(sortedList)
@@ -357,7 +357,7 @@ func TestV2ResourceListSorting(t *testing.T) {
 }
 
 func TestV2Signer_GoogleCloudStorage(t *testing.T) {
-	// 测试 Google Cloud Storage 的特殊处理
+	// Test special handling for Google Cloud Storage
 	req, _ := http.NewRequest("GET", "https://bucket.storage.googleapis.com/key", nil)
 
 	signer := &V2Signer{}
@@ -365,7 +365,7 @@ func TestV2Signer_GoogleCloudStorage(t *testing.T) {
 
 	query := presignedReq.URL.Query()
 
-	// 应该使用 GoogleAccessId 而不是 AWSAccessKeyId
+	// Should use GoogleAccessId instead of AWSAccessKeyId
 	if query.Get("GoogleAccessId") == "" {
 		t.Error("Expected GoogleAccessId parameter for Google Cloud Storage")
 	}

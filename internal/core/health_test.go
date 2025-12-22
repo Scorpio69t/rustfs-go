@@ -15,8 +15,8 @@ import (
 func TestHealthCheck(t *testing.T) {
 	tests := []struct {
 		name              string
-		statusCode        int  // HEAD 请求返回的状态码
-		expectedFinalCode int  // 期望的最终状态码（可能经过 GET 重试）
+		statusCode        int // status code returned by HEAD
+		expectedFinalCode int // expected final status (may be after GET retry)
 		bucketName        string
 		expectedHealth    bool
 		delay             time.Duration
@@ -44,14 +44,14 @@ func TestHealthCheck(t *testing.T) {
 			statusCode:        http.StatusForbidden,
 			expectedFinalCode: http.StatusForbidden,
 			bucketName:        "test-bucket",
-			expectedHealth:    true, // 403 表示存储桶存在，只是需要认证
+			expectedHealth:    true, // 403 means bucket exists but needs auth
 		},
 		{
 			name:              "Bucket endpoint - 404 Not Found (bucket does not exist)",
 			statusCode:        http.StatusNotFound,
 			expectedFinalCode: http.StatusNotFound,
 			bucketName:        "non-existent-bucket",
-			expectedHealth:    false, // 404 表示存储桶不存在
+			expectedHealth:    false, // 404 means bucket does not exist
 		},
 		{
 			name:              "Root endpoint - 404 Not Found",
@@ -74,20 +74,20 @@ func TestHealthCheck(t *testing.T) {
 		},
 		{
 			name:              "Root endpoint - 501 Not Implemented (fallback to GET)",
-			statusCode:        http.StatusNotImplemented, // HEAD 返回 501
-			expectedFinalCode: http.StatusOK,              // GET 返回 200
-			expectedHealth:    true,                       // 应该回退到 GET 请求并成功
+			statusCode:        http.StatusNotImplemented, // HEAD returns 501
+			expectedFinalCode: http.StatusOK,             // GET returns 200
+			expectedHealth:    true,                      // should fallback to GET and succeed
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 创建模拟服务器
+			// Create mock server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if tt.delay > 0 {
 					time.Sleep(tt.delay)
 				}
-				// 如果配置的状态码是 501，但请求是 GET，则返回 200
+				// If configured 501 but request is GET, return 200
 				if tt.statusCode == http.StatusNotImplemented && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 				} else {
@@ -96,10 +96,10 @@ func TestHealthCheck(t *testing.T) {
 			}))
 			defer server.Close()
 
-			// 解析服务器 URL
+			// Parse server URL
 			endpointURL, _ := url.Parse(server.URL)
 
-			// 创建执行器
+			// Create executor
 			executor := &Executor{
 				httpClient:    server.Client(),
 				endpointURL:   endpointURL,
@@ -111,7 +111,7 @@ func TestHealthCheck(t *testing.T) {
 				locationCache: &cache.LocationCache{},
 			}
 
-			// 执行健康检查
+			// Perform health check
 			opts := &HealthCheckOptions{
 				Timeout:    2 * time.Second,
 				BucketName: tt.bucketName,
@@ -120,7 +120,7 @@ func TestHealthCheck(t *testing.T) {
 
 			result := executor.HealthCheck(opts)
 
-			// 验证结果
+			// Validate result
 			if result.Healthy != tt.expectedHealth {
 				t.Errorf("Expected healthy=%v, got %v", tt.expectedHealth, result.Healthy)
 			}
@@ -141,7 +141,7 @@ func TestHealthCheck(t *testing.T) {
 				t.Error("Expected CheckedAt to be set")
 			}
 
-			// ResponseTime 可能非常短，接近 0，所以我们只记录而不报错
+			// ResponseTime may be very short (near 0); log but don't fail
 			if result.ResponseTime == 0 {
 				t.Logf("Warning: ResponseTime is 0 (may be very fast)")
 			}
@@ -152,7 +152,7 @@ func TestHealthCheck(t *testing.T) {
 }
 
 func TestHealthCheckTimeout(t *testing.T) {
-	// 创建一个慢响应的服务器
+	// Create a slow server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(3 * time.Second)
 		w.WriteHeader(http.StatusOK)
@@ -172,7 +172,7 @@ func TestHealthCheckTimeout(t *testing.T) {
 		locationCache: &cache.LocationCache{},
 	}
 
-	// 设置较短的超时
+	// Set shorter timeout
 	opts := &HealthCheckOptions{
 		Timeout: 500 * time.Millisecond,
 		Context: context.Background(),
@@ -180,7 +180,7 @@ func TestHealthCheckTimeout(t *testing.T) {
 
 	result := executor.HealthCheck(opts)
 
-	// 应该超时，不健康
+	// Should time out and be unhealthy
 	if result.Healthy {
 		t.Error("Expected unhealthy due to timeout")
 	}
@@ -197,10 +197,10 @@ func TestHealthCheckWithRetry(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attempts++
 		if attempts < 3 {
-			// 前两次返回错误
+			// First two attempts return error
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			// 第三次返回成功
+			// Third attempt returns success
 			w.WriteHeader(http.StatusOK)
 		}
 	}))
@@ -226,7 +226,7 @@ func TestHealthCheckWithRetry(t *testing.T) {
 
 	result := executor.HealthCheckWithRetry(opts, 3)
 
-	// 应该在第三次成功
+	// Should succeed on third attempt
 	if !result.Healthy {
 		t.Errorf("Expected healthy after retry, got: %s", result.String())
 	}
@@ -257,7 +257,7 @@ func TestHealthCheckDefaultOptions(t *testing.T) {
 		locationCache: &cache.LocationCache{},
 	}
 
-	// 使用 nil 选项（应该使用默认值）
+	// Use nil options (should apply defaults)
 	result := executor.HealthCheck(nil)
 
 	if !result.Healthy {

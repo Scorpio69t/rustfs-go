@@ -1,5 +1,5 @@
 // Package signer internal/signer/signer.go
-// 提供内部签名器接口和实现
+// Provides internal signer interfaces and implementations
 package signer
 
 import (
@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-// Signer 签名器接口
+// Signer defines signer interface
 type Signer interface {
-	// Sign 签名请求
+	// Sign signs a request
 	Sign(req *http.Request, accessKey, secretKey, sessionToken, region string) *http.Request
 
-	// Presign 预签名请求
+	// Presign generates a presigned request
 	Presign(req *http.Request, accessKey, secretKey, sessionToken, region string, expires time.Duration) *http.Request
 }
 
-// SignerType 签名类型
+// SignerType represents signer type
 type SignerType int
 
 const (
@@ -25,7 +25,7 @@ const (
 	SignerAnonymous
 )
 
-// NewSigner 创建签名器
+// NewSigner creates a signer instance
 func NewSigner(signerType SignerType) Signer {
 	switch signerType {
 	case SignerV2:
@@ -37,15 +37,15 @@ func NewSigner(signerType SignerType) Signer {
 	}
 }
 
-// AnonymousSigner 匿名签名器
+// AnonymousSigner signs anonymously
 type AnonymousSigner struct{}
 
-// Sign 使用匿名方式签名请求
+// Sign signs request anonymously
 func (s *AnonymousSigner) Sign(req *http.Request, accessKey, secretKey, sessionToken, region string) *http.Request {
 	return req
 }
 
-// Presign 使用匿名方式预签名请求
+// Presign presigns request anonymously
 func (s *AnonymousSigner) Presign(req *http.Request, accessKey, secretKey, sessionToken, region string, expires time.Duration) *http.Request {
 	return req
 }

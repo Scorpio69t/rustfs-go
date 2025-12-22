@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// DefaultTransport 创建默认 HTTP 传输
-// 与 http.DefaultTransport 类似，但禁用压缩以避免自动解压缩 gzip 编码的内容
+// DefaultTransport creates default HTTP transport
+// Similar to http.DefaultTransport but disables compression to avoid auto-decompressing gzip bodies
 func DefaultTransport(secure bool) (*http.Transport, error) {
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -26,21 +26,21 @@ func DefaultTransport(secure bool) (*http.Transport, error) {
 		IdleConnTimeout:       time.Minute,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 10 * time.Second,
-		// 禁用压缩，避免底层传输自动解码 content-encoding=gzip 的对象
-		// 参考: https://golang.org/src/net/http/transport.go?h=roundTrip#L1843
+		// Disable compression to avoid automatic decoding of content-encoding=gzip
+		// Ref: https://golang.org/src/net/http/transport.go?h=roundTrip#L1843
 		DisableCompression: true,
 	}
 
 	if secure {
 		tr.TLSClientConfig = &tls.Config{
-			// 安全考虑：
-			// - 不使用 SSLv3（POODLE 和 BEAST 漏洞）
-			// - 不使用 TLSv1.0（使用 CBC 密码的 POODLE 和 BEAST）
-			// - 不使用 TLSv1.1（RC4 密码使用）
+			// Security considerations:
+			// - No SSLv3 (POODLE/BEAST)
+			// - No TLSv1.0 (CBC-related POODLE/BEAST)
+			// - No TLSv1.1 (RC4 usage)
 			MinVersion: tls.VersionTLS12,
 		}
 
-		// 支持自定义 CA 证书（通过 SSL_CERT_FILE 环境变量）
+		// Support custom CA certificate via SSL_CERT_FILE environment variable
 		if certFile := os.Getenv("SSL_CERT_FILE"); certFile != "" {
 			rootCAs := mustGetSystemCertPool()
 			data, err := os.ReadFile(certFile)
@@ -54,36 +54,36 @@ func DefaultTransport(secure bool) (*http.Transport, error) {
 	return tr, nil
 }
 
-// TransportOptions 传输选项
+// TransportOptions transport options
 type TransportOptions struct {
-	// TLS 配置
+	// TLS config
 	TLSConfig *tls.Config
 
-	// 超时设置
+	// Timeout settings
 	DialTimeout           time.Duration
 	DialKeepAlive         time.Duration
 	ResponseHeaderTimeout time.Duration
 	ExpectContinueTimeout time.Duration
 	TLSHandshakeTimeout   time.Duration
 
-	// 连接池设置
+	// Connection pool settings
 	MaxIdleConns        int
 	MaxIdleConnsPerHost int
 	IdleConnTimeout     time.Duration
 
-	// 代理设置
+	// Proxy settings
 	Proxy func(*http.Request) (*url.URL, error)
 
-	// 启用压缩（默认禁用）
+	// Enable compression (disabled by default)
 	EnableCompression bool
 
-	// 禁用保持连接
+	// Disable keep-alives
 	DisableKeepAlives bool
 }
 
-// NewTransport 创建自定义传输
+// NewTransport creates custom transport
 func NewTransport(opts TransportOptions) *http.Transport {
-	// 设置默认值
+	// Set defaults
 	dialTimeout := opts.DialTimeout
 	if dialTimeout <= 0 {
 		dialTimeout = 30 * time.Second
@@ -124,7 +124,7 @@ func NewTransport(opts TransportOptions) *http.Transport {
 		expectContinueTimeout = 10 * time.Second
 	}
 
-	// 确定是否禁用压缩（默认禁用，除非明确启用）
+	// Determine whether to disable compression (default disabled unless enabled)
 	disableCompression := !opts.EnableCompression
 
 	tr := &http.Transport{
@@ -142,12 +142,12 @@ func NewTransport(opts TransportOptions) *http.Transport {
 		DisableKeepAlives:     opts.DisableKeepAlives,
 	}
 
-	// 设置 TLS 配置
+	// Set TLS config
 	if opts.TLSConfig != nil {
 		tr.TLSClientConfig = opts.TLSConfig
 	}
 
-	// 设置代理
+	// Set proxy
 	if opts.Proxy != nil {
 		tr.Proxy = opts.Proxy
 	} else {
@@ -157,20 +157,20 @@ func NewTransport(opts TransportOptions) *http.Transport {
 	return tr
 }
 
-// mustGetSystemCertPool 返回系统 CA 证书池，如果出错则返回空池
+// mustGetSystemCertPool returns system CA pool, or empty pool on error
 func mustGetSystemCertPool() *x509.CertPool {
 	pool, err := x509.SystemCertPool()
 	if err != nil {
-		// 在某些系统（如 Windows）上可能失败，返回空池
+		// On some systems (e.g., Windows) this may fail; return empty pool
 		return x509.NewCertPool()
 	}
 	return pool
 }
 
-// NewHTTPClient 创建配置好的 HTTP 客户端
+// NewHTTPClient creates configured HTTP client
 func NewHTTPClient(transport *http.Transport, timeout time.Duration) *http.Client {
 	if timeout <= 0 {
-		timeout = 0 // 无超时
+		timeout = 0 // no timeout
 	}
 
 	return &http.Client{
