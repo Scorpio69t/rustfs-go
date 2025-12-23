@@ -65,6 +65,9 @@ type ObjectInfo struct {
 
 	// Error (used for list operations)
 	Err error `json:"-"`
+
+	// IsPrefix indicates this entry is a common prefix (pseudo-directory)
+	IsPrefix bool `json:"isPrefix,omitempty"`
 }
 
 // ObjectToDelete represents an object to be deleted

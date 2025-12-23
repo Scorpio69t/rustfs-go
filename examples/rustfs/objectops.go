@@ -121,6 +121,10 @@ func main() {
 			break
 		}
 		count++
+		if obj.IsPrefix {
+			log.Printf("  %d. %s (folder)\n", count, obj.Key)
+			continue
+		}
 		log.Printf("  %d. %s (size: %d bytes)\n", count, obj.Key, obj.Size)
 	}
 

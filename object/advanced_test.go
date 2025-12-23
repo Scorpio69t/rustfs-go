@@ -70,6 +70,24 @@ func TestList(t *testing.T) {
 			wantErr:      false,
 		},
 		{
+			name:       "List with common prefix",
+			bucketName: "test-bucket",
+			responseXML: `<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+    <Name>test-bucket</Name>
+    <Prefix></Prefix>
+    <KeyCount>0</KeyCount>
+    <MaxKeys>1000</MaxKeys>
+    <Delimiter>/</Delimiter>
+    <IsTruncated>false</IsTruncated>
+    <CommonPrefixes>
+        <Prefix>demo/</Prefix>
+    </CommonPrefixes>
+</ListBucketResult>`,
+			expectedKeys: []string{"demo/"},
+			wantErr:      false,
+		},
+		{
 			name:       "Invalid bucket name",
 			bucketName: "",
 			wantErr:    true,
@@ -94,12 +112,14 @@ func TestList(t *testing.T) {
 
 			var keys []string
 			var hasError bool
+			var prefixFlags []bool
 			for obj := range objectCh {
 				if obj.Err != nil {
 					hasError = true
 					break
 				}
 				keys = append(keys, obj.Key)
+				prefixFlags = append(prefixFlags, obj.IsPrefix)
 			}
 
 			if (hasError) != tt.wantErr {
@@ -109,6 +129,10 @@ func TestList(t *testing.T) {
 
 			if !tt.wantErr && len(keys) != len(tt.expectedKeys) {
 				t.Errorf("List() returned %d keys, want %d", len(keys), len(tt.expectedKeys))
+			}
+
+			if tt.name == "List with common prefix" && len(prefixFlags) > 0 && !prefixFlags[0] {
+				t.Errorf("Expected first entry to be a prefix, got IsPrefix=%v", prefixFlags[0])
 			}
 		})
 	}

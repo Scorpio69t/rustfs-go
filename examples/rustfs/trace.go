@@ -170,7 +170,11 @@ func traceListOperation(client *rustfs.Client, ctx context.Context, bucketName s
 		}
 		count++
 		if count <= 5 { // Only show first 5
-			fmt.Printf("   - %s (%d bytes)\n", obj.Key, obj.Size)
+			if obj.IsPrefix {
+				fmt.Printf("   - %s (folder)\n", obj.Key)
+			} else {
+				fmt.Printf("   - %s (%d bytes)\n", obj.Key, obj.Size)
+			}
 		}
 	}
 

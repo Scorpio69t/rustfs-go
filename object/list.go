@@ -132,7 +132,7 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 
 			// Send common prefixes (when using delimiter)
 			for _, prefix := range result.CommonPrefixes {
-				if !sendOrBreak(types.ObjectInfo{Key: prefix.Prefix}) {
+				if !sendOrBreak(types.ObjectInfo{Key: prefix.Prefix, IsPrefix: true}) {
 					return
 				}
 			}
