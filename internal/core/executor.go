@@ -88,6 +88,8 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 		httpReq *http.Request
 	)
 
+	meta := req.Metadata()
+
 	// Retry loop
 	for attempt := 0; attempt < e.maxRetries; attempt++ {
 		// Check context cancellation
@@ -96,7 +98,7 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 		}
 
 		// Build HTTP request
-		httpReq, err = e.buildHTTPRequest(ctx, req)
+		httpReq, err = e.buildHTTPRequest(ctx, req, meta)
 		if err != nil {
 			return nil, err
 		}
@@ -105,6 +107,9 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 		resp, err = e.httpClient.Do(httpReq)
 		if err != nil {
 			if e.shouldRetry(err, attempt) {
+				if !resetRequestBody(&meta) {
+					return nil, err
+				}
 				e.waitForRetry(ctx, attempt)
 				continue
 			}
@@ -119,6 +124,9 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 		// Retry if the response warrants it
 		if e.shouldRetryResponse(resp, attempt) {
 			closeResponse(resp)
+			if !resetRequestBody(&meta) {
+				return resp, nil
+			}
 			e.waitForRetry(ctx, attempt)
 			continue
 		}
@@ -135,9 +143,7 @@ func (e *Executor) Execute(ctx context.Context, req *Request) (*http.Response, e
 }
 
 // buildHTTPRequest constructs and signs the outbound HTTP request
-func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Request, error) {
-	meta := req.Metadata()
-
+func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request, meta RequestMetadata) (*http.Request, error) {
 	// Resolve bucket location
 	location := meta.BucketLocation
 	if location == "" && meta.BucketName != "" {
@@ -193,12 +199,26 @@ func (e *Executor) Presign(ctx context.Context, req *Request) (*url.URL, http.He
 		ctx = context.Background()
 	}
 
-	httpReq, err := e.buildHTTPRequest(ctx, req)
+	httpReq, err := e.buildHTTPRequest(ctx, req, req.Metadata())
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return httpReq.URL, httpReq.Header, nil
+}
+
+// resetRequestBody attempts to rewind the request body for a retry.
+// Returns false when the body cannot be replayed.
+func resetRequestBody(meta *RequestMetadata) bool {
+	if meta.ContentBody == nil {
+		return true
+	}
+	if seeker, ok := meta.ContentBody.(io.Seeker); ok {
+		if _, err := seeker.Seek(0, io.SeekStart); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // makeTargetURL builds the final request URL

@@ -1,8 +1,7 @@
 //go:build example
 // +build example
 
-// presigned.go - Presigned URL example (using old API)
-// Note: Presigned URL functionality has not been migrated to new API yet, this example still uses old API
+// presigned.go - Presigned URL examples using the new Object service API
 package main
 
 import (
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Scorpio69t/rustfs-go"
+	"github.com/Scorpio69t/rustfs-go/object"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 )
 
@@ -36,53 +36,36 @@ func main() {
 	bucketName := YOURBUCKET
 	objectName := "test-object.txt"
 
-	// Generate presigned GET URL (valid for 1 hour)
-	presignedURL, err := client.PresignedGetObject(ctx, bucketName, objectName, time.Hour, url.Values{})
+	// Generate presigned GET URL (valid for 15 minutes) with a response header override
+	getURL, getSignedHeaders, err := client.Object().PresignGet(
+		ctx,
+		bucketName,
+		objectName,
+		15*time.Minute,
+		url.Values{"response-content-type": []string{"text/plain"}},
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("Presigned GET URL (valid for 1 hour):\n%s\n", presignedURL.String())
-
-	// Generate presigned PUT URL (valid for 1 hour)
-	presignedPutURL, err := client.PresignedPutObject(ctx, bucketName, "upload-object.txt", time.Hour)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Printf("Presigned PUT URL (valid for 1 hour):\n%s\n", presignedPutURL.String())
-
-	// Generate presigned POST URL
-	policy := rustfs.NewPostPolicy()
-	err = policy.SetExpires(time.Now().Add(time.Hour))
-	if err != nil {
-		log.Fatalln(err)
-		return
+	log.Printf("Presigned GET URL (15m): %s", getURL.String())
+	if len(getSignedHeaders) > 0 {
+		log.Printf("Signed headers for GET: %+v", getSignedHeaders)
 	}
 
-	err = policy.SetCondition("$eq", "bucket", bucketName)
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
-	err = policy.SetCondition("$eq", "key", "post-object.txt")
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
-	err = policy.SetCondition("$eq", "Content-Type", "text/plain")
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
-	postURL, formData, err := client.PresignedPostPolicy(ctx, policy)
+	// Generate presigned PUT URL (valid for 15 minutes) signing SSE-S3 header
+	putURL, putSignedHeaders, err := client.Object().PresignPut(
+		ctx,
+		bucketName,
+		"upload-object.txt",
+		15*time.Minute,
+		nil,
+		object.WithPresignSSES3(),
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("Presigned POST URL:\n%s\n", postURL.String())
-	log.Println("Form data:")
-	for k, v := range formData {
-		log.Printf("  %s: %s\n", k, v)
+	log.Printf("Presigned PUT URL (15m, SSE-S3): %s", putURL.String())
+	if len(putSignedHeaders) > 0 {
+		log.Printf("Signed headers for PUT: %+v", putSignedHeaders)
 	}
 }

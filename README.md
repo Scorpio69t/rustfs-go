@@ -196,11 +196,59 @@ err = multipartSvc.AbortMultipartUpload(ctx, "my-bucket", "large-file.txt", uplo
 
 ### 🔐 Presigned URLs
 
-> **⏳ Planned**: Presigned URL support will be delivered in a future release.
+```go
+// Generate presigned GET URL with response header override
+url, signedHeaders, err := client.Object().PresignGet(
+    ctx,
+    "my-bucket",
+    "photo.jpg",
+    15*time.Minute,
+    url.Values{"response-content-type": []string{"image/jpeg"}},
+)
 
-### 🏷️ Object Tagging
+// Generate presigned PUT URL signing SSE-S3 header
+putURL, putSignedHeaders, err := client.Object().PresignPut(
+    ctx,
+    "my-bucket",
+    "uploads/photo.jpg",
+    15*time.Minute,
+    nil,
+    object.WithPresignSSES3(),
+)
+```
 
-> **⏳ Planned**: Object tagging support will be delivered in a future release.
+> 📖 **Full example**: see [examples/rustfs/presigned.go](examples/rustfs/presigned.go)
+
+### 🏷️ Object Tagging & File Helpers
+
+```go
+// Upload from file with tags (add object.WithSSES3() if SSE is enabled on your server)
+uploadInfo, err := client.Object().FPut(
+    ctx,
+    "my-bucket",
+    "demo/hello.txt",
+    "/path/to/file.txt",
+    object.WithUserTags(map[string]string{"env": "dev"}),
+)
+
+// Read and delete tags
+tags, _ := client.Object().GetTagging(ctx, "my-bucket", uploadInfo.Key)
+_ = client.Object().DeleteTagging(ctx, "my-bucket", uploadInfo.Key)
+```
+
+> 📖 **Full example**: see [examples/rustfs/object_tagging.go](examples/rustfs/object_tagging.go)
+
+### 📜 Bucket Policy & Lifecycle
+
+```go
+policyJSON := `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::my-bucket/public/*"]}]}`
+_ = client.Bucket().SetPolicy(ctx, "my-bucket", policyJSON)
+
+lifecycleXML := []byte(`<LifecycleConfiguration><Rule><ID>expire-temp</ID><Status>Enabled</Status><Filter><Prefix>temp/</Prefix></Filter><Expiration><Days>30</Days></Expiration></Rule></LifecycleConfiguration>`)
+_ = client.Bucket().SetLifecycle(ctx, "my-bucket", lifecycleXML)
+```
+
+> 📖 **Full example**: see [examples/rustfs/bucket_policy_lifecycle.go](examples/rustfs/bucket_policy_lifecycle.go)
 
 ### 🏥 Health Check
 

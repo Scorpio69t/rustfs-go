@@ -41,8 +41,11 @@ func (s *objectService) FPut(ctx context.Context, bucketName, objectName, filePa
 			}
 		}
 	}
+	// Re-apply options to include inferred content type
+	_ = applyPutOptions(opts)
 
-	return s.Put(ctx, bucketName, objectName, file, stat.Size(), opts...)
+	reader := io.NewSectionReader(file, 0, stat.Size())
+	return s.Put(ctx, bucketName, objectName, reader, stat.Size(), opts...)
 }
 
 // FGet downloads an object directly to a local file path.
