@@ -83,14 +83,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Roadmap
 
-### v1.1.0 (Planned)
-- [ ] Presigned URL support
-- [ ] Object tagging
-- [ ] Bucket policy management
-- [ ] Lifecycle management
-- [ ] Server-side encryption
+### v1.1.3 (Planned)
+- [x] Presigned URL support (GET/PUT, header overrides, SSE signing)
+- [x] Object tagging (set/get/delete, tagging count parsing)
+- [x] Bucket policy management (set/get/delete)
+- [x] Lifecycle management (set/get/delete)
+- [x] Server-side encryption options (SSE-S3/SSE-C for upload/download)
+- [x] File helpers (fput/fget for path-based upload/download)
 
-### v1.2.0 (Planned)
+### v1.1.4 (Planned)
 - [ ] Object versioning
 - [ ] Cross-region replication
 - [ ] Event notifications
