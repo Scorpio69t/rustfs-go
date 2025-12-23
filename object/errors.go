@@ -13,6 +13,9 @@ var (
 	// ErrObjectNotFound object not found
 	ErrObjectNotFound = errors.New("object not found")
 
+	// ErrListStopped list operation stopped via stop channel
+	ErrListStopped = errors.New("list stopped by stop channel")
+
 	// ErrNotImplemented feature not implemented
 	ErrNotImplemented = errors.New("not implemented yet")
 )
