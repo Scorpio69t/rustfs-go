@@ -61,6 +61,15 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		meta.QueryValues.Set("versionId", options.VersionID)
 	}
 
+	// Set SSE-C headers when downloading encrypted objects
+	if options.SSECustomerAlgorithm != "" && options.SSECustomerKey != "" {
+		meta.CustomHeader.Set("x-amz-server-side-encryption-customer-algorithm", options.SSECustomerAlgorithm)
+		meta.CustomHeader.Set("x-amz-server-side-encryption-customer-key", options.SSECustomerKey)
+		if options.SSECustomerKeyMD5 != "" {
+			meta.CustomHeader.Set("x-amz-server-side-encryption-customer-key-MD5", options.SSECustomerKeyMD5)
+		}
+	}
+
 	// Merge custom headers
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {

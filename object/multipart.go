@@ -58,6 +58,12 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 
 	// Apply options
 	options := applyPutOptions(opts)
+	if !options.contentTypeSet && options.ContentType == "" {
+		options.ContentType = "application/octet-stream"
+	}
+	if !options.contentTypeSet && options.ContentType == "" {
+		options.ContentType = "application/octet-stream"
+	}
 
 	// Build request metadata
 	meta := core.RequestMetadata{
@@ -119,6 +125,12 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 			meta.CustomHeader[k] = v
 		}
 	}
+
+	// Set SSE-C headers if provided (must match initiation)
+	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
+
+	// Set SSE-C headers if provided
+	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
 
 	// Create POST request
 	req := core.NewRequest(ctx, http.MethodPost, meta)
@@ -187,6 +199,9 @@ func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, 
 			meta.CustomHeader[k] = v
 		}
 	}
+
+	// Set SSE-C headers if provided (required for SSE-C multipart uploads)
+	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
 
 	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)

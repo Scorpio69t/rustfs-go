@@ -31,9 +31,7 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {
-	options := PutOptions{
-		ContentType: "application/octet-stream", // default content type
-	}
+	options := PutOptions{}
 	for _, opt := range opts {
 		opt(&options)
 	}

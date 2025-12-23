@@ -95,7 +95,7 @@ func TestApplyPutOptions(t *testing.T) {
 			name: "Default options",
 			opts: nil,
 			want: PutOptions{
-				ContentType: "application/octet-stream",
+				ContentType: "",
 			},
 		},
 		{
@@ -112,7 +112,7 @@ func TestApplyPutOptions(t *testing.T) {
 				WithUserMetadata(map[string]string{"author": "test"}),
 			},
 			want: PutOptions{
-				ContentType: "image/jpeg",
+				ContentType:  "image/jpeg",
 				UserMetadata: map[string]string{"author": "test"},
 			},
 		},

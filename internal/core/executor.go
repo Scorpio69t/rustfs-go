@@ -164,6 +164,13 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 		httpReq.Header[k] = v
 	}
 
+	// Add extra presign headers (used for signing only)
+	if meta.PresignURL && meta.ExtraPresignHeader != nil {
+		for k, v := range meta.ExtraPresignHeader {
+			httpReq.Header[k] = v
+		}
+	}
+
 	// Set Content-Length
 	httpReq.ContentLength = meta.ContentLength
 
@@ -178,6 +185,20 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request) (*http.Re
 	}
 
 	return httpReq, nil
+}
+
+// Presign builds and signs the request, returning the presigned URL and signed headers without executing it.
+func (e *Executor) Presign(ctx context.Context, req *Request) (*url.URL, http.Header, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	httpReq, err := e.buildHTTPRequest(ctx, req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return httpReq.URL, httpReq.Header, nil
 }
 
 // makeTargetURL builds the final request URL

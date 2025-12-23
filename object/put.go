@@ -28,6 +28,9 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 
 	// Apply options
 	options := applyPutOptions(opts)
+	if !options.contentTypeSet && options.ContentType == "" {
+		options.ContentType = "application/octet-stream"
+	}
 
 	// Build request metadata
 	meta := core.RequestMetadata{
@@ -114,6 +117,9 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 			meta.CustomHeader[k] = v
 		}
 	}
+
+	// Set SSE-C headers if provided
+	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
 
 	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
