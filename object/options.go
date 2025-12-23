@@ -3,11 +3,15 @@ package object
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 )
 
 // PutOptions controls object upload behavior
 type PutOptions struct {
+	// Tracks whether caller explicitly set Content-Type
+	contentTypeSet bool
+
 	// Content-Type
 	ContentType string
 
@@ -44,11 +48,22 @@ type PutOptions struct {
 	// Disable Content-SHA256
 	DisableContentSHA256 bool
 
+	// SSE-S3 / SSE-C options
+	SSECustomerAlgorithm string
+	SSECustomerKey       string
+	SSECustomerKeyMD5    string
+
 	// Multipart part size
 	PartSize uint64
 
 	// Number of concurrent uploads
 	NumThreads uint
+}
+
+// PresignOptions controls presigned URL generation
+type PresignOptions struct {
+	Headers     http.Header
+	QueryValues url.Values
 }
 
 // GetOptions controls object download behavior
@@ -69,6 +84,11 @@ type GetOptions struct {
 
 	// Custom headers
 	CustomHeaders http.Header
+
+	// SSE-C headers for encrypted objects
+	SSECustomerAlgorithm string
+	SSECustomerKey       string
+	SSECustomerKeyMD5    string
 }
 
 // StatOptions controls stat/metadata retrieval
@@ -156,6 +176,57 @@ type CopyOptions struct {
 func WithContentType(contentType string) PutOption {
 	return func(opts *PutOptions) {
 		opts.ContentType = contentType
+		opts.contentTypeSet = true
+	}
+}
+
+// WithPresignHeaders adds headers that must be signed for the presigned URL
+func WithPresignHeaders(headers http.Header) PresignOption {
+	return func(opts *PresignOptions) {
+		if opts.Headers == nil {
+			opts.Headers = make(http.Header)
+		}
+		for k, v := range headers {
+			opts.Headers[k] = append([]string{}, v...)
+		}
+	}
+}
+
+// WithPresignQuery adds additional query parameters (e.g., response-content-type)
+func WithPresignQuery(values url.Values) PresignOption {
+	return func(opts *PresignOptions) {
+		if opts.QueryValues == nil {
+			opts.QueryValues = make(url.Values)
+		}
+		for k, v := range values {
+			for _, vv := range v {
+				opts.QueryValues.Add(k, vv)
+			}
+		}
+	}
+}
+
+// WithPresignSSES3 signs SSE-S3 header for presigned requests
+func WithPresignSSES3() PresignOption {
+	return func(opts *PresignOptions) {
+		if opts.Headers == nil {
+			opts.Headers = make(http.Header)
+		}
+		opts.Headers.Set("x-amz-server-side-encryption", "AES256")
+	}
+}
+
+// WithPresignSSECustomer signs SSE-C headers for presigned requests (key must be base64 encoded)
+func WithPresignSSECustomer(keyB64, keyMD5 string) PresignOption {
+	return func(opts *PresignOptions) {
+		if opts.Headers == nil {
+			opts.Headers = make(http.Header)
+		}
+		opts.Headers.Set("x-amz-server-side-encryption-customer-algorithm", "AES256")
+		opts.Headers.Set("x-amz-server-side-encryption-customer-key", keyB64)
+		if keyMD5 != "" {
+			opts.Headers.Set("x-amz-server-side-encryption-customer-key-MD5", keyMD5)
+		}
 	}
 }
 
@@ -201,12 +272,40 @@ func WithPartSize(size uint64) PutOption {
 	}
 }
 
+// WithSSES3 enables SSE-S3 server-side encryption for uploads
+func WithSSES3() PutOption {
+	return func(opts *PutOptions) {
+		if opts.CustomHeaders == nil {
+			opts.CustomHeaders = make(http.Header)
+		}
+		opts.CustomHeaders.Set("x-amz-server-side-encryption", "AES256")
+	}
+}
+
+// WithSSECustomer provides SSE-C parameters for uploads (key must be base64 encoded)
+func WithSSECustomer(keyB64, keyMD5 string) PutOption {
+	return func(opts *PutOptions) {
+		opts.SSECustomerAlgorithm = "AES256"
+		opts.SSECustomerKey = keyB64
+		opts.SSECustomerKeyMD5 = keyMD5
+	}
+}
+
 // WithGetRange sets byte range for downloads
 func WithGetRange(start, end int64) GetOption {
 	return func(opts *GetOptions) {
 		opts.RangeStart = start
 		opts.RangeEnd = end
 		opts.SetRange = true
+	}
+}
+
+// WithGetSSECustomer sets SSE-C parameters for downloads (key must be base64 encoded)
+func WithGetSSECustomer(keyB64, keyMD5 string) GetOption {
+	return func(opts *GetOptions) {
+		opts.SSECustomerAlgorithm = "AES256"
+		opts.SSECustomerKey = keyB64
+		opts.SSECustomerKeyMD5 = keyMD5
 	}
 }
 

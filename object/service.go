@@ -4,6 +4,9 @@ package object
 import (
 	"context"
 	"io"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -16,6 +19,12 @@ type Service interface {
 	// Get downloads an object
 	Get(ctx context.Context, bucketName, objectName string, opts ...GetOption) (io.ReadCloser, types.ObjectInfo, error)
 
+	// FPut uploads a file from a local path
+	FPut(ctx context.Context, bucketName, objectName, filePath string, opts ...PutOption) (types.UploadInfo, error)
+
+	// FGet downloads an object to a local file path
+	FGet(ctx context.Context, bucketName, objectName, filePath string, opts ...GetOption) (types.ObjectInfo, error)
+
 	// Stat retrieves object info
 	Stat(ctx context.Context, bucketName, objectName string, opts ...StatOption) (types.ObjectInfo, error)
 
@@ -27,6 +36,21 @@ type Service interface {
 
 	// Copy copies an object
 	Copy(ctx context.Context, destBucket, destObject, srcBucket, srcObject string, opts ...CopyOption) (types.CopyInfo, error)
+
+	// PresignGet creates a presigned GET URL with optional signed headers
+	PresignGet(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
+
+	// PresignPut creates a presigned PUT URL with optional signed headers
+	PresignPut(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
+
+	// SetTagging sets object tags
+	SetTagging(ctx context.Context, bucketName, objectName string, tags map[string]string) error
+
+	// GetTagging retrieves object tags
+	GetTagging(ctx context.Context, bucketName, objectName string) (map[string]string, error)
+
+	// DeleteTagging deletes object tags
+	DeleteTagging(ctx context.Context, bucketName, objectName string) error
 }
 
 // PutOption applies upload option
@@ -46,3 +70,6 @@ type ListOption func(*ListOptions)
 
 // CopyOption applies copy option
 type CopyOption func(*CopyOptions)
+
+// PresignOption applies presign options
+type PresignOption func(*PresignOptions)

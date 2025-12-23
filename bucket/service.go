@@ -23,6 +23,24 @@ type Service interface {
 
 	// GetLocation get bucket location/region
 	GetLocation(ctx context.Context, bucketName string) (string, error)
+
+	// SetPolicy sets bucket policy JSON
+	SetPolicy(ctx context.Context, bucketName, policy string) error
+
+	// GetPolicy retrieves bucket policy JSON
+	GetPolicy(ctx context.Context, bucketName string) (string, error)
+
+	// DeletePolicy removes bucket policy
+	DeletePolicy(ctx context.Context, bucketName string) error
+
+	// SetLifecycle sets bucket lifecycle configuration (XML)
+	SetLifecycle(ctx context.Context, bucketName string, config []byte) error
+
+	// GetLifecycle retrieves bucket lifecycle configuration (XML)
+	GetLifecycle(ctx context.Context, bucketName string) ([]byte, error)
+
+	// DeleteLifecycle removes bucket lifecycle configuration
+	DeleteLifecycle(ctx context.Context, bucketName string) error
 }
 
 // CreateOption create bucket options function
