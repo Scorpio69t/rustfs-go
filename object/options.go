@@ -359,6 +359,20 @@ func WithListMaxKeys(maxKeys int) ListOption {
 	}
 }
 
+// WithListVersions lists object versions instead of current objects
+func WithListVersions() ListOption {
+	return func(opts *ListOptions) {
+		opts.WithVersions = true
+	}
+}
+
+// WithListMetadata includes object metadata in list results when supported
+func WithListMetadata(include bool) ListOption {
+	return func(opts *ListOptions) {
+		opts.WithMetadata = include
+	}
+}
+
 // WithCopySourceVersionID sets the source version ID for a copy
 func WithCopySourceVersionID(versionID string) CopyOption {
 	return func(opts *CopyOptions) {

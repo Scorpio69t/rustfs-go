@@ -96,6 +96,14 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 			return false
 		}
 
+		// Switch to version listing if requested
+		if options.WithVersions {
+			if err := s.streamObjectVersions(ctx, bucketName, &options, objectCh); err != nil {
+				objectCh <- types.ObjectInfo{Err: err}
+			}
+			return
+		}
+
 		// Set delimiter
 		delimiter := "/"
 		if options.Recursive {
@@ -156,6 +164,65 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 	}()
 
 	return objectCh
+}
+
+// ListVersions lists object versions and delete markers.
+func (s *objectService) ListVersions(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo {
+	opts = append(opts, WithListVersions())
+	return s.List(ctx, bucketName, opts...)
+}
+
+// streamObjectVersions streams object versions and delete markers using ListObjectVersions.
+func (s *objectService) streamObjectVersions(ctx context.Context, bucketName string, options *ListOptions, objectCh chan<- types.ObjectInfo) error {
+	// Set delimiter depending on recursive flag
+	delimiter := "/"
+	if options.Recursive {
+		delimiter = ""
+	}
+
+	var keyMarker, versionIDMarker string
+	for {
+		// Context cancellation
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		result, err := s.listObjectVersionsQuery(ctx, bucketName, options, delimiter, keyMarker, versionIDMarker)
+		if err != nil {
+			return err
+		}
+
+		for _, version := range result.Versions {
+			version.ETag = trimETag(version.ETag)
+			select {
+			case objectCh <- version:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+
+		for _, marker := range result.DeleteMarkers {
+			select {
+			case objectCh <- marker:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+
+		// Next markers
+		keyMarker = result.NextKeyMarker
+		versionIDMarker = result.NextVersionIdMarker
+
+		if !result.IsTruncated {
+			return nil
+		}
+		// guard infinite loop
+		if keyMarker == "" && versionIDMarker == "" {
+			return fmt.Errorf("version list truncated without next markers")
+		}
+	}
 }
 
 // listObjectsV2Query queries object list V2
@@ -245,6 +312,80 @@ func (s *objectService) listObjectsV2Query(ctx context.Context, bucketName strin
 		if decodedPrefix, err := url.QueryUnescape(result.CommonPrefixes[i].Prefix); err == nil {
 			result.CommonPrefixes[i].Prefix = decodedPrefix
 		}
+	}
+
+	return result, nil
+}
+
+// listObjectVersionsResult represents ListObjectVersions response
+type listObjectVersionsResult struct {
+	XMLName             xml.Name           `xml:"ListVersionsResult"`
+	Name                string             `xml:"Name"`
+	Prefix              string             `xml:"Prefix"`
+	KeyMarker           string             `xml:"KeyMarker"`
+	VersionIdMarker     string             `xml:"VersionIdMarker"`
+	NextKeyMarker       string             `xml:"NextKeyMarker"`
+	NextVersionIdMarker string             `xml:"NextVersionIdMarker"`
+	MaxKeys             int                `xml:"MaxKeys"`
+	IsTruncated         bool               `xml:"IsTruncated"`
+	Versions            []types.ObjectInfo `xml:"Version"`
+	DeleteMarkers       []types.ObjectInfo `xml:"DeleteMarker"`
+}
+
+// listObjectVersionsQuery queries versions and delete markers
+func (s *objectService) listObjectVersionsQuery(ctx context.Context, bucketName string, options *ListOptions, delimiter, keyMarker, versionIDMarker string) (listObjectVersionsResult, error) {
+	queryValues := url.Values{
+		"versions": {"true"},
+	}
+
+	if options.Prefix != "" {
+		queryValues.Set("prefix", options.Prefix)
+	}
+	if delimiter != "" {
+		queryValues.Set("delimiter", delimiter)
+	}
+	if options.StartAfter != "" && keyMarker == "" {
+		queryValues.Set("key-marker", options.StartAfter)
+	} else if keyMarker != "" {
+		queryValues.Set("key-marker", keyMarker)
+	}
+	if versionIDMarker != "" {
+		queryValues.Set("version-id-marker", versionIDMarker)
+	}
+
+	maxKeys := options.MaxKeys
+	if maxKeys <= 0 {
+		maxKeys = 1000
+	}
+	queryValues.Set("max-keys", strconv.Itoa(maxKeys))
+
+	meta := core.RequestMetadata{
+		BucketName:   bucketName,
+		QueryValues:  queryValues,
+		CustomHeader: options.CustomHeaders,
+	}
+
+	req := core.NewRequest(ctx, http.MethodGet, meta)
+
+	resp, err := s.executor.Execute(ctx, req)
+	if err != nil {
+		return listObjectVersionsResult{}, err
+	}
+	defer closeResponse(resp)
+
+	if resp.StatusCode != http.StatusOK {
+		return listObjectVersionsResult{}, parseErrorResponse(resp, bucketName, "")
+	}
+
+	var result listObjectVersionsResult
+	decoder := xml.NewDecoder(resp.Body)
+	if err := decoder.Decode(&result); err != nil {
+		return listObjectVersionsResult{}, fmt.Errorf("failed to decode list object versions response: %w", err)
+	}
+
+	// Mark delete markers explicitly
+	for i := range result.DeleteMarkers {
+		result.DeleteMarkers[i].IsDeleteMarker = true
 	}
 
 	return result, nil

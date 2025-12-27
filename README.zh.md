@@ -30,6 +30,7 @@ RustFS Go SDK 是一个用于与 RustFS 对象存储系统交互的 Go 语言客
 - ✅ **错误处理** - 完善的错误处理和重试机制
 - ✅ **流式支持** - 高效的大文件流式上传/下载
 - ✅ **生产就绪** - 经过充分测试，提供完整示例
+- ✅ **数据保护** - 桶版本控制、跨区复制、事件通知、访问日志（示例见 `examples/rustfs/data_protection.go`）
 
 ## 🚀 安装
 
@@ -78,6 +79,12 @@ err := bucketSvc.Create(ctx, "my-bucket",
     bucket.WithRegion("us-east-1"),
     bucket.WithObjectLocking(false),
 )
+
+// 启用版本控制与保护配置
+_ = bucketSvc.SetVersioning(ctx, "my-bucket", types.VersioningConfig{Status: "Enabled"})
+_ = bucketSvc.SetReplication(ctx, "my-bucket", []byte(`<ReplicationConfiguration>...</ReplicationConfiguration>`))
+_ = bucketSvc.SetNotification(ctx, "my-bucket", []byte(`<NotificationConfiguration>...</NotificationConfiguration>`))
+_ = bucketSvc.SetLogging(ctx, "my-bucket", []byte(`<BucketLoggingStatus>...</BucketLoggingStatus>`))
 
 // 列出所有存储桶
 buckets, err := bucketSvc.List(ctx)

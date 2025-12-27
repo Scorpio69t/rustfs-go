@@ -15,4 +15,10 @@ var (
 
 	// ErrBucketNotEmpty bucket not empty
 	ErrBucketNotEmpty = errors.New("bucket not empty")
+
+	// ErrInvalidVersioningStatus invalid versioning status
+	ErrInvalidVersioningStatus = errors.New("invalid versioning status, must be Enabled or Suspended")
+
+	// ErrEmptyBucketConfig invalid empty bucket configuration payload
+	ErrEmptyBucketConfig = errors.New("configuration payload cannot be empty")
 )

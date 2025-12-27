@@ -34,6 +34,9 @@ type Service interface {
 	// List lists objects
 	List(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo
 
+	// ListVersions lists object versions and delete markers
+	ListVersions(ctx context.Context, bucketName string, opts ...ListOption) <-chan types.ObjectInfo
+
 	// Copy copies an object
 	Copy(ctx context.Context, destBucket, destObject, srcBucket, srcObject string, opts ...CopyOption) (types.CopyInfo, error)
 

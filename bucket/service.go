@@ -41,6 +41,39 @@ type Service interface {
 
 	// DeleteLifecycle removes bucket lifecycle configuration
 	DeleteLifecycle(ctx context.Context, bucketName string) error
+
+	// SetVersioning sets bucket versioning configuration
+	SetVersioning(ctx context.Context, bucketName string, cfg types.VersioningConfig) error
+
+	// GetVersioning retrieves bucket versioning configuration
+	GetVersioning(ctx context.Context, bucketName string) (types.VersioningConfig, error)
+
+	// SetReplication sets bucket cross-region replication configuration
+	SetReplication(ctx context.Context, bucketName string, config []byte) error
+
+	// GetReplication retrieves bucket replication configuration
+	GetReplication(ctx context.Context, bucketName string) ([]byte, error)
+
+	// DeleteReplication removes bucket replication configuration
+	DeleteReplication(ctx context.Context, bucketName string) error
+
+	// SetNotification sets bucket event notification configuration
+	SetNotification(ctx context.Context, bucketName string, config []byte) error
+
+	// GetNotification retrieves bucket event notification configuration
+	GetNotification(ctx context.Context, bucketName string) ([]byte, error)
+
+	// DeleteNotification removes bucket event notification configuration
+	DeleteNotification(ctx context.Context, bucketName string) error
+
+	// SetLogging sets bucket access logging configuration
+	SetLogging(ctx context.Context, bucketName string, config []byte) error
+
+	// GetLogging retrieves bucket access logging configuration
+	GetLogging(ctx context.Context, bucketName string) ([]byte, error)
+
+	// DeleteLogging removes bucket access logging configuration
+	DeleteLogging(ctx context.Context, bucketName string) error
 }
 
 // CreateOption create bucket options function

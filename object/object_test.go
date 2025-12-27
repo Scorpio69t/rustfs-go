@@ -203,11 +203,12 @@ func TestApplyListOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "With stop channel",
-			opts: []ListOption{WithListStopChan(stopCh)},
+			name: "With versions",
+			opts: []ListOption{WithListVersions(), WithListMetadata(true), WithListMaxKeys(10)},
 			want: ListOptions{
-				StopChan: stopCh,
-				MaxKeys:  1000,
+				MaxKeys:      10,
+				WithVersions: true,
+				WithMetadata: true,
 			},
 		},
 	}
