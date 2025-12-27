@@ -30,6 +30,7 @@ RustFS Go SDK is a comprehensive Go client library for interacting with the Rust
 - ✅ **Error Handling** - Robust error handling and retry mechanisms
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
+- ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers
 
 ## 🚀 Installation
 
@@ -78,6 +79,12 @@ err := bucketSvc.Create(ctx, "my-bucket",
     bucket.WithRegion("us-east-1"),
     bucket.WithObjectLocking(false),
 )
+
+// Enable versioning and configure protection features
+_ = bucketSvc.SetVersioning(ctx, "my-bucket", types.VersioningConfig{Status: "Enabled"})
+_ = bucketSvc.SetReplication(ctx, "my-bucket", []byte(`<ReplicationConfiguration>...</ReplicationConfiguration>`))
+_ = bucketSvc.SetNotification(ctx, "my-bucket", []byte(`<NotificationConfiguration>...</NotificationConfiguration>`))
+_ = bucketSvc.SetLogging(ctx, "my-bucket", []byte(`<BucketLoggingStatus>...</BucketLoggingStatus>`))
 
 // List all buckets
 buckets, err := bucketSvc.List(ctx)

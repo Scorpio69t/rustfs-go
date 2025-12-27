@@ -92,10 +92,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] File helpers (fput/fget for path-based upload/download)
 
 ### v1.1.4 (Planned)
-- [ ] Object versioning
-- [ ] Cross-region replication
-- [ ] Event notifications
-- [ ] Access logging
+- [x] Object versioning
+- [x] Cross-region replication
+- [x] Event notifications
+- [x] Access logging
 
 ---
 

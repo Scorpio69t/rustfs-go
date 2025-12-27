@@ -200,6 +200,15 @@ func TestApplyListOptions(t *testing.T) {
 				MaxKeys:   1000,
 			},
 		},
+		{
+			name: "With versions",
+			opts: []ListOption{WithListVersions(), WithListMetadata(true), WithListMaxKeys(10)},
+			want: ListOptions{
+				MaxKeys:      10,
+				WithVersions: true,
+				WithMetadata: true,
+			},
+		},
 	}
 
 	for _, tt := range tests {
