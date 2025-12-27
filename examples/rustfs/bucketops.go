@@ -86,6 +86,10 @@ func main() {
 			break
 		}
 		count++
+		if obj.IsPrefix {
+			log.Printf("  %d. %s (Folder)\n", count, obj.Key)
+			continue
+		}
 		log.Printf("  %d. %s (Size: %d bytes, Modified: %s)\n",
 			count, obj.Key, obj.Size, obj.LastModified.Format("2006-01-02 15:04:05"))
 	}

@@ -120,6 +120,9 @@ type ListOptions struct {
 	// Recursive listing
 	Recursive bool
 
+	// StopChan is an optional signal channel to stop listing early
+	StopChan <-chan struct{}
+
 	// Max keys
 	MaxKeys int
 
@@ -339,6 +342,13 @@ func WithListPrefix(prefix string) ListOption {
 func WithListRecursive(recursive bool) ListOption {
 	return func(opts *ListOptions) {
 		opts.Recursive = recursive
+	}
+}
+
+// WithListStopChan sets a channel to stop listing early
+func WithListStopChan(ch <-chan struct{}) ListOption {
+	return func(opts *ListOptions) {
+		opts.StopChan = ch
 	}
 }
 

@@ -172,6 +172,8 @@ func TestApplyGetOptions(t *testing.T) {
 }
 
 func TestApplyListOptions(t *testing.T) {
+	stopCh := make(chan struct{})
+
 	tests := []struct {
 		name string
 		opts []ListOption
@@ -222,6 +224,9 @@ func TestApplyListOptions(t *testing.T) {
 			}
 			if got.Recursive != tt.want.Recursive {
 				t.Errorf("Recursive = %v, want %v", got.Recursive, tt.want.Recursive)
+			}
+			if got.StopChan != tt.want.StopChan {
+				t.Errorf("StopChan = %v, want %v", got.StopChan, tt.want.StopChan)
 			}
 		})
 	}

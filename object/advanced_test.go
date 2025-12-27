@@ -3,6 +3,7 @@ package object
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -69,6 +70,24 @@ func TestList(t *testing.T) {
 			wantErr:      false,
 		},
 		{
+			name:       "List with common prefix",
+			bucketName: "test-bucket",
+			responseXML: `<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+    <Name>test-bucket</Name>
+    <Prefix></Prefix>
+    <KeyCount>0</KeyCount>
+    <MaxKeys>1000</MaxKeys>
+    <Delimiter>/</Delimiter>
+    <IsTruncated>false</IsTruncated>
+    <CommonPrefixes>
+        <Prefix>demo/</Prefix>
+    </CommonPrefixes>
+</ListBucketResult>`,
+			expectedKeys: []string{"demo/"},
+			wantErr:      false,
+		},
+		{
 			name:       "Invalid bucket name",
 			bucketName: "",
 			wantErr:    true,
@@ -93,12 +112,14 @@ func TestList(t *testing.T) {
 
 			var keys []string
 			var hasError bool
+			var prefixFlags []bool
 			for obj := range objectCh {
 				if obj.Err != nil {
 					hasError = true
 					break
 				}
 				keys = append(keys, obj.Key)
+				prefixFlags = append(prefixFlags, obj.IsPrefix)
 			}
 
 			if (hasError) != tt.wantErr {
@@ -109,7 +130,65 @@ func TestList(t *testing.T) {
 			if !tt.wantErr && len(keys) != len(tt.expectedKeys) {
 				t.Errorf("List() returned %d keys, want %d", len(keys), len(tt.expectedKeys))
 			}
+
+			if tt.name == "List with common prefix" && len(prefixFlags) > 0 && !prefixFlags[0] {
+				t.Errorf("Expected first entry to be a prefix, got IsPrefix=%v", prefixFlags[0])
+			}
 		})
+	}
+}
+
+func TestListStopChannel(t *testing.T) {
+	responseXML := `<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult>
+    <Name>test-bucket</Name>
+    <Prefix></Prefix>
+    <KeyCount>2</KeyCount>
+    <MaxKeys>1000</MaxKeys>
+    <IsTruncated>false</IsTruncated>
+    <Contents>
+        <Key>file1.txt</Key>
+        <ETag>"abc123"</ETag>
+        <Size>1024</Size>
+    </Contents>
+    <Contents>
+        <Key>file2.txt</Key>
+        <ETag>"def456"</ETag>
+        <Size>2048</Size>
+    </Contents>
+</ListBucketResult>`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(responseXML))
+	}))
+	defer server.Close()
+
+	service := createAdvancedTestService(t, server)
+	ctx := context.Background()
+	stopCh := make(chan struct{})
+	objectCh := service.List(ctx, "test-bucket", WithListStopChan(stopCh))
+
+	var keys []string
+	var stopErr error
+	for obj := range objectCh {
+		if obj.Err != nil {
+			stopErr = obj.Err
+			break
+		}
+		keys = append(keys, obj.Key)
+		if len(keys) == 1 {
+			close(stopCh)
+		}
+	}
+
+	if !errors.Is(stopErr, ErrListStopped) {
+		t.Fatalf("expected ErrListStopped, got %v", stopErr)
+	}
+
+	if len(keys) != 1 || keys[0] != "file1.txt" {
+		t.Fatalf("expected to receive only the first object before stopping, got %v", keys)
 	}
 }
 

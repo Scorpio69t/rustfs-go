@@ -51,6 +51,50 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 
 		// Apply options
 		options := applyListOptions(opts)
+		stopCh := options.StopChan
+
+		// shouldStop checks whether listing should stop due to context or stop channel
+		shouldStop := func() error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+			if stopCh != nil {
+				select {
+				case <-stopCh:
+					return ErrListStopped
+				default:
+				}
+			}
+			return nil
+		}
+
+		// sendOrBreak sends an object or exits when canceled/stopped
+		sendOrBreak := func(obj types.ObjectInfo) bool {
+			if err := shouldStop(); err != nil && obj.Err == nil {
+				obj.Err = err
+			}
+
+			if obj.Err != nil {
+				select {
+				case objectCh <- obj:
+				case <-ctx.Done():
+					objectCh <- types.ObjectInfo{Err: ctx.Err()}
+				}
+				return false
+			}
+
+			select {
+			case objectCh <- obj:
+				return true
+			case <-ctx.Done():
+				objectCh <- types.ObjectInfo{Err: ctx.Err()}
+			case <-stopCh:
+				objectCh <- types.ObjectInfo{Err: ErrListStopped}
+			}
+			return false
+		}
 
 		// Switch to version listing if requested
 		if options.WithVersions {
@@ -71,18 +115,16 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 		var continuationToken string
 
 		for {
-			// Check if context canceled
-			select {
-			case <-ctx.Done():
-				objectCh <- types.ObjectInfo{Err: ctx.Err()}
+			// Check if context canceled or stop requested
+			if err := shouldStop(); err != nil {
+				sendOrBreak(types.ObjectInfo{Err: err})
 				return
-			default:
 			}
 
 			// Query object list (up to 1000)
 			result, err := s.listObjectsV2Query(ctx, bucketName, &options, delimiter, continuationToken)
 			if err != nil {
-				objectCh <- types.ObjectInfo{Err: err}
+				sendOrBreak(types.ObjectInfo{Err: err})
 				return
 			}
 
@@ -91,20 +133,14 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 				// Remove ETag quotes
 				object.ETag = trimETag(object.ETag)
 
-				select {
-				case objectCh <- object:
-				case <-ctx.Done():
-					objectCh <- types.ObjectInfo{Err: ctx.Err()}
+				if !sendOrBreak(object) {
 					return
 				}
 			}
 
 			// Send common prefixes (when using delimiter)
 			for _, prefix := range result.CommonPrefixes {
-				select {
-				case objectCh <- types.ObjectInfo{Key: prefix.Prefix}:
-				case <-ctx.Done():
-					objectCh <- types.ObjectInfo{Err: ctx.Err()}
+				if !sendOrBreak(types.ObjectInfo{Key: prefix.Prefix, IsPrefix: true}) {
 					return
 				}
 			}
@@ -121,9 +157,7 @@ func (s *objectService) List(ctx context.Context, bucketName string, opts ...Lis
 
 			// Prevent infinite loop (some S3 implementations may bug)
 			if continuationToken == "" {
-				objectCh <- types.ObjectInfo{
-					Err: fmt.Errorf("list is truncated without continuation token"),
-				}
+				sendOrBreak(types.ObjectInfo{Err: fmt.Errorf("list is truncated without continuation token")})
 				return
 			}
 		}
