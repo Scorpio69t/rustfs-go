@@ -30,7 +30,7 @@ RustFS Go SDK is a comprehensive Go client library for interacting with the Rust
 - ✅ **Error Handling** - Robust error handling and retry mechanisms
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
-- ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers
+- ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers (see `examples/rustfs/data_protection.go`)
 
 ## 🚀 Installation
 
