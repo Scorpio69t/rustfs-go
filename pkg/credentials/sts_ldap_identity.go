@@ -54,7 +54,7 @@ type LDAPIdentityResult struct {
 }
 
 // LDAPIdentity retrieves credentials from RustFS
-type LDAPIdentity struct{
+type LDAPIdentity struct {
 	Expiry
 
 	// Optional http Client to use when connecting to RustFS STS service.
