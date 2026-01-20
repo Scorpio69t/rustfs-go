@@ -20,18 +20,18 @@
   - [x] file-download.go - 下载到文件
   - [x] object-stat.go - 获取对象信息
   - [x] object-delete.go - 删除对象
-  - [ ] object-delete-multiple.go - 批量删除对象
+  - [x] object-delete-multiple.go - 批量删除对象
   - [x] object-copy.go - 复制对象
   - [x] object-list.go - 列出对象
-- [ ] 2.3 对象列表操作（剩余功能）
-  - [ ] object-list-versions.go - 列出对象版本
+- [x] 2.3 对象列表操作（剩余功能）
+  - [x] object-list-versions.go - 列出对象版本
 
 ## 3. 高级功能示例迁移（第二批：版本控制和标签）
 - [x] 3.1 版本控制（4个文件）
   - [x] versioning-enable.go - 启用版本控制
   - [x] versioning-suspend.go - 暂停版本控制
   - [x] versioning-status.go - 获取版本控制状态
-  - [ ] versioning-list.go - 列出对象版本
+  - [x] versioning-list.go - 列出对象版本
 - [x] 3.2 对象标签（4个文件）
   - [x] tagging-object-set.go - 设置对象标签
   - [x] tagging-object-get.go - 获取对象标签
@@ -102,18 +102,19 @@
 - [x] 9.4 确认无版权问题（无 MinIO 声明）
 
 ## 10. 文档更新
-- [ ] 10.1 更新 README.md 中的示例引用
-- [ ] 10.2 更新 README.zh.md 中的示例引用
+- [x] 10.1 更新 README.md 中的示例引用
+- [x] 10.2 更新 README.zh.md 中的示例引用
 - [x] 10.3 在 examples/s3/README.md 中添加示例索引
-- [ ] 10.4 更新 CHANGELOG.md 记录此变更
+- [x] 10.4 更新 CHANGELOG.md 记录此变更
 
 ## 总结
-已完成示例数量：24 个
+已完成示例数量：26 个
 - ✅ 存储桶基础操作：5个
-- ✅ 对象基础操作：8个
-- ✅ 版本控制：3个
+- ✅ 对象基础操作：9个（包含批量删除）
+- ✅ 版本控制：4个（包含列出版本）
 - ✅ 对象标签：3个
 - ✅ 策略管理：3个
 - ✅ 预签名 URL：2个
 
 核心功能已全部覆盖，所有示例已通过实际运行测试！
+文档已全部更新（README.md, README.zh.md, CHANGELOG.md）。

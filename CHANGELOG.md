@@ -42,6 +42,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Smart retry policy (network errors and selected HTTP status codes)
 - Automatic path-style selection for IP endpoints
 
+#### Examples
+- **26 S3 API examples** – comprehensive examples for standard S3 operations in `examples/s3/`:
+  - Bucket operations (5): create, delete, list, exists, location
+  - Object operations (9): put, get, copy, delete, stat, list, file upload/download, multiple delete
+  - Versioning (4): enable, suspend, status, list versions
+  - Object tagging (3): set, get, delete tags
+  - Bucket policies (3): set, get, delete policies
+  - Presigned URLs (2): GET and PUT presigned URLs
+- **8 RustFS examples** – advanced features in `examples/rustfs/`:
+  - Bucket and object operations
+  - Multipart upload
+  - Health checks and HTTP tracing
+  - Object tagging, bucket policies, lifecycle management
+  - Data protection (versioning, replication, notifications, logging)
+
 ### Technical Details
 
 #### New Modules
