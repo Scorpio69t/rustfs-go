@@ -220,8 +220,8 @@
 ### 5.5 高级操作示例
 - [ ] 5.5.1 对象组合示例
   - [ ] object-compose.go
-- [ ] 5.5.2 对象追加示例
-  - [ ] object-append.go
+- [x] 5.5.2 对象追加示例
+  - [x] object-append.go
 - [ ] 5.5.3 Select 查询示例
   - [ ] object-select-csv.go
   - [ ] object-select-json.go
