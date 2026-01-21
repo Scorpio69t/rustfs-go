@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：删除存储桶策略
-// 演示如何使用 RustFS Go SDK 删除存储桶的访问策略
+// Example: Delete bucket policy
+// Demonstrates how to delete a bucket access policy using the RustFS Go SDK
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
 		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
 		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
@@ -22,28 +22,28 @@ func main() {
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Bucket 服务
+	// Get Bucket service
 	bucketSvc := client.Bucket()
 
 	bucketName := YOURBUCKET
 
-	// 删除存储桶策略
+	// Delete bucket policy
 	err = bucketSvc.DeletePolicy(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("删除存储桶策略失败: %v", err)
+		log.Fatalf("Failed to delete bucket policy: %v", err)
 	}
 
-	log.Printf("✅ 存储桶 '%s' 的策略已删除", bucketName)
-	log.Println("\n提示：存储桶现在没有公共访问策略")
+	log.Printf("✅ Policy deleted for bucket '%s'", bucketName)
+	log.Println("\nTip: The bucket now has no public access policy")
 }

@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：流式上传对象
-// 演示如何使用流式上传大文件
+// Example: Streaming upload
+// Demonstrates how to perform streaming uploads for large files
 package main
 
 import (
@@ -25,7 +25,7 @@ const (
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -39,16 +39,16 @@ func main() {
 
 	objectName := "streaming-upload.txt"
 
-	// 创建一个大的数据流（模拟流式数据）
-	// 实际应用中可以是文件流、网络流等
+	// Create a large data stream (simulate streaming data)
+	// In real use this could be a file stream, network stream, etc.
 	data := strings.Repeat("This is a streaming upload test. ", 1000)
 	reader := strings.NewReader(data)
 
-	fmt.Printf("开始流式上传对象 '%s'...\n", objectName)
-	fmt.Printf("数据大小: %d 字节\n", len(data))
+	fmt.Printf("Starting streaming upload for '%s'...\n", objectName)
+	fmt.Printf("Data size: %d bytes\n", len(data))
 
 	// 流式上传
-	// 注意：-1 表示未知大小，SDK 会使用分块上传
+	// Note: -1 indicates unknown size and the SDK will use multipart uploads
 	uploadInfo, err := service.Put(
 		ctx,
 		bucket,
@@ -58,13 +58,13 @@ func main() {
 		object.WithContentType("text/plain"),
 	)
 	if err != nil {
-		log.Fatalf("流式上传失败: %v\n", err)
+		log.Fatalf("Streaming upload failed: %v\n", err)
 	}
 
-	fmt.Println("\n✅ 上传成功")
-	fmt.Printf("对象名: %s\n", uploadInfo.Key)
+	fmt.Println("\n✅ Upload successful")
+	fmt.Printf("Object: %s\n", uploadInfo.Key)
 	fmt.Printf("ETag: %s\n", uploadInfo.ETag)
-	fmt.Printf("大小: %d 字节\n", uploadInfo.Size)
+	fmt.Printf("Size: %d bytes\n", uploadInfo.Size)
 }
 
 // ProgressReader 是一个带进度显示的 Reader

@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：上传带标签的对象
-// 演示如何在上传对象时直接设置标签
+// Example: Upload an object with tags
+// Demonstrates how to set tags when uploading an object
 package main
 
 import (
@@ -24,7 +24,7 @@ const (
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -37,7 +37,7 @@ func main() {
 	service := client.Object()
 
 	objectName := "tagged-object.txt"
-	content := "这是一个带标签的对象"
+	content := "This is an object with tags"
 
 	// 定义对象标签
 	tags := map[string]string{
@@ -47,7 +47,7 @@ func main() {
 		"Category":    "Sample",
 	}
 
-	fmt.Printf("上传对象 '%s' 并设置标签...\n", objectName)
+	fmt.Printf("Uploading object '%s' with tags...\n", objectName)
 
 	// 上传对象时设置标签
 	reader := strings.NewReader(content)
@@ -61,27 +61,27 @@ func main() {
 		object.WithUserTags(tags),
 	)
 	if err != nil {
-		log.Fatalf("上传对象失败: %v\n", err)
+		log.Fatalf("Failed to upload object: %v\n", err)
 	}
 
-	fmt.Printf("✅ 对象上传成功\n")
-	fmt.Printf("   对象名: %s\n", uploadInfo.Key)
+	fmt.Printf("✅ Object uploaded successfully\n")
+	fmt.Printf("   Key: %s\n", uploadInfo.Key)
 	fmt.Printf("   ETag: %s\n", uploadInfo.ETag)
-	fmt.Printf("   大小: %d 字节\n", uploadInfo.Size)
+	fmt.Printf("   Size: %d bytes\n", uploadInfo.Size)
 
 	// 读取对象标签以验证
-	fmt.Println("\n验证对象标签...")
+	fmt.Println("\nVerifying object tags...")
 	objectTags, err := service.GetTagging(ctx, bucket, objectName)
 	if err != nil {
-		log.Fatalf("获取标签失败: %v\n", err)
+		log.Fatalf("Failed to get tags: %v", err)
 	}
 
 	if len(objectTags) == 0 {
-		fmt.Println("⚠️  对象没有标签")
+		fmt.Println("⚠️  No tags found for object")
 		return
 	}
 
-	fmt.Println("✅ 对象标签:")
+	fmt.Println("✅ Object tags:")
 	for key, value := range objectTags {
 		fmt.Printf("   %s = %s\n", key, value)
 	}

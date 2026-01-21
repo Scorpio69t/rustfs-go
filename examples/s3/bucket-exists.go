@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：检查存储桶是否存在
-// 演示如何使用 RustFS Go SDK 检查存储桶是否存在
+// Example: Check if a bucket exists
+// Demonstrates how to check bucket existence using the RustFS Go SDK
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
 		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
 		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
@@ -22,43 +22,43 @@ func main() {
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Bucket 服务
+	// Get Bucket service
 	bucketSvc := client.Bucket()
 
-	// 检查存储桶是否存在
+	// Check if bucket exists
 	bucketName := YOURBUCKET
 	exists, err := bucketSvc.Exists(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("检查存储桶失败: %v", err)
+		log.Fatalf("Failed to check bucket: %v", err)
 	}
 
 	if exists {
-		log.Printf("✅ 存储桶 '%s' 存在", bucketName)
+		log.Printf("✅ Bucket '%s' exists", bucketName)
 	} else {
-		log.Printf("❌ 存储桶 '%s' 不存在", bucketName)
+		log.Printf("❌ Bucket '%s' does not exist", bucketName)
 	}
 
-	// 检查一个不存在的存储桶
+	// Check a non-existent bucket
 	nonExistentBucket := "this-bucket-does-not-exist-12345"
 	exists, err = bucketSvc.Exists(ctx, nonExistentBucket)
 	if err != nil {
-		log.Fatalf("检查存储桶失败: %v", err)
+		log.Fatalf("Failed to check bucket: %v", err)
 	}
 
 	if exists {
-		log.Printf("✅ 存储桶 '%s' 存在", nonExistentBucket)
+		log.Printf("✅ Bucket '%s' exists", nonExistentBucket)
 	} else {
-		log.Printf("❌ 存储桶 '%s' 不存在", nonExistentBucket)
+		log.Printf("❌ Bucket '%s' does not exist", nonExistentBucket)
 	}
 }

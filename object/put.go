@@ -148,13 +148,13 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		return types.UploadInfo{}, err
 	}
 
-	// Get object size (if present in response)
+	// Set object size (use request size, override if response provides valid Content-Length)
+	uploadInfo.Size = objectSize
 	if contentLength := resp.Header.Get("Content-Length"); contentLength != "" {
-		if size, err := strconv.ParseInt(contentLength, 10, 64); err == nil {
+		if size, err := strconv.ParseInt(contentLength, 10, 64); err == nil && size > 0 {
+			// Only use Content-Length if it's greater than 0
 			uploadInfo.Size = size
 		}
-	} else {
-		uploadInfo.Size = objectSize
 	}
 
 	return uploadInfo, nil

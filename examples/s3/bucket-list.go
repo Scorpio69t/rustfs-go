@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：列出所有存储桶
-// 演示如何使用 RustFS Go SDK 列出账户下的所有存储桶
+// Example: List all buckets
+// Demonstrates how to use the RustFS Go SDK to list all buckets in the account
 package main
 
 import (
@@ -27,7 +27,7 @@ func main() {
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Unable to create client: %v", err)
 	}
 
 	ctx := context.Background()
@@ -35,26 +35,26 @@ func main() {
 	// 获取 Bucket 服务
 	bucketSvc := client.Bucket()
 
-	// 列出所有存储桶
+	// List all buckets
 	buckets, err := bucketSvc.List(ctx)
 	if err != nil {
-		log.Fatalf("列出存储桶失败: %v", err)
+		log.Fatalf("Failed to list buckets: %v", err)
 	}
 
-	// 显示结果
-	log.Printf("找到 %d 个存储桶:", len(buckets))
+	// Show results
+	log.Printf("Found %d buckets:", len(buckets))
 	log.Println("----------------------------------------")
 
 	for i, bucket := range buckets {
-		log.Printf("%d. 名称: %s", i+1, bucket.Name)
-		log.Printf("   创建时间: %s", bucket.CreationDate.Format("2006-01-02 15:04:05"))
+		log.Printf("%d. Name: %s", i+1, bucket.Name)
+		log.Printf("   Created: %s", bucket.CreationDate.Format("2006-01-02 15:04:05"))
 		if bucket.Region != "" {
-			log.Printf("   区域: %s", bucket.Region)
+			log.Printf("   Region: %s", bucket.Region)
 		}
 		log.Println("----------------------------------------")
 	}
 
 	if len(buckets) == 0 {
-		log.Println("当前没有存储桶")
+		log.Println("No buckets found")
 	}
 }

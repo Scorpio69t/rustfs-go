@@ -28,7 +28,7 @@ type Rule struct {
 
 // ApplySSEByDefault specifies the default encryption settings
 type ApplySSEByDefault struct {
-	SSEAlgorithm   string `xml:"SSEAlgorithm"`           // AES256 or aws:kms
+	SSEAlgorithm   string `xml:"SSEAlgorithm"`             // AES256 or aws:kms
 	KMSMasterKeyID string `xml:"KMSMasterKeyID,omitempty"` // KMS key ID for aws:kms
 }
 
@@ -89,7 +89,7 @@ func NewSSEC(key []byte) (*C, error) {
 func (c *C) ApplyHeaders(h http.Header) {
 	h.Set("X-Amz-Server-Side-Encryption-Customer-Algorithm", c.Algorithm)
 	h.Set("X-Amz-Server-Side-Encryption-Customer-Key", base64.StdEncoding.EncodeToString(c.Key))
-	
+
 	// Calculate and set MD5 of the key
 	md5sum := md5.Sum(c.Key)
 	h.Set("X-Amz-Server-Side-Encryption-Customer-Key-MD5", base64.StdEncoding.EncodeToString(md5sum[:]))
@@ -104,7 +104,7 @@ func (c *C) Type() Type {
 func (c *C) ApplyCopyHeaders(h http.Header) {
 	h.Set("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Algorithm", c.Algorithm)
 	h.Set("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key", base64.StdEncoding.EncodeToString(c.Key))
-	
+
 	md5sum := md5.Sum(c.Key)
 	h.Set("X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key-MD5", base64.StdEncoding.EncodeToString(md5sum[:]))
 }
@@ -126,11 +126,11 @@ func NewSSEKMS(keyID string, context map[string]string) *KMS {
 // ApplyHeaders applies SSE-KMS headers to the request
 func (k *KMS) ApplyHeaders(h http.Header) {
 	h.Set("X-Amz-Server-Side-Encryption", "aws:kms")
-	
+
 	if k.KeyID != "" {
 		h.Set("X-Amz-Server-Side-Encryption-Aws-Kms-Key-Id", k.KeyID)
 	}
-	
+
 	if len(k.Context) > 0 {
 		ctx, _ := json.Marshal(k.Context)
 		h.Set("X-Amz-Server-Side-Encryption-Context", base64.StdEncoding.EncodeToString(ctx))

@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：获取存储桶位置
-// 演示如何使用 RustFS Go SDK 获取存储桶的区域位置
+// Example: Get bucket location
+// Demonstrates how to retrieve the region/location of a bucket using the RustFS Go SDK
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
 		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
 		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
@@ -22,30 +22,29 @@ func main() {
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Bucket 服务
+	// Get Bucket service
 	bucketSvc := client.Bucket()
 
-	// 获取存储桶位置
+	// Get bucket location
 	bucketName := YOURBUCKET
 	location, err := bucketSvc.GetLocation(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("获取存储桶位置失败: %v", err)
+		log.Fatalf("Failed to get bucket location: %v", err)
 	}
-
-	log.Printf("✅ 存储桶 '%s' 位于区域: %s", bucketName, location)
+	log.Printf("✅ Bucket '%s' is located in region: %s", bucketName, location)
 
 	if location == "" {
-		log.Println("提示：空字符串通常表示默认区域（us-east-1）")
+		log.Println("Tip: an empty string typically indicates the default region (us-east-1)")
 	}
 }

@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：设置存储桶生命周期策略
-// 演示如何配置对象自动过期和转换规则
+// Example: Set bucket lifecycle policy
+// Demonstrates how to configure object expiration and transition rules
 package main
 
 import (
@@ -22,7 +22,7 @@ const (
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -59,16 +59,16 @@ func main() {
 	</Rule>
 </LifecycleConfiguration>`
 
-	fmt.Printf("为存储桶 '%s' 设置生命周期策略...\n", bucket)
+	fmt.Printf("Setting lifecycle policy for bucket '%s'...\n", bucket)
 
-	// 设置生命周期配置
+	// Set lifecycle configuration
 	err = service.SetLifecycle(ctx, bucket, []byte(lifecycleConfig))
 	if err != nil {
-		log.Fatalf("设置生命周期配置失败: %v\n", err)
+		log.Fatalf("Failed to set lifecycle configuration: %v\n", err)
 	}
 
-	fmt.Println("✅ 生命周期配置设置成功")
-	fmt.Println("\n生命周期规则:")
-	fmt.Println("  1. temp/ 目录：30 天后自动删除")
-	fmt.Println("  2. logs/ 目录：90 天后自动删除")
+	fmt.Println("✅ Lifecycle configuration set successfully")
+	fmt.Println("\nLifecycle rules:")
+	fmt.Println("  1. temp/ : expire after 30 days")
+	fmt.Println("  2. logs/ : expire after 90 days")
 }

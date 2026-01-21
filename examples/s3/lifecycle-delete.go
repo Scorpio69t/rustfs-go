@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：删除存储桶生命周期策略
-// 演示如何移除生命周期配置
+// Example: Delete bucket lifecycle policy
+// Demonstrates how to remove a bucket's lifecycle configuration
 package main
 
 import (
@@ -22,7 +22,7 @@ const (
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -34,13 +34,13 @@ func main() {
 	ctx := context.Background()
 	service := client.Bucket()
 
-	fmt.Printf("删除存储桶 '%s' 的生命周期配置...\n", bucket)
+	fmt.Printf("Deleting lifecycle configuration for bucket '%s'...\n", bucket)
 
-	// 删除生命周期配置
+	// Delete lifecycle configuration
 	err = service.DeleteLifecycle(ctx, bucket)
 	if err != nil {
-		log.Fatalf("删除生命周期配置失败: %v\n", err)
+		log.Fatalf("Failed to delete lifecycle configuration: %v\n", err)
 	}
 
-	fmt.Println("✅ 生命周期配置已删除")
+	fmt.Println("✅ Lifecycle configuration deleted")
 }

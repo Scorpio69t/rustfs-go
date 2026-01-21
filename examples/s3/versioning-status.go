@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：获取存储桶版本控制状态
-// 演示如何使用 RustFS Go SDK 获取存储桶的版本控制状态
+// Example: Get bucket versioning status
+// Demonstrates how to use the RustFS Go SDK to get a bucket's versioning status
 package main
 
 import (
@@ -28,7 +28,7 @@ func main() {
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Unable to create client: %v", err)
 	}
 
 	ctx := context.Background()
@@ -41,26 +41,26 @@ func main() {
 	// 获取版本控制状态
 	config, err := bucketSvc.GetVersioning(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("获取版本控制状态失败: %v", err)
+		log.Fatalf("Failed to get versioning status: %v", err)
 	}
 
-	log.Printf("✅ 存储桶 '%s' 版本控制状态:", bucketName)
+	log.Printf("✅ Bucket '%s' versioning status:", bucketName)
 	log.Println("----------------------------------------")
-	log.Printf("  状态: %s", config.Status)
+	log.Printf("  Status: %s", config.Status)
 
 	if config.MFADelete != "" {
-		log.Printf("  MFA 删除: %s", config.MFADelete)
+		log.Printf("  MFA Delete: %s", config.MFADelete)
 	}
 
 	log.Println()
 	if config.IsEnabled() {
-		log.Println("  ✅ 版本控制已启用")
-		log.Println("  新上传的对象将生成版本ID")
+		log.Println("  ✅ Versioning is enabled")
+		log.Println("  New object uploads will receive a version ID")
 	} else if config.IsSuspended() {
-		log.Println("  ⏸️  版本控制已暂停")
-		log.Println("  新上传的对象不会生成版本ID")
+		log.Println("  ⏸️  Versioning is suspended")
+		log.Println("  New object uploads will not receive a version ID")
 	} else {
-		log.Println("  ❌ 版本控制未启用")
+		log.Println("  ❌ Versioning is not enabled")
 	}
 	log.Println("----------------------------------------")
 }

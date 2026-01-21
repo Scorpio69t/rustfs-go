@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：获取存储桶生命周期策略
-// 演示如何查询当前的生命周期配置
+// Example: Get bucket lifecycle policy
+// Demonstrates how to retrieve the current lifecycle configuration
 package main
 
 import (
@@ -22,7 +22,7 @@ const (
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -34,19 +34,19 @@ func main() {
 	ctx := context.Background()
 	service := client.Bucket()
 
-	fmt.Printf("获取存储桶 '%s' 的生命周期配置...\n\n", bucket)
+	fmt.Printf("Retrieving lifecycle configuration for bucket '%s'...\n\n", bucket)
 
-	// 获取生命周期配置
+	// Get lifecycle configuration
 	config, err := service.GetLifecycle(ctx, bucket)
 	if err != nil {
-		log.Fatalf("获取生命周期配置失败: %v\n", err)
+		log.Fatalf("Failed to get lifecycle configuration: %v\n", err)
 	}
 
 	if len(config) == 0 {
-		fmt.Println("该存储桶没有配置生命周期策略")
+		fmt.Println("No lifecycle configuration is set for this bucket")
 		return
 	}
 
-	fmt.Println("✅ 生命周期配置:")
+	fmt.Println("✅ Lifecycle configuration:")
 	fmt.Println(string(config))
 }

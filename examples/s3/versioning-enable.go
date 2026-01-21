@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：启用存储桶版本控制
-// 演示如何使用 RustFS Go SDK 启用存储桶的版本控制
+// Example: Enable bucket versioning
+// Demonstrates how to use the RustFS Go SDK to enable bucket versioning
 package main
 
 import (
@@ -29,7 +29,7 @@ func main() {
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Unable to create client: %v", err)
 	}
 
 	ctx := context.Background()
@@ -46,20 +46,20 @@ func main() {
 
 	err = bucketSvc.SetVersioning(ctx, bucketName, versioningConfig)
 	if err != nil {
-		log.Fatalf("启用版本控制失败: %v", err)
+		log.Fatalf("Failed to enable versioning: %v", err)
 	}
 
-	log.Printf("✅ 存储桶 '%s' 已启用版本控制", bucketName)
+	log.Printf("✅ Bucket '%s' versioning enabled", bucketName)
 
-	// 验证版本控制状态
+	// Verify versioning status
 	config, err := bucketSvc.GetVersioning(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("获取版本控制状态失败: %v", err)
+		log.Fatalf("Failed to get versioning status: %v", err)
 	}
 
-	log.Println("\n当前版本控制状态:")
-	log.Printf("  状态: %s", config.Status)
+	log.Println("\nCurrent versioning status:")
+	log.Printf("  Status: %s", config.Status)
 	if config.IsEnabled() {
-		log.Println("  ✅ 版本控制已启用")
+		log.Println("  ✅ Versioning is enabled")
 	}
 }
