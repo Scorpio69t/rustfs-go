@@ -348,25 +348,48 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 📝 Examples
 
-More example code can be found in the [examples/rustfs](examples/rustfs/) directory:
+We provide comprehensive examples in two directories:
 
-- [Bucket Operations](examples/rustfs/bucketops.go)
-- [Object Operations](examples/rustfs/objectops.go)
-- [Multipart Upload](examples/rustfs/multipart.go)
-- [Health Check](examples/rustfs/health.go)
-- [HTTP Tracing](examples/rustfs/trace.go)
+### 🔧 RustFS Examples ([examples/rustfs](examples/rustfs/))
+
+Advanced examples demonstrating RustFS features:
+
+- [Bucket Operations](examples/rustfs/bucketops.go) - Create, list, delete buckets
+- [Object Operations](examples/rustfs/objectops.go) - Upload, download, copy objects
+- [Multipart Upload](examples/rustfs/multipart.go) - Large file upload with multipart
+- [Health Check](examples/rustfs/health.go) - Service health monitoring
+- [HTTP Tracing](examples/rustfs/trace.go) - Request tracing and debugging
+- [Object Tagging](examples/rustfs/object_tagging.go) - Tag management
+- [Bucket Policy & Lifecycle](examples/rustfs/bucket_policy_lifecycle.go) - Policy and lifecycle configuration
+- [Data Protection](examples/rustfs/data_protection.go) - Versioning, replication, notifications, logging
+
+### 📦 S3 Compatible Examples ([examples/s3](examples/s3/))
+
+Standard S3 API examples (35 examples covering all common operations):
+
+- **Bucket Operations** (5): create, delete, list, exists, location
+- **Object Operations** (11): put, get, copy, delete, stat, list, list versions, file upload/download, batch delete, streaming, progress
+- **Versioning** (3): enable, suspend, status
+- **Tagging** (4): set, get, delete tags, put with tags
+- **Bucket Policy** (3): set, get, delete policies
+- **Lifecycle Management** (3): set, get, delete lifecycle rules
+- **Presigned URLs** (3): GET, PUT, and GET with response header override
+- **Health Check** (1): service health monitoring
+
+See [examples/s3/README.md](examples/s3/README.md) for complete list and usage instructions.
 
 ### Run the examples
 
 ```bash
+# RustFS examples
 cd examples/rustfs
-
-# Run examples
 go run -tags example bucketops.go
 go run -tags example objectops.go
-go run -tags example multipart.go
-go run -tags example health.go
-go run -tags example trace.go
+
+# S3 examples
+cd examples/s3
+go run -tags example bucket-create.go
+go run -tags example object-put.go
 ```
 
 > **💡 Tip**: Before running examples, make sure:
