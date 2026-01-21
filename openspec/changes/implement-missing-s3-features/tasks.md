@@ -182,9 +182,9 @@
 - [x] 5.1.1 SSE-S3 加密示例
   - [x] encryption-sse-s3-put.go
   - [x] encryption-sse-s3-get.go
-- [ ] 5.1.2 SSE-C 加密示例
-  - [ ] encryption-sse-c-put.go
-  - [ ] encryption-sse-c-get.go
+- [x] 5.1.2 SSE-C 加密示例
+  - [x] encryption-sse-c-put.go
+  - [x] encryption-sse-c-get.go
 - [ ] 5.1.3 存储桶加密示例
   - [ ] encryption-bucket-set.go
   - [ ] encryption-bucket-get.go
