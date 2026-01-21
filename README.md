@@ -365,14 +365,16 @@ Advanced examples demonstrating RustFS features:
 
 ### 📦 S3 Compatible Examples ([examples/s3](examples/s3/))
 
-Standard S3 API examples (26 examples covering all common operations):
+Standard S3 API examples (35 examples covering all common operations):
 
 - **Bucket Operations** (5): create, delete, list, exists, location
-- **Object Operations** (9): put, get, copy, delete, stat, list, file upload/download
-- **Versioning** (4): enable, suspend, status, list versions
-- **Tagging** (3): set, get, delete object tags
-- **Policies** (3): set, get, delete bucket policies
-- **Presigned URLs** (2): GET and PUT presigned URLs
+- **Object Operations** (11): put, get, copy, delete, stat, list, list versions, file upload/download, batch delete, streaming, progress
+- **Versioning** (3): enable, suspend, status
+- **Tagging** (4): set, get, delete tags, put with tags
+- **Bucket Policy** (3): set, get, delete policies
+- **Lifecycle Management** (3): set, get, delete lifecycle rules
+- **Presigned URLs** (3): GET, PUT, and GET with response header override
+- **Health Check** (1): service health monitoring
 
 See [examples/s3/README.md](examples/s3/README.md) for complete list and usage instructions.
 

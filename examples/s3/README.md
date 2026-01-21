@@ -65,8 +65,10 @@ go run -tags example bucket-create.go
 | `object-copy.go` | 复制对象 |
 | `object-delete.go` | 删除单个对象 |
 | `object-delete-multiple.go` | 批量删除对象 |
-| `object-list.go` | 列出对象（V2） |
-| `object-list-v1.go` | 列出对象（V1） |
+| `object-list.go` | 列出对象 |
+| `object-list-versions.go` | 列出对象版本 |
+| `object-put-streaming.go` | 流式上传对象 |
+| `object-put-progress.go` | 带进度显示的上传 |
 
 ### 📁 文件操作
 
@@ -74,7 +76,6 @@ go run -tags example bucket-create.go
 |---------|---------|
 | `file-upload.go` | 从文件上传对象 |
 | `file-download.go` | 下载对象到文件 |
-| `file-upload-encrypted.go` | 上传加密文件 |
 
 ### 🔄 版本控制
 
@@ -83,7 +84,6 @@ go run -tags example bucket-create.go
 | `versioning-enable.go` | 启用版本控制 |
 | `versioning-suspend.go` | 暂停版本控制 |
 | `versioning-status.go` | 获取版本控制状态 |
-| `versioning-list.go` | 列出对象版本 |
 
 ### 🏷️ 对象标签
 
@@ -93,21 +93,6 @@ go run -tags example bucket-create.go
 | `tagging-object-get.go` | 获取对象标签 |
 | `tagging-object-delete.go` | 删除对象标签 |
 | `tagging-object-put-with-tags.go` | 上传带标签的对象 |
-| `tagging-bucket-set.go` | 设置存储桶标签 |
-| `tagging-bucket-get.go` | 获取存储桶标签 |
-| `tagging-bucket-delete.go` | 删除存储桶标签 |
-
-### 🔒 加密
-
-| 示例文件 | 功能描述 |
-|---------|---------|
-| `encryption-sse-put.go` | SSE 服务端加密上传 |
-| `encryption-sse-get.go` | SSE 服务端加密下载 |
-| `encryption-sse-c-put.go` | SSE-C 客户端提供密钥上传 |
-| `encryption-sse-c-get.go` | SSE-C 客户端提供密钥下载 |
-| `encryption-bucket-set.go` | 设置存储桶默认加密 |
-| `encryption-bucket-get.go` | 获取存储桶加密配置 |
-| `encryption-bucket-delete.go` | 删除存储桶加密配置 |
 
 ### 🔗 预签名 URL
 
@@ -115,22 +100,9 @@ go run -tags example bucket-create.go
 |---------|---------|
 | `presigned-get.go` | 生成预签名 GET URL |
 | `presigned-put.go` | 生成预签名 PUT URL |
-| `presigned-head.go` | 生成预签名 HEAD URL |
-| `presigned-post-policy.go` | 生成预签名 POST Policy |
 | `presigned-get-override-headers.go` | 预签名 GET 并覆盖响应头 |
 
-### 🔐 对象锁定和保留
-
-| 示例文件 | 功能描述 |
-|---------|---------|
-| `lock-config-set.go` | 设置对象锁定配置 |
-| `lock-config-get.go` | 获取对象锁定配置 |
-| `lock-legal-hold-set.go` | 设置法律保留 |
-| `lock-legal-hold-get.go` | 获取法律保留状态 |
-| `lock-retention-set.go` | 设置对象保留 |
-| `lock-retention-get.go` | 获取对象保留 |
-
-### 📋 存储桶策略和配置
+### 📋 存储桶策略和生命周期
 
 | 示例文件 | 功能描述 |
 |---------|---------|
@@ -140,6 +112,12 @@ go run -tags example bucket-create.go
 | `lifecycle-set.go` | 设置生命周期规则 |
 | `lifecycle-get.go` | 获取生命周期规则 |
 | `lifecycle-delete.go` | 删除生命周期规则 |
+
+### 🏥 健康检查
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `health-check.go` | 服务健康检查和监控 |
 
 ### 🔄 跨区复制
 
