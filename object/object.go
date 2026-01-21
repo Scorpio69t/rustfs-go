@@ -30,6 +30,7 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 // - multipart.go: InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload methods
 // - compose.go: Compose method
 // - append.go: Append method
+// - select.go: Select method
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {

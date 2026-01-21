@@ -142,17 +142,17 @@
 ## Phase 4: Query & Restore (Priority: Low)
 
 ### 4.1 Select Object Content
-- [ ] 4.1.1 创建 pkg/select 包
-  - [ ] 定义 SelectOptions 类型
-  - [ ] 定义输入/输出序列化类型
-  - [ ] SQL 表达式支持
-- [ ] 4.1.2 扩展 object service
-  - [ ] Select() 实现
-  - [ ] 流式结果处理
-- [ ] 4.1.3 测试
-  - [ ] CSV 查询测试
-  - [ ] JSON 查询测试
-  - [ ] Parquet 查询测试
+- [x] 4.1.1 创建 pkg/select 包
+  - [x] 定义 SelectOptions 类型
+  - [x] 定义输入/输出序列化类型
+  - [x] SQL 表达式支持
+- [x] 4.1.2 扩展 object service
+  - [x] Select() 实现
+  - [x] 流式结果处理
+- [x] 4.1.3 测试
+  - [x] CSV 查询测试
+  - [x] JSON 查询测试
+  - [x] Parquet 查询测试
 
 ### 4.2 Restore Archived Objects
 - [ ] 4.2.1 定义恢复类型
@@ -274,7 +274,7 @@
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
 - Phase 3: 3/4 子任务完成
-- Phase 4: 0/3 子任务完成
+- Phase 4: 1/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
