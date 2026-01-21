@@ -4,6 +4,7 @@ package bucket
 import (
 	"context"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
@@ -74,6 +75,15 @@ type Service interface {
 
 	// DeleteLogging removes bucket access logging configuration
 	DeleteLogging(ctx context.Context, bucketName string) error
+
+	// SetEncryption sets bucket default encryption configuration
+	SetEncryption(ctx context.Context, bucketName string, config sse.Configuration) error
+
+	// GetEncryption retrieves bucket default encryption configuration
+	GetEncryption(ctx context.Context, bucketName string) (sse.Configuration, error)
+
+	// DeleteEncryption removes bucket default encryption configuration
+	DeleteEncryption(ctx context.Context, bucketName string) error
 }
 
 // CreateOption create bucket options function

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 )
 
 // PutOptions controls object upload behavior
@@ -48,7 +50,10 @@ type PutOptions struct {
 	// Disable Content-SHA256
 	DisableContentSHA256 bool
 
-	// SSE-S3 / SSE-C options
+	// Server-side encryption
+	SSE sse.Encrypter
+
+	// SSE-S3 / SSE-C options (deprecated, use SSE field)
 	SSECustomerAlgorithm string
 	SSECustomerKey       string
 	SSECustomerKeyMD5    string
@@ -85,7 +90,10 @@ type GetOptions struct {
 	// Custom headers
 	CustomHeaders http.Header
 
-	// SSE-C headers for encrypted objects
+	// Server-side encryption for encrypted objects
+	SSE sse.Encrypter
+
+	// SSE-C headers for encrypted objects (deprecated, use SSE field)
 	SSECustomerAlgorithm string
 	SSECustomerKey       string
 	SSECustomerKeyMD5    string
@@ -278,10 +286,7 @@ func WithPartSize(size uint64) PutOption {
 // WithSSES3 enables SSE-S3 server-side encryption for uploads
 func WithSSES3() PutOption {
 	return func(opts *PutOptions) {
-		if opts.CustomHeaders == nil {
-			opts.CustomHeaders = make(http.Header)
-		}
-		opts.CustomHeaders.Set("x-amz-server-side-encryption", "AES256")
+		opts.SSE = sse.NewSSES3()
 	}
 }
 
@@ -291,6 +296,33 @@ func WithSSECustomer(keyB64, keyMD5 string) PutOption {
 		opts.SSECustomerAlgorithm = "AES256"
 		opts.SSECustomerKey = keyB64
 		opts.SSECustomerKeyMD5 = keyMD5
+	}
+}
+
+// WithSSE sets server-side encryption for uploads
+func WithSSE(encrypter sse.Encrypter) PutOption {
+	return func(opts *PutOptions) {
+		opts.SSE = encrypter
+	}
+}
+
+// WithSSEC enables SSE-C (customer-provided key) encryption
+func WithSSEC(key []byte) PutOption {
+	return func(opts *PutOptions) {
+		enc, err := sse.NewSSEC(key)
+		if err != nil {
+			// If key is invalid, set to nil which will cause validation error later
+			opts.SSE = nil
+			return
+		}
+		opts.SSE = enc
+	}
+}
+
+// WithSSEKMS enables SSE-KMS (AWS KMS) encryption
+func WithSSEKMS(keyID string, context map[string]string) PutOption {
+	return func(opts *PutOptions) {
+		opts.SSE = sse.NewSSEKMS(keyID, context)
 	}
 }
 
@@ -309,6 +341,25 @@ func WithGetSSECustomer(keyB64, keyMD5 string) GetOption {
 		opts.SSECustomerAlgorithm = "AES256"
 		opts.SSECustomerKey = keyB64
 		opts.SSECustomerKeyMD5 = keyMD5
+	}
+}
+
+// WithGetSSE sets server-side encryption for downloads of encrypted objects
+func WithGetSSE(encrypter sse.Encrypter) GetOption {
+	return func(opts *GetOptions) {
+		opts.SSE = encrypter
+	}
+}
+
+// WithGetSSEC enables SSE-C decryption for downloads
+func WithGetSSEC(key []byte) GetOption {
+	return func(opts *GetOptions) {
+		enc, err := sse.NewSSEC(key)
+		if err != nil {
+			opts.SSE = nil
+			return
+		}
+		opts.SSE = enc
 	}
 }
 

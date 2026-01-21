@@ -2,24 +2,28 @@
 
 ## Phase 1: Security & Compliance (Priority: High)
 
-### 1.1 Server-Side Encryption (SSE)
-- [ ] 1.1.1 创建 pkg/sse 包
-  - [ ] 定义 SSE 配置类型
-  - [ ] 实现 SSE-S3 支持
-  - [ ] 实现 SSE-C 支持
-  - [ ] 实现 SSE-KMS 支持（可选）
-- [ ] 1.1.2 扩展 object.PutOption
-  - [ ] WithSSES3() option
-  - [ ] WithSSEC(key []byte) option
-  - [ ] WithSSEKMS(keyID string) option
-- [ ] 1.1.3 扩展 bucket service
-  - [ ] SetEncryption() 实现
-  - [ ] GetEncryption() 实现
-  - [ ] DeleteEncryption() 实现
-- [ ] 1.1.4 测试
-  - [ ] SSE-S3 加密上传/下载测试
-  - [ ] SSE-C 加密上传/下载测试
-  - [ ] 存储桶默认加密测试
+### 1.1 Server-Side Encryption (SSE) ✅ COMPLETED
+- [x] 1.1.1 创建 pkg/sse 包
+  - [x] 定义 SSE 配置类型
+  - [x] 实现 SSE-S3 支持
+  - [x] 实现 SSE-C 支持
+  - [x] 实现 SSE-KMS 支持（可选）
+- [x] 1.1.2 扩展 object.PutOption
+  - [x] WithSSES3() option
+  - [x] WithSSEC(key []byte) option
+  - [x] WithSSEKMS(keyID string) option
+- [x] 1.1.3 扩展 bucket service
+  - [x] SetEncryption() 实现
+  - [x] GetEncryption() 实现
+  - [x] DeleteEncryption() 实现
+- [x] 1.1.4 测试
+  - [x] SSE-S3 加密上传/下载测试
+  - [x] SSE-C 加密上传/下载测试
+  - [x] 存储桶默认加密测试
+- [x] 1.1.5 示例代码
+  - [x] encryption-sse-s3-put.go
+  - [x] encryption-sse-c-put.go
+  - [x] encryption-bucket-config.go
 
 ### 1.2 Object Locking & Retention
 - [ ] 1.2.1 创建 pkg/objectlock 包

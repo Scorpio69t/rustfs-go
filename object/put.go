@@ -118,8 +118,13 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		}
 	}
 
-	// Set SSE-C headers if provided
-	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
+	// Apply server-side encryption headers
+	if options.SSE != nil {
+		options.SSE.ApplyHeaders(meta.CustomHeader)
+	} else {
+		// Fallback to legacy SSE-C headers if SSE field not set
+		applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
+	}
 
 	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
