@@ -8,9 +8,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/cors"
+	"github.com/Scorpio69t/rustfs-go/pkg/notification"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -404,5 +406,39 @@ func TestGetReplicationMetrics(t *testing.T) {
 	}
 	if metrics.ReplicatedCount != 5 || metrics.ReplicatedSize != 2048 {
 		t.Fatalf("unexpected metrics: %+v", metrics)
+	}
+}
+
+func TestListenNotification(t *testing.T) {
+	responseLine := `{"Records":[{"eventName":"s3:ObjectCreated:Put"}]}`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := r.URL.Query()["ping"]; !ok {
+			t.Fatalf("expected ping query flag")
+		}
+		events := r.URL.Query()["events"]
+		if len(events) != 1 || events[0] != string(notification.ObjectCreatedAll) {
+			t.Fatalf("unexpected events query: %v", events)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(responseLine + "\n"))
+	}))
+	defer server.Close()
+
+	service := createTestService(t, server)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	ch := service.ListenNotification(ctx, "demo-bucket", "", "", []notification.EventType{notification.ObjectCreatedAll})
+	select {
+	case info := <-ch:
+		if info.Err != nil {
+			t.Fatalf("ListenNotification() error = %v", info.Err)
+		}
+		if len(info.Records) != 1 || info.Records[0].EventName != "s3:ObjectCreated:Put" {
+			t.Fatalf("unexpected notification info: %+v", info)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatalf("timeout waiting for notification")
 	}
 }

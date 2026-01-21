@@ -102,19 +102,19 @@
   - [x] 复制指标测试
 
 ### 3.2 Event Notification
-- [ ] 3.2.1 创建/完善 pkg/notification 包
-  - [ ] 定义 NotificationConfig 类型
-  - [ ] 定义 QueueConfig 类型
-  - [ ] 定义 TopicConfig 类型
-  - [ ] 定义 LambdaConfig 类型
-- [ ] 3.2.2 扩展 bucket service
-  - [ ] SetNotification() 实现
-  - [ ] GetNotification() 实现
-  - [ ] DeleteNotification() 实现
-  - [ ] ListenNotification() 实现
-- [ ] 3.2.3 测试
-  - [ ] 通知配置测试
-  - [ ] 事件监听测试
+- [x] 3.2.1 创建/完善 pkg/notification 包
+  - [x] 定义 NotificationConfig 类型
+  - [x] 定义 QueueConfig 类型
+  - [x] 定义 TopicConfig 类型
+  - [x] 定义 LambdaConfig 类型
+- [x] 3.2.2 扩展 bucket service
+  - [x] SetNotification() 实现
+  - [x] GetNotification() 实现
+  - [x] DeleteNotification() 实现
+  - [x] ListenNotification() 实现
+- [x] 3.2.3 测试
+  - [x] 通知配置测试
+  - [x] 事件监听测试
 
 ### 3.3 Object Composition
 - [ ] 3.3.1 定义组合类型
@@ -273,7 +273,7 @@
 ### 总体进度
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
-- Phase 3: 1/4 子任务完成
+- Phase 3: 2/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成

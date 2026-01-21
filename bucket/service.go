@@ -6,6 +6,7 @@ import (
 
 	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/cors"
+	"github.com/Scorpio69t/rustfs-go/pkg/notification"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/pkg/replication"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
@@ -73,6 +74,9 @@ type Service interface {
 
 	// DeleteNotification removes bucket event notification configuration
 	DeleteNotification(ctx context.Context, bucketName string) error
+
+	// ListenNotification listens for bucket notification events.
+	ListenNotification(ctx context.Context, bucketName, prefix, suffix string, events []notification.EventType) <-chan notification.Info
 
 	// SetLogging sets bucket access logging configuration
 	SetLogging(ctx context.Context, bucketName string, config []byte) error
