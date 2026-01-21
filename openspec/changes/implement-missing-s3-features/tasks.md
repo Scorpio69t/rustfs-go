@@ -155,15 +155,15 @@
   - [x] Parquet 查询测试
 
 ### 4.2 Restore Archived Objects
-- [ ] 4.2.1 定义恢复类型
-  - [ ] RestoreRequest 类型
-  - [ ] GlacierJobParameters 类型
-- [ ] 4.2.2 扩展 object service
-  - [ ] Restore() 实现
-  - [ ] 恢复状态查询
-- [ ] 4.2.3 测试
-  - [ ] 对象恢复测试
-  - [ ] 恢复状态查询测试
+- [x] 4.2.1 定义恢复类型
+  - [x] RestoreRequest 类型
+  - [x] GlacierJobParameters 类型
+- [x] 4.2.2 扩展 object service
+  - [x] Restore() 实现
+  - [x] 恢复状态查询
+- [x] 4.2.3 测试
+  - [x] 对象恢复测试
+  - [x] 恢复状态查询测试
 
 ### 4.3 Post Policy (Browser Upload)
 - [ ] 4.3.1 创建 pkg/policy 包
@@ -274,7 +274,7 @@
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
 - Phase 3: 3/4 子任务完成
-- Phase 4: 1/3 子任务完成
+- Phase 4: 2/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成
 

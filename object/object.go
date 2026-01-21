@@ -31,6 +31,7 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 // - compose.go: Compose method
 // - append.go: Append method
 // - select.go: Select method
+// - restore.go: Restore method
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {

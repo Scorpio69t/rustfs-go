@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Scorpio69t/rustfs-go/errors"
@@ -91,6 +92,11 @@ func (p *ResponseParser) ParseObjectInfo(resp *http.Response, bucketName, object
 	info.ChecksumSHA256 = header.Get("x-amz-checksum-sha256")
 	info.ChecksumCRC64NVME = header.Get("x-amz-checksum-crc64nvme")
 
+	// Parse restore status
+	if restoreHeader := header.Get("x-amz-restore"); restoreHeader != "" {
+		info.Restore = parseRestoreHeader(restoreHeader)
+	}
+
 	return info, nil
 }
 
@@ -126,4 +132,28 @@ func trimETag(etag string) string {
 		return etag[1 : len(etag)-1]
 	}
 	return etag
+}
+
+func parseRestoreHeader(value string) *types.RestoreInfo {
+	if value == "" {
+		return nil
+	}
+
+	info := &types.RestoreInfo{}
+	if idx := strings.Index(value, "ongoing-request=\""); idx >= 0 {
+		start := idx + len("ongoing-request=\"")
+		if end := strings.Index(value[start:], "\""); end >= 0 {
+			info.OngoingRestore = value[start:start+end] == "true"
+		}
+	}
+	if idx := strings.Index(value, "expiry-date=\""); idx >= 0 {
+		start := idx + len("expiry-date=\"")
+		if end := strings.Index(value[start:], "\""); end >= 0 {
+			if parsed, err := time.Parse(http.TimeFormat, value[start:start+end]); err == nil {
+				info.ExpiryTime = parsed
+			}
+		}
+	}
+
+	return info
 }

@@ -4,10 +4,6 @@ package object
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/xml"
 	"net/http"
 	"net/url"
@@ -52,14 +48,4 @@ func (s *objectService) Select(ctx context.Context, bucketName, objectName strin
 	}
 
 	return s3select.NewResults(resp, bucketName, objectName)
-}
-
-func sumMD5Base64(data []byte) string {
-	sum := md5.Sum(data)
-	return base64.StdEncoding.EncodeToString(sum[:])
-}
-
-func sumSHA256Hex(data []byte) string {
-	sum := sha256.Sum256(data)
-	return hex.EncodeToString(sum[:])
 }

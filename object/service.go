@@ -10,6 +10,7 @@ import (
 
 	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
+	"github.com/Scorpio69t/rustfs-go/pkg/restore"
 	s3select "github.com/Scorpio69t/rustfs-go/pkg/select"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -51,6 +52,9 @@ type Service interface {
 
 	// Select queries object content using S3 Select
 	Select(ctx context.Context, bucketName, objectName string, opts s3select.Options) (*s3select.Results, error)
+
+	// Restore initiates a restore request for an archived object
+	Restore(ctx context.Context, bucketName, objectName, versionID string, req restore.RestoreRequest) error
 
 	// PresignGet creates a presigned GET URL with optional signed headers
 	PresignGet(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
