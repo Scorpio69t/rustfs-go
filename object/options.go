@@ -71,6 +71,17 @@ type PresignOptions struct {
 	QueryValues url.Values
 }
 
+// LegalHoldOptions controls legal hold operations.
+type LegalHoldOptions struct {
+	VersionID string
+}
+
+// RetentionOptions controls retention operations.
+type RetentionOptions struct {
+	VersionID        string
+	GovernanceBypass bool
+}
+
 // GetOptions controls object download behavior
 type GetOptions struct {
 	// Range header
@@ -436,5 +447,26 @@ func WithCopyMetadata(metadata map[string]string, replace bool) CopyOption {
 	return func(opts *CopyOptions) {
 		opts.UserMetadata = metadata
 		opts.ReplaceMetadata = replace
+	}
+}
+
+// WithLegalHoldVersionID targets a specific object version for legal hold operations.
+func WithLegalHoldVersionID(versionID string) LegalHoldOption {
+	return func(opts *LegalHoldOptions) {
+		opts.VersionID = versionID
+	}
+}
+
+// WithRetentionVersionID targets a specific object version for retention operations.
+func WithRetentionVersionID(versionID string) RetentionOption {
+	return func(opts *RetentionOptions) {
+		opts.VersionID = versionID
+	}
+}
+
+// WithGovernanceBypass bypasses governance retention restrictions.
+func WithGovernanceBypass() RetentionOption {
+	return func(opts *RetentionOptions) {
+		opts.GovernanceBypass = true
 	}
 }

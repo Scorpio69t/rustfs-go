@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
@@ -54,6 +55,18 @@ type Service interface {
 
 	// DeleteTagging deletes object tags
 	DeleteTagging(ctx context.Context, bucketName, objectName string) error
+
+	// SetLegalHold sets legal hold status for an object
+	SetLegalHold(ctx context.Context, bucketName, objectName string, hold objectlock.LegalHoldStatus, opts ...LegalHoldOption) error
+
+	// GetLegalHold retrieves legal hold status for an object
+	GetLegalHold(ctx context.Context, bucketName, objectName string, opts ...LegalHoldOption) (objectlock.LegalHoldStatus, error)
+
+	// SetRetention sets retention mode and retain-until date for an object
+	SetRetention(ctx context.Context, bucketName, objectName string, mode objectlock.RetentionMode, retainUntil time.Time, opts ...RetentionOption) error
+
+	// GetRetention retrieves retention configuration for an object
+	GetRetention(ctx context.Context, bucketName, objectName string, opts ...RetentionOption) (objectlock.RetentionMode, time.Time, error)
 }
 
 // PutOption applies upload option
@@ -76,3 +89,9 @@ type CopyOption func(*CopyOptions)
 
 // PresignOption applies presign options
 type PresignOption func(*PresignOptions)
+
+// LegalHoldOption applies legal hold options
+type LegalHoldOption func(*LegalHoldOptions)
+
+// RetentionOption applies retention options
+type RetentionOption func(*RetentionOptions)

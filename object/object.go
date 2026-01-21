@@ -85,6 +85,24 @@ func applyCopyOptions(opts []CopyOption) CopyOptions {
 	return options
 }
 
+// applyLegalHoldOptions applies legal hold options.
+func applyLegalHoldOptions(opts []LegalHoldOption) LegalHoldOptions {
+	options := LegalHoldOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
+// applyRetentionOptions applies retention options.
+func applyRetentionOptions(opts []RetentionOption) RetentionOptions {
+	options := RetentionOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
 // validateBucketName validates bucket name
 func validateBucketName(bucketName string) error {
 	if bucketName == "" {

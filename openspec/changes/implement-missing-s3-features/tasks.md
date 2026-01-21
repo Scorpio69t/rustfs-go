@@ -26,22 +26,22 @@
   - [x] encryption-bucket-config.go
 
 ### 1.2 Object Locking & Retention
-- [ ] 1.2.1 创建 pkg/objectlock 包
-  - [ ] 定义 ObjectLockConfig 类型
-  - [ ] 定义 RetentionMode 类型
-  - [ ] 定义 LegalHold 类型
-- [ ] 1.2.2 扩展 bucket service
-  - [ ] SetObjectLockConfig() 实现
-  - [ ] GetObjectLockConfig() 实现
-- [ ] 1.2.3 扩展 object service
-  - [ ] SetLegalHold() 实现
-  - [ ] GetLegalHold() 实现
-  - [ ] SetRetention() 实现
-  - [ ] GetRetention() 实现
-- [ ] 1.2.4 测试
-  - [ ] 对象锁定配置测试
-  - [ ] 法律保留测试
-  - [ ] 对象保留期测试
+- [x] 1.2.1 创建 pkg/objectlock 包
+  - [x] 定义 ObjectLockConfig 类型
+  - [x] 定义 RetentionMode 类型
+  - [x] 定义 LegalHold 类型
+- [x] 1.2.2 扩展 bucket service
+  - [x] SetObjectLockConfig() 实现
+  - [x] GetObjectLockConfig() 实现
+- [x] 1.2.3 扩展 object service
+  - [x] SetLegalHold() 实现
+  - [x] GetLegalHold() 实现
+  - [x] SetRetention() 实现
+  - [x] GetRetention() 实现
+- [x] 1.2.4 测试
+  - [x] 对象锁定配置测试
+  - [x] 法律保留测试
+  - [x] 对象保留期测试
 
 ## Phase 2: Configuration & Management (Priority: High)
 
@@ -271,7 +271,7 @@
 ## 进度跟踪
 
 ### 总体进度
-- Phase 1: 0/2 子任务完成
+- Phase 1: 2/2 子任务完成
 - Phase 2: 0/3 子任务完成
 - Phase 3: 0/4 子任务完成
 - Phase 4: 0/3 子任务完成

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
@@ -155,5 +156,55 @@ func TestReplicationNotificationLogging(t *testing.T) {
 				t.Fatalf("%s returned error: %v", tt.name, err)
 			}
 		})
+	}
+}
+
+func TestSetAndGetObjectLockConfig(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := r.URL.Query()["object-lock"]; !ok {
+			t.Fatalf("expected object-lock query flag")
+		}
+		switch r.Method {
+		case http.MethodPut:
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), "<ObjectLockEnabled>Enabled</ObjectLockEnabled>") {
+				t.Fatalf("expected object lock enabled in body, got %s", string(body))
+			}
+			if !strings.Contains(string(body), "<Mode>GOVERNANCE</Mode>") {
+				t.Fatalf("expected retention mode in body, got %s", string(body))
+			}
+			w.WriteHeader(http.StatusOK)
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/xml")
+			_, _ = w.Write([]byte(`<ObjectLockConfiguration><ObjectLockEnabled>Enabled</ObjectLockEnabled><Rule><DefaultRetention><Mode>GOVERNANCE</Mode><Days>1</Days></DefaultRetention></Rule></ObjectLockConfiguration>`))
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}))
+	defer server.Close()
+
+	service := createTestService(t, server)
+	config := objectlock.Config{
+		Rule: &objectlock.Rule{
+			DefaultRetention: objectlock.DefaultRetention{
+				Mode: objectlock.RetentionGovernance,
+				Days: 1,
+			},
+		},
+	}
+
+	if err := service.SetObjectLockConfig(context.Background(), "demo-bucket", config); err != nil {
+		t.Fatalf("SetObjectLockConfig() error = %v", err)
+	}
+
+	got, err := service.GetObjectLockConfig(context.Background(), "demo-bucket")
+	if err != nil {
+		t.Fatalf("GetObjectLockConfig() error = %v", err)
+	}
+	if got.ObjectLockEnabled != objectlock.ObjectLockEnabledValue {
+		t.Fatalf("expected enabled, got %s", got.ObjectLockEnabled)
+	}
+	if got.Rule == nil || got.Rule.DefaultRetention.Mode != objectlock.RetentionGovernance {
+		t.Fatalf("expected governance retention mode")
 	}
 }

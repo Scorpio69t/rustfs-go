@@ -4,6 +4,7 @@ package bucket
 import (
 	"context"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -84,6 +85,12 @@ type Service interface {
 
 	// DeleteEncryption removes bucket default encryption configuration
 	DeleteEncryption(ctx context.Context, bucketName string) error
+
+	// SetObjectLockConfig sets bucket object lock configuration
+	SetObjectLockConfig(ctx context.Context, bucketName string, config objectlock.Config) error
+
+	// GetObjectLockConfig retrieves bucket object lock configuration
+	GetObjectLockConfig(ctx context.Context, bucketName string) (objectlock.Config, error)
 }
 
 // CreateOption create bucket options function
