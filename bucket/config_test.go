@@ -265,3 +265,60 @@ func TestSetGetDeleteCORS(t *testing.T) {
 		t.Fatalf("DeleteCORS() error = %v", err)
 	}
 }
+
+func TestBucketTaggingCRUD(t *testing.T) {
+	responseXML := `<?xml version="1.0" encoding="UTF-8"?>
+<Tagging>
+  <TagSet>
+    <Tag>
+      <Key>env</Key>
+      <Value>prod</Value>
+    </Tag>
+    <Tag>
+      <Key>team</Key>
+      <Value>storage</Value>
+    </Tag>
+  </TagSet>
+</Tagging>`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := r.URL.Query()["tagging"]; !ok {
+			t.Fatalf("expected tagging query flag")
+		}
+		switch r.Method {
+		case http.MethodPut:
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), "<Tagging>") {
+				t.Fatalf("expected tagging XML in body, got %s", string(body))
+			}
+			w.WriteHeader(http.StatusOK)
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/xml")
+			_, _ = w.Write([]byte(responseXML))
+		case http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}))
+	defer server.Close()
+
+	service := createTestService(t, server)
+	tags := map[string]string{"env": "prod", "team": "storage"}
+
+	if err := service.SetTagging(context.Background(), "demo-bucket", tags); err != nil {
+		t.Fatalf("SetTagging() error = %v", err)
+	}
+
+	got, err := service.GetTagging(context.Background(), "demo-bucket")
+	if err != nil {
+		t.Fatalf("GetTagging() error = %v", err)
+	}
+	if got["env"] != "prod" || got["team"] != "storage" {
+		t.Fatalf("unexpected tags: %+v", got)
+	}
+
+	if err := service.DeleteTagging(context.Background(), "demo-bucket"); err != nil {
+		t.Fatalf("DeleteTagging() error = %v", err)
+	}
+}

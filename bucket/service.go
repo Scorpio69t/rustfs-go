@@ -96,6 +96,15 @@ type Service interface {
 	// DeleteCORS removes bucket CORS configuration
 	DeleteCORS(ctx context.Context, bucketName string) error
 
+	// SetTagging sets bucket tags
+	SetTagging(ctx context.Context, bucketName string, tags map[string]string) error
+
+	// GetTagging retrieves bucket tags
+	GetTagging(ctx context.Context, bucketName string) (map[string]string, error)
+
+	// DeleteTagging removes bucket tags
+	DeleteTagging(ctx context.Context, bucketName string) error
+
 	// SetObjectLockConfig sets bucket object lock configuration
 	SetObjectLockConfig(ctx context.Context, bucketName string, config objectlock.Config) error
 

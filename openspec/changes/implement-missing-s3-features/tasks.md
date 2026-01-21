@@ -60,15 +60,15 @@
   - [x] CORS 规则删除测试
 
 ### 2.2 Bucket Tagging (if not exists)
-- [ ] 2.2.1 检查现有实现
-- [ ] 2.2.2 扩展 bucket service（如需要）
-  - [ ] SetTagging() 实现
-  - [ ] GetTagging() 实现
-  - [ ] DeleteTagging() 实现
-- [ ] 2.2.3 测试
-  - [ ] 存储桶标签设置测试
-  - [ ] 存储桶标签获取测试
-  - [ ] 存储桶标签删除测试
+- [x] 2.2.1 检查现有实现
+- [x] 2.2.2 扩展 bucket service（如需要）
+  - [x] SetTagging() 实现
+  - [x] GetTagging() 实现
+  - [x] DeleteTagging() 实现
+- [x] 2.2.3 测试
+  - [x] 存储桶标签设置测试
+  - [x] 存储桶标签获取测试
+  - [x] 存储桶标签删除测试
 
 ### 2.3 ACL Configuration
 - [ ] 2.3.1 创建 pkg/acl 包
@@ -272,7 +272,7 @@
 
 ### 总体进度
 - Phase 1: 2/2 子任务完成
-- Phase 2: 1/3 子任务完成
+- Phase 2: 2/3 子任务完成
 - Phase 3: 0/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成
