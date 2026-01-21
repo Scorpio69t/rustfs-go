@@ -3,6 +3,7 @@ package core
 
 import (
 	"context"
+	"encoding/xml"
 	"io"
 	"net"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Scorpio69t/rustfs-go/errors"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
 	"github.com/Scorpio69t/rustfs-go/pkg/signer"
 	"github.com/Scorpio69t/rustfs-go/types"
@@ -205,6 +207,90 @@ func (e *Executor) Presign(ctx context.Context, req *Request) (*url.URL, http.He
 	}
 
 	return httpReq.URL, httpReq.Header, nil
+}
+
+// GetCredentials returns the resolved credentials using the executor context.
+func (e *Executor) GetCredentials(ctx context.Context) (credentials.Value, error) {
+	_ = ctx
+	if e.credentials == nil {
+		return credentials.Value{SignerType: credentials.SignatureAnonymous}, nil
+	}
+	httpClient := e.httpClient
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	credContext := &credentials.CredContext{
+		Client:   httpClient,
+		Endpoint: e.endpointURL.String(),
+	}
+	return e.credentials.GetWithContext(credContext)
+}
+
+// ResolveBucketLocation fetches the bucket location and updates the cache.
+func (e *Executor) ResolveBucketLocation(ctx context.Context, bucketName string) (string, error) {
+	if bucketName == "" {
+		return e.region, nil
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if e.locationCache != nil {
+		if loc, ok := e.locationCache.Get(bucketName); ok {
+			return loc, nil
+		}
+	}
+
+	meta := RequestMetadata{
+		BucketName: bucketName,
+		QueryValues: url.Values{
+			"location": {""},
+		},
+	}
+	req := NewRequest(ctx, http.MethodGet, meta)
+	resp, err := e.Execute(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	defer closeResponse(resp)
+
+	if resp == nil {
+		return "", errors.NewAPIError(errors.ErrCodeInternalError, "empty response", http.StatusInternalServerError)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.ParseErrorResponse(resp, bucketName, "")
+	}
+
+	var result struct {
+		XMLName  xml.Name `xml:"LocationConstraint"`
+		Location string   `xml:",chardata"`
+	}
+	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	location := result.Location
+	if location == "" {
+		location = "us-east-1"
+	}
+	if e.locationCache != nil {
+		e.locationCache.Set(bucketName, location)
+	}
+	return location, nil
+}
+
+// TargetURL returns a resolved target URL for a bucket/object and query.
+func (e *Executor) TargetURL(ctx context.Context, bucketName, objectName string, query url.Values) (*url.URL, error) {
+	location := e.region
+	if bucketName != "" {
+		resolved, err := e.ResolveBucketLocation(ctx, bucketName)
+		if err != nil {
+			return nil, err
+		}
+		if resolved != "" {
+			location = resolved
+		}
+	}
+	return e.makeTargetURL(bucketName, objectName, location, query)
 }
 
 // resetRequestBody attempts to rewind the request body for a retry.

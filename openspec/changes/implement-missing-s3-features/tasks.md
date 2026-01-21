@@ -166,15 +166,15 @@
   - [x] 恢复状态查询测试
 
 ### 4.3 Post Policy (Browser Upload)
-- [ ] 4.3.1 创建 pkg/policy 包
-  - [ ] PostPolicy 类型
-  - [ ] Condition 类型
-  - [ ] Policy 生成
-- [ ] 4.3.2 扩展 object service
-  - [ ] PresignedPostPolicy() 实现
-- [ ] 4.3.3 测试
-  - [ ] PostPolicy 生成测试
-  - [ ] 浏览器上传模拟测试
+- [x] 4.3.1 创建 pkg/policy 包
+  - [x] PostPolicy 类型
+  - [x] Condition 类型
+  - [x] Policy 生成
+- [x] 4.3.2 扩展 object service
+  - [x] PresignedPostPolicy() 实现
+- [x] 4.3.3 测试
+  - [x] PostPolicy 生成测试
+  - [x] 浏览器上传模拟测试
 
 ## Phase 5: Examples & Documentation
 
@@ -274,7 +274,7 @@
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
 - Phase 3: 3/4 子任务完成
-- Phase 4: 2/3 子任务完成
+- Phase 4: 3/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成
 

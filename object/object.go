@@ -32,6 +32,7 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 // - append.go: Append method
 // - select.go: Select method
 // - restore.go: Restore method
+// - post_policy.go: PresignedPostPolicy method
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {
