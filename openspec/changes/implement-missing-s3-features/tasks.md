@@ -185,10 +185,10 @@
 - [x] 5.1.2 SSE-C 加密示例
   - [x] encryption-sse-c-put.go
   - [x] encryption-sse-c-get.go
-- [ ] 5.1.3 存储桶加密示例
-  - [ ] encryption-bucket-set.go
-  - [ ] encryption-bucket-get.go
-  - [ ] encryption-bucket-delete.go
+- [x] 5.1.3 存储桶加密示例
+  - [x] encryption-bucket-set.go
+  - [x] encryption-bucket-get.go
+  - [x] encryption-bucket-delete.go
 
 ### 5.2 对象锁定示例
 - [ ] 5.2.1 对象锁定配置示例
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 0/7 子任务完成
+- Phase 5: 1/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
