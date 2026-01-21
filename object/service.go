@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -55,6 +56,12 @@ type Service interface {
 
 	// DeleteTagging deletes object tags
 	DeleteTagging(ctx context.Context, bucketName, objectName string) error
+
+	// GetACL retrieves object ACL
+	GetACL(ctx context.Context, bucketName, objectName string) (acl.ACL, error)
+
+	// SetACL sets object ACL
+	SetACL(ctx context.Context, bucketName, objectName string, policy acl.ACL) error
 
 	// SetLegalHold sets legal hold status for an object
 	SetLegalHold(ctx context.Context, bucketName, objectName string, hold objectlock.LegalHoldStatus, opts ...LegalHoldOption) error

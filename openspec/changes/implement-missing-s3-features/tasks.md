@@ -71,19 +71,19 @@
   - [x] 存储桶标签删除测试
 
 ### 2.3 ACL Configuration
-- [ ] 2.3.1 创建 pkg/acl 包
-  - [ ] 定义 ACL 类型
-  - [ ] 定义 Grant 类型
-  - [ ] 实现 XML 序列化/反序列化
-- [ ] 2.3.2 扩展 object service
-  - [ ] GetACL() 实现
-  - [ ] SetACL() 实现
-- [ ] 2.3.3 扩展 bucket service
-  - [ ] GetACL() 实现
-  - [ ] SetACL() 实现
-- [ ] 2.3.4 测试
-  - [ ] 对象 ACL 测试
-  - [ ] 存储桶 ACL 测试
+- [x] 2.3.1 创建 pkg/acl 包
+  - [x] 定义 ACL 类型
+  - [x] 定义 Grant 类型
+  - [x] 实现 XML 序列化/反序列化
+- [x] 2.3.2 扩展 object service
+  - [x] GetACL() 实现
+  - [x] SetACL() 实现
+- [x] 2.3.3 扩展 bucket service
+  - [x] GetACL() 实现
+  - [x] SetACL() 实现
+- [x] 2.3.4 测试
+  - [x] 对象 ACL 测试
+  - [x] 存储桶 ACL 测试
 
 ## Phase 3: Advanced Operations (Priority: Medium)
 
@@ -272,7 +272,7 @@
 
 ### 总体进度
 - Phase 1: 2/2 子任务完成
-- Phase 2: 2/3 子任务完成
+- Phase 2: 3/3 子任务完成
 - Phase 3: 0/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成

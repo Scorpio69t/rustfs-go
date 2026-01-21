@@ -4,6 +4,7 @@ package bucket
 import (
 	"context"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/cors"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
@@ -104,6 +105,12 @@ type Service interface {
 
 	// DeleteTagging removes bucket tags
 	DeleteTagging(ctx context.Context, bucketName string) error
+
+	// SetACL sets bucket ACL
+	SetACL(ctx context.Context, bucketName string, policy acl.ACL) error
+
+	// GetACL retrieves bucket ACL
+	GetACL(ctx context.Context, bucketName string) (acl.ACL, error)
 
 	// SetObjectLockConfig sets bucket object lock configuration
 	SetObjectLockConfig(ctx context.Context, bucketName string, config objectlock.Config) error
