@@ -46,18 +46,18 @@
 ## Phase 2: Configuration & Management (Priority: High)
 
 ### 2.1 CORS Configuration
-- [ ] 2.1.1 创建 pkg/cors 包
-  - [ ] 定义 CORSConfig 类型
-  - [ ] 定义 CORSRule 类型
-  - [ ] 实现 XML 序列化/反序列化
-- [ ] 2.1.2 扩展 bucket service
-  - [ ] SetCORS() 实现
-  - [ ] GetCORS() 实现
-  - [ ] DeleteCORS() 实现
-- [ ] 2.1.3 测试
-  - [ ] CORS 规则设置测试
-  - [ ] CORS 规则获取测试
-  - [ ] CORS 规则删除测试
+- [x] 2.1.1 创建 pkg/cors 包
+  - [x] 定义 CORSConfig 类型
+  - [x] 定义 CORSRule 类型
+  - [x] 实现 XML 序列化/反序列化
+- [x] 2.1.2 扩展 bucket service
+  - [x] SetCORS() 实现
+  - [x] GetCORS() 实现
+  - [x] DeleteCORS() 实现
+- [x] 2.1.3 测试
+  - [x] CORS 规则设置测试
+  - [x] CORS 规则获取测试
+  - [x] CORS 规则删除测试
 
 ### 2.2 Bucket Tagging (if not exists)
 - [ ] 2.2.1 检查现有实现
@@ -272,7 +272,7 @@
 
 ### 总体进度
 - Phase 1: 2/2 子任务完成
-- Phase 2: 0/3 子任务完成
+- Phase 2: 1/3 子任务完成
 - Phase 3: 0/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成

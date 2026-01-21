@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/cors"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -206,5 +207,61 @@ func TestSetAndGetObjectLockConfig(t *testing.T) {
 	}
 	if got.Rule == nil || got.Rule.DefaultRetention.Mode != objectlock.RetentionGovernance {
 		t.Fatalf("expected governance retention mode")
+	}
+}
+
+func TestSetGetDeleteCORS(t *testing.T) {
+	responseXML := `<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration>
+  <CORSRule>
+    <AllowedOrigin>*</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+  </CORSRule>
+</CORSConfiguration>`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := r.URL.Query()["cors"]; !ok {
+			t.Fatalf("expected cors query flag")
+		}
+		switch r.Method {
+		case http.MethodPut:
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), "<CORSConfiguration") {
+				t.Fatalf("expected cors config in body, got %s", string(body))
+			}
+			w.WriteHeader(http.StatusOK)
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/xml")
+			_, _ = w.Write([]byte(responseXML))
+		case http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}))
+	defer server.Close()
+
+	service := createTestService(t, server)
+	config := cors.NewConfig([]cors.Rule{
+		{
+			AllowedOrigin: []string{"*"},
+			AllowedMethod: []string{"GET"},
+		},
+	})
+
+	if err := service.SetCORS(context.Background(), "demo-bucket", config); err != nil {
+		t.Fatalf("SetCORS() error = %v", err)
+	}
+
+	got, err := service.GetCORS(context.Background(), "demo-bucket")
+	if err != nil {
+		t.Fatalf("GetCORS() error = %v", err)
+	}
+	if len(got.CORSRules) != 1 || got.CORSRules[0].AllowedOrigin[0] != "*" {
+		t.Fatalf("unexpected CORS config: %+v", got)
+	}
+
+	if err := service.DeleteCORS(context.Background(), "demo-bucket"); err != nil {
+		t.Fatalf("DeleteCORS() error = %v", err)
 	}
 }

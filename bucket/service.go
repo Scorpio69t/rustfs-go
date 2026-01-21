@@ -4,6 +4,7 @@ package bucket
 import (
 	"context"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/cors"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 	"github.com/Scorpio69t/rustfs-go/types"
@@ -85,6 +86,15 @@ type Service interface {
 
 	// DeleteEncryption removes bucket default encryption configuration
 	DeleteEncryption(ctx context.Context, bucketName string) error
+
+	// SetCORS sets bucket CORS configuration
+	SetCORS(ctx context.Context, bucketName string, config cors.Config) error
+
+	// GetCORS retrieves bucket CORS configuration
+	GetCORS(ctx context.Context, bucketName string) (cors.Config, error)
+
+	// DeleteCORS removes bucket CORS configuration
+	DeleteCORS(ctx context.Context, bucketName string) error
 
 	// SetObjectLockConfig sets bucket object lock configuration
 	SetObjectLockConfig(ctx context.Context, bucketName string, config objectlock.Config) error
