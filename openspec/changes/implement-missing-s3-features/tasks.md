@@ -222,10 +222,10 @@
   - [x] object-compose.go
 - [x] 5.5.2 对象追加示例
   - [x] object-append.go
-- [ ] 5.5.3 Select 查询示例
-  - [ ] object-select-csv.go
-  - [ ] object-select-json.go
-- [ ] 5.5.4 ACL 示例
+- [x] 5.5.3 Select 查询示例
+  - [x] object-select-csv.go
+  - [x] object-select-json.go
+- [x] 5.5.4 ACL 示例
   - [x] acl-object-get.go
   - [x] acl-object-set.go
 
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 1/7 子任务完成
+- Phase 5: 2/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
