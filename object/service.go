@@ -42,6 +42,9 @@ type Service interface {
 	// Copy copies an object
 	Copy(ctx context.Context, destBucket, destObject, srcBucket, srcObject string, opts ...CopyOption) (types.CopyInfo, error)
 
+	// Compose creates an object by composing source objects
+	Compose(ctx context.Context, dst DestinationInfo, sources []SourceInfo, opts ...PutOption) (types.UploadInfo, error)
+
 	// PresignGet creates a presigned GET URL with optional signed headers
 	PresignGet(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
 

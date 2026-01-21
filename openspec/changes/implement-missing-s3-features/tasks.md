@@ -117,17 +117,17 @@
   - [x] 事件监听测试
 
 ### 3.3 Object Composition
-- [ ] 3.3.1 定义组合类型
-  - [ ] SourceInfo 类型
-  - [ ] DestinationInfo 类型
-- [ ] 3.3.2 扩展 object service
-  - [ ] Compose() 实现
-  - [ ] 支持多源组合
-  - [ ] 支持条件组合
-- [ ] 3.3.3 测试
-  - [ ] 简单组合测试
-  - [ ] 多对象组合测试
-  - [ ] 条件组合测试
+- [x] 3.3.1 定义组合类型
+  - [x] SourceInfo 类型
+  - [x] DestinationInfo 类型
+- [x] 3.3.2 扩展 object service
+  - [x] Compose() 实现
+  - [x] 支持多源组合
+  - [x] 支持条件组合
+- [x] 3.3.3 测试
+  - [x] 简单组合测试
+  - [x] 多对象组合测试
+  - [x] 条件组合测试
 
 ### 3.4 Object Append (RustFS Extension)
 - [ ] 3.4.1 扩展 object service
@@ -273,7 +273,7 @@
 ### 总体进度
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
-- Phase 3: 2/4 子任务完成
+- Phase 3: 3/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成
