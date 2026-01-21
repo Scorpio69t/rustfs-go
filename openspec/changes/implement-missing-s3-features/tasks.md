@@ -179,9 +179,9 @@
 ## Phase 5: Examples & Documentation
 
 ### 5.1 加密示例
-- [ ] 5.1.1 SSE-S3 加密示例
-  - [ ] encryption-sse-s3-put.go
-  - [ ] encryption-sse-s3-get.go
+- [x] 5.1.1 SSE-S3 加密示例
+  - [x] encryption-sse-s3-put.go
+  - [x] encryption-sse-s3-get.go
 - [ ] 5.1.2 SSE-C 加密示例
   - [ ] encryption-sse-c-put.go
   - [ ] encryption-sse-c-get.go
