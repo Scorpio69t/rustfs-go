@@ -4,9 +4,12 @@ package object
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"sync"
 	"testing"
 )
 
@@ -92,5 +95,121 @@ func TestAppendMissingSizeHeader(t *testing.T) {
 	_, err := service.Append(context.Background(), "bucket", "object", bytes.NewReader([]byte("data")), 4, 0)
 	if err == nil {
 		t.Fatalf("expected Append() to fail when size header is missing")
+	}
+}
+
+func TestAppendLargeObject(t *testing.T) {
+	const offset = int64(1024)
+	const size = int64(5 * 1024 * 1024)
+	expectedSize := offset + size
+	payload := bytes.Repeat([]byte("a"), int(size))
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("expected PUT request, got %s", r.Method)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if got := r.Header.Get("x-amz-write-offset-bytes"); got != strconv.FormatInt(offset, 10) {
+			t.Errorf("unexpected offset header %q", got)
+		}
+		if r.ContentLength != size {
+			t.Errorf("unexpected Content-Length %d", r.ContentLength)
+		}
+		_, _ = io.Copy(io.Discard, r.Body)
+		w.Header().Set("ETag", "\"etag-large\"")
+		w.Header().Set("x-amz-object-size", strconv.FormatInt(expectedSize, 10))
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	service := createAdvancedTestService(t, server)
+	uploadInfo, err := service.Append(context.Background(), "bucket", "object", bytes.NewReader(payload), size, offset)
+	if err != nil {
+		t.Fatalf("Append() error = %v", err)
+	}
+	if uploadInfo.Size != expectedSize {
+		t.Fatalf("Append() size = %d, want %d", uploadInfo.Size, expectedSize)
+	}
+}
+
+func TestAppendConcurrent(t *testing.T) {
+	const workers = 4
+
+	var mu sync.Mutex
+	seenOffsets := make(map[int64]struct{})
+	var handlerErrs []string
+
+	recordErr := func(msg string) {
+		mu.Lock()
+		handlerErrs = append(handlerErrs, msg)
+		mu.Unlock()
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			recordErr(fmt.Sprintf("expected PUT request, got %s", r.Method))
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		offsetStr := r.Header.Get("x-amz-write-offset-bytes")
+		if offsetStr == "" {
+			recordErr("missing x-amz-write-offset-bytes header")
+		}
+		offset, err := strconv.ParseInt(offsetStr, 10, 64)
+		if err != nil {
+			recordErr(fmt.Sprintf("invalid offset header: %v", err))
+		}
+		mu.Lock()
+		seenOffsets[offset] = struct{}{}
+		mu.Unlock()
+
+		_, _ = io.Copy(io.Discard, r.Body)
+		finalSize := offset + r.ContentLength
+		w.Header().Set("ETag", "\"etag-concurrent\"")
+		w.Header().Set("x-amz-object-size", strconv.FormatInt(finalSize, 10))
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	service := createAdvancedTestService(t, server)
+	ctx := context.Background()
+
+	errCh := make(chan error, workers)
+	var wg sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			size := int64(1024 + i)
+			offset := int64(i * 2048)
+			payload := bytes.Repeat([]byte("b"), int(size))
+			uploadInfo, err := service.Append(ctx, "bucket", "object", bytes.NewReader(payload), size, offset)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			if uploadInfo.Size != offset+size {
+				errCh <- fmt.Errorf("append size %d, want %d", uploadInfo.Size, offset+size)
+				return
+			}
+		}(i)
+	}
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			t.Fatalf("Append() error = %v", err)
+		}
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	if len(handlerErrs) > 0 {
+		t.Fatalf("handler errors: %v", handlerErrs)
+	}
+	if len(seenOffsets) != workers {
+		t.Fatalf("expected %d offsets, got %d", workers, len(seenOffsets))
 	}
 }
