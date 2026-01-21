@@ -230,9 +230,9 @@
   - [x] acl-object-set.go
 
 ### 5.6 Post Policy 示例
-- [ ] 5.6.1 浏览器上传示例
-  - [ ] presigned-post-policy.go
-  - [ ] browser-upload.html
+- [x] 5.6.1 浏览器上传示例
+  - [x] presigned-post-policy.go
+  - [x] browser-upload.html
 
 ### 5.7 文档更新
 - [ ] 5.7.1 更新 API 文档
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 2/7 子任务完成
+- Phase 5: 3/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
