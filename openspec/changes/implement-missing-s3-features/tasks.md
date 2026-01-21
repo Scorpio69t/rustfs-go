@@ -226,8 +226,8 @@
   - [ ] object-select-csv.go
   - [ ] object-select-json.go
 - [ ] 5.5.4 ACL 示例
-  - [ ] acl-object-get.go
-  - [ ] acl-object-set.go
+  - [x] acl-object-get.go
+  - [x] acl-object-set.go
 
 ### 5.6 Post Policy 示例
 - [ ] 5.6.1 浏览器上传示例
