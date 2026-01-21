@@ -45,6 +45,9 @@ type Service interface {
 	// Compose creates an object by composing source objects
 	Compose(ctx context.Context, dst DestinationInfo, sources []SourceInfo, opts ...PutOption) (types.UploadInfo, error)
 
+	// Append appends data to an object at a specific offset
+	Append(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, offset int64, opts ...PutOption) (types.UploadInfo, error)
+
 	// PresignGet creates a presigned GET URL with optional signed headers
 	PresignGet(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
 

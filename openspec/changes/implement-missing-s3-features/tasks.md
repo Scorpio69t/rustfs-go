@@ -130,12 +130,12 @@
   - [x] 条件组合测试
 
 ### 3.4 Object Append (RustFS Extension)
-- [ ] 3.4.1 扩展 object service
-  - [ ] Append() 实现
-  - [ ] 偏移量管理
-  - [ ] 追加选项
+- [x] 3.4.1 扩展 object service
+  - [x] Append() 实现
+  - [x] 偏移量管理
+  - [x] 追加选项
 - [ ] 3.4.2 测试
-  - [ ] 追加上传测试
+  - [x] 追加上传测试
   - [ ] 大文件追加测试
   - [ ] 并发追加测试
 
