@@ -88,18 +88,18 @@
 ## Phase 3: Advanced Operations (Priority: Medium)
 
 ### 3.1 Bucket Replication
-- [ ] 3.1.1 创建 pkg/replication 包（如不存在）
-  - [ ] 定义 ReplicationConfig 类型
-  - [ ] 定义 Rule 类型
-  - [ ] 定义 Destination 类型
-- [ ] 3.1.2 扩展 bucket service
-  - [ ] SetReplication() 实现
-  - [ ] GetReplication() 实现
-  - [ ] DeleteReplication() 实现
-  - [ ] GetReplicationMetrics() 实现
-- [ ] 3.1.3 测试
-  - [ ] 复制配置测试
-  - [ ] 复制指标测试
+- [x] 3.1.1 创建 pkg/replication 包（如不存在）
+  - [x] 定义 ReplicationConfig 类型
+  - [x] 定义 Rule 类型
+  - [x] 定义 Destination 类型
+- [x] 3.1.2 扩展 bucket service
+  - [x] SetReplication() 实现
+  - [x] GetReplication() 实现
+  - [x] DeleteReplication() 实现
+  - [x] GetReplicationMetrics() 实现
+- [x] 3.1.3 测试
+  - [x] 复制配置测试
+  - [x] 复制指标测试
 
 ### 3.2 Event Notification
 - [ ] 3.2.1 创建/完善 pkg/notification 包
@@ -273,7 +273,7 @@
 ### 总体进度
 - Phase 1: 2/2 子任务完成
 - Phase 2: 3/3 子任务完成
-- Phase 3: 0/4 子任务完成
+- Phase 3: 1/4 子任务完成
 - Phase 4: 0/3 子任务完成
 - Phase 5: 0/7 子任务完成
 - Phase 6: 0/4 子任务完成

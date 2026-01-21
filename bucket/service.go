@@ -7,6 +7,7 @@ import (
 	"github.com/Scorpio69t/rustfs-go/pkg/acl"
 	"github.com/Scorpio69t/rustfs-go/pkg/cors"
 	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
+	"github.com/Scorpio69t/rustfs-go/pkg/replication"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
@@ -60,6 +61,9 @@ type Service interface {
 
 	// DeleteReplication removes bucket replication configuration
 	DeleteReplication(ctx context.Context, bucketName string) error
+
+	// GetReplicationMetrics retrieves replication metrics for a bucket
+	GetReplicationMetrics(ctx context.Context, bucketName string) (replication.Metrics, error)
 
 	// SetNotification sets bucket event notification configuration
 	SetNotification(ctx context.Context, bucketName string, config []byte) error

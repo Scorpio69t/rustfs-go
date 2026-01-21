@@ -384,3 +384,25 @@ func TestBucketACLSetGet(t *testing.T) {
 		t.Fatalf("unexpected ACL grants: %+v", got.Grants)
 	}
 }
+
+func TestGetReplicationMetrics(t *testing.T) {
+	responseJSON := `{"replicationCount":5,"completedReplicationSize":2048}`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := r.URL.Query()["replication-metrics"]; !ok {
+			t.Fatalf("expected replication-metrics query flag")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(responseJSON))
+	}))
+	defer server.Close()
+
+	service := createTestService(t, server)
+	metrics, err := service.GetReplicationMetrics(context.Background(), "demo-bucket")
+	if err != nil {
+		t.Fatalf("GetReplicationMetrics() error = %v", err)
+	}
+	if metrics.ReplicatedCount != 5 || metrics.ReplicatedSize != 2048 {
+		t.Fatalf("unexpected metrics: %+v", metrics)
+	}
+}
