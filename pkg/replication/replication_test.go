@@ -39,3 +39,31 @@ func TestReplicationConfigXML(t *testing.T) {
 		t.Fatalf("unexpected parsed config: %+v", parsed)
 	}
 }
+
+func TestReplicationConfigNormalizeErrors(t *testing.T) {
+	cfg := ReplicationConfig{
+		Rules: []Rule{
+			{
+				Status:      Status("Invalid"),
+				Destination: Destination{Bucket: "arn:aws:s3:::dest-bucket"},
+			},
+		},
+	}
+
+	if err := cfg.Normalize(); err == nil {
+		t.Fatalf("expected invalid status error")
+	}
+
+	cfg = ReplicationConfig{
+		Rules: []Rule{
+			{
+				Status:      Enabled,
+				Destination: Destination{},
+			},
+		},
+	}
+
+	if err := cfg.Normalize(); err == nil {
+		t.Fatalf("expected missing destination bucket error")
+	}
+}
