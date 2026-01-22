@@ -190,6 +190,12 @@ go run -tags example bucket-create.go
 | `object-select-csv.go` | Select CSV objects |
 | `object-select-json.go` | Select JSON objects |
 
+### 🧊 Object Restore
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `object-restore.go` | Restore an archived object |
+
 ### 🧪 End-to-End & Performance
 
 | 示例文件 | 功能描述 |
@@ -198,6 +204,14 @@ go run -tags example bucket-create.go
 | `perf-sse.go` | SSE-S3 upload performance comparison |
 | `perf-large-object.go` | Large object upload/download performance |
 | `perf-concurrent.go` | Concurrent upload performance |
+
+## ⚠️ Not supported yet
+
+Some legacy examples are intentionally omitted because the SDK does not expose these APIs yet:
+- Presigned HEAD URL
+- S3 Accelerate uploads
+- Upload with checksum (ChecksumMode)
+- Client-side encryption (CSE). SSE-S3 and SSE-C are supported.
 
 ## 💡 使用提示
 
