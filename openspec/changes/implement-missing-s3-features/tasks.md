@@ -235,16 +235,16 @@
   - [x] browser-upload.html
 
 ### 5.7 文档更新
-- [ ] 5.7.1 更新 API 文档
-  - [ ] bucket package 文档
-  - [ ] object package 文档
-  - [ ] 新增 pkg 文档
-- [ ] 5.7.2 更新 README
-  - [ ] 功能列表更新
-  - [ ] 示例索引更新
-- [ ] 5.7.3 更新 CHANGELOG
-  - [ ] 新功能记录
-  - [ ] API 变更记录
+- [x] 5.7.1 更新 API 文档
+  - [x] bucket package 文档
+  - [x] object package 文档
+  - [x] 新增 pkg 文档
+- [x] 5.7.2 更新 README
+  - [x] 功能列表更新
+  - [x] 示例索引更新
+- [x] 5.7.3 更新 CHANGELOG
+  - [x] 新功能记录
+  - [x] API 变更记录
 
 ## Phase 6: Testing & Quality Assurance
 
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 6/7 子任务完成
+- Phase 5: 7/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
