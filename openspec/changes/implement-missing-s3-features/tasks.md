@@ -208,14 +208,14 @@
   - [x] cors-delete.go
 
 ### 5.4 复制和通知示例
-- [ ] 5.4.1 复制配置示例
-  - [ ] replication-set.go
-  - [ ] replication-get.go
-  - [ ] replication-metrics.go
-- [ ] 5.4.2 事件通知示例
-  - [ ] notification-set.go
-  - [ ] notification-get.go
-  - [ ] notification-listen.go
+- [x] 5.4.1 复制配置示例
+  - [x] replication-set.go
+  - [x] replication-get.go
+  - [x] replication-metrics.go
+- [x] 5.4.2 事件通知示例
+  - [x] notification-set.go
+  - [x] notification-get.go
+  - [x] notification-listen.go
 
 ### 5.5 高级操作示例
 - [x] 5.5.1 对象组合示例
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 5/7 子任务完成
+- Phase 5: 6/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
