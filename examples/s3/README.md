@@ -101,6 +101,21 @@ go run -tags example bucket-create.go
 | `presigned-get.go` | 生成预签名 GET URL |
 | `presigned-put.go` | 生成预签名 PUT URL |
 | `presigned-get-override-headers.go` | 预签名 GET 并覆盖响应头 |
+| `presigned-post-policy.go` | Generate presigned POST policy |
+
+### 🔐 Encryption
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `encryption-sse-s3-put.go` | Upload with SSE-S3 |
+| `encryption-sse-s3-get.go` | Download with SSE-S3 |
+| `encryption-sse-c-put.go` | Upload with SSE-C |
+| `encryption-sse-c-get.go` | Download with SSE-C |
+| `encryption-bucket-set.go` | Set bucket encryption |
+| `encryption-bucket-get.go` | Get bucket encryption |
+| `encryption-bucket-delete.go` | Delete bucket encryption |
+| `encryption-bucket-config.go` | Bucket encryption configuration (legacy) |
+| `debug-sse-c.go` | Debug SSE-C headers |
 
 ### 📋 存储桶策略和生命周期
 
@@ -123,53 +138,57 @@ go run -tags example bucket-create.go
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `replication-set.go` | 设置复制配置 |
-| `replication-get.go` | 获取复制配置 |
-| `replication-delete.go` | 删除复制配置 |
+| `replication-set.go` | Set replication configuration |
+| `replication-get.go` | Get replication configuration |
+| `replication-metrics.go` | Get replication metrics |
 
 ### 🔔 事件通知
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `notification-set.go` | 设置事件通知 |
-| `notification-get.go` | 获取事件通知配置 |
-| `notification-delete.go` | 删除所有通知 |
+| `notification-set.go` | Set notification configuration |
+| `notification-get.go` | Get notification configuration |
+| `notification-listen.go` | Listen for notifications |
 
 ### 🌐 CORS 配置
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `cors-set.go` | 设置 CORS 配置 |
+| `cors-set.go` | Set CORS configuration |
+| `cors-get.go` | Get CORS configuration |
+| `cors-delete.go` | Delete CORS configuration |
 
 ### 🔑 访问控制
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `acl-object-get.go` | 获取对象 ACL |
+| `acl-object-get.go` | Get object ACL |
+| `acl-object-set.go` | Set object ACL |
 
-### 📤 高级上传
-
-| 示例文件 | 功能描述 |
-|---------|---------|
-| `upload-streaming.go` | 流式上传 |
-| `upload-progress.go` | 带进度条上传 |
-| `upload-checksum.go` | 带校验和上传 |
-| `upload-multipart-incomplete-list.go` | 列出未完成的多部分上传 |
-| `upload-multipart-incomplete-delete.go` | 删除未完成的多部分上传 |
-
-### 🔍 对象查询和恢复
+### 🔒 Object Lock
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `select-object.go` | 对象 SQL 查询 |
-| `restore-object.go` | 恢复归档对象 |
-| `restore-object-select.go` | 恢复并查询对象 |
+| `object-lock-config-set.go` | Set object lock configuration |
+| `object-lock-config-get.go` | Get object lock configuration |
+| `object-legal-hold-set.go` | Set legal hold |
+| `object-legal-hold-get.go` | Get legal hold |
+| `object-retention-set.go` | Set retention |
+| `object-retention-get.go` | Get retention |
 
-### 🏥 健康检查
+### 🧩 Advanced Object Operations
 
 | 示例文件 | 功能描述 |
 |---------|---------|
-| `healthcheck.go` | SDK 健康检查 |
+| `object-compose.go` | Compose objects |
+| `object-append.go` | Append to object |
+
+### 🔍 Object Select
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `object-select-csv.go` | Select CSV objects |
+| `object-select-json.go` | Select JSON objects |
 
 ## 💡 使用提示
 
