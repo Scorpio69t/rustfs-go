@@ -45,10 +45,6 @@ type Executor struct {
 
 	// Bucket location cache
 	locationCache LocationCache
-
-	// Trace/debug options
-	traceEnabled bool
-	traceOutput  io.Writer
 }
 
 // ExecutorConfig configures an Executor
@@ -435,7 +431,7 @@ func (e *Executor) signRequest(req *http.Request, meta RequestMetadata, location
 		return nil // anonymous request
 	}
 
-	creds, err := e.credentials.Get()
+	creds, err := e.GetCredentials(req.Context())
 	if err != nil {
 		return err
 	}
@@ -515,7 +511,7 @@ func (e *Executor) shouldRetry(err error, attempt int) bool {
 
 	// Inspect url.Error
 	if urlErr, ok := err.(*url.Error); ok {
-		if urlErr.Temporary() || urlErr.Timeout() {
+		if urlErr.Timeout() {
 			return true
 		}
 		// Recursively inspect wrapped error
@@ -524,7 +520,7 @@ func (e *Executor) shouldRetry(err error, attempt int) bool {
 
 	// Inspect net.Error
 	if netErr, ok := err.(net.Error); ok {
-		return netErr.Temporary() || netErr.Timeout()
+		return netErr.Timeout()
 	}
 
 	return false

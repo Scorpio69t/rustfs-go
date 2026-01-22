@@ -134,7 +134,9 @@ func (s *Results) start(pipeWriter *io.PipeWriter) {
 			case commonMsg:
 				switch eventType(headers.Get("event-type")) {
 				case endEvent:
-					pipeWriter.Close()
+					if err := pipeWriter.Close(); err != nil {
+						pipeWriter.CloseWithError(err)
+					}
 					closeResponse(s.resp)
 					return
 				case recordsEvent:

@@ -190,6 +190,15 @@ go run -tags example bucket-create.go
 | `object-select-csv.go` | Select CSV objects |
 | `object-select-json.go` | Select JSON objects |
 
+### 🧪 End-to-End & Performance
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `e2e-scenario.go` | End-to-end scenario test |
+| `perf-sse.go` | SSE-S3 upload performance comparison |
+| `perf-large-object.go` | Large object upload/download performance |
+| `perf-concurrent.go` | Concurrent upload performance |
+
 ## 💡 使用提示
 
 ### 配置管理

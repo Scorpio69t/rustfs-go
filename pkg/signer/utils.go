@@ -2,7 +2,6 @@
 package signer
 
 import (
-	"crypto/sha256"
 	"net/http"
 	"net/url"
 	"sort"
@@ -13,13 +12,6 @@ import (
 const (
 	UnsignedPayload = "UNSIGNED-PAYLOAD"
 )
-
-// sum256 computes SHA256 hash
-func sum256(data []byte) []byte {
-	hash := sha256.New()
-	hash.Write(data)
-	return hash.Sum(nil)
-}
 
 // getHostAddr returns host header, or URL host if missing
 func getHostAddr(req *http.Request) string {

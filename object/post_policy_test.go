@@ -21,7 +21,9 @@ func TestPresignedPostPolicy(t *testing.T) {
 		if r.URL.Query().Has("location") {
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><LocationConstraint>us-east-1</LocationConstraint>`))
+			if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><LocationConstraint>us-east-1</LocationConstraint>`)); err != nil {
+				t.Fatalf("Failed to write location response: %v", err)
+			}
 			return
 		}
 		w.WriteHeader(http.StatusOK)

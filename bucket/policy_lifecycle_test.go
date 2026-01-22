@@ -18,7 +18,9 @@ func TestPolicyAndLifecycle(t *testing.T) {
 				w.WriteHeader(http.StatusNoContent)
 			case http.MethodGet:
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"Version":"2012-10-17"}`))
+				if _, err := w.Write([]byte(`{"Version":"2012-10-17"}`)); err != nil {
+					t.Fatalf("Failed to write policy response: %v", err)
+				}
 			case http.MethodDelete:
 				w.WriteHeader(http.StatusNoContent)
 			default:
@@ -30,7 +32,9 @@ func TestPolicyAndLifecycle(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			case http.MethodGet:
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<LifecycleConfiguration/>`))
+				if _, err := w.Write([]byte(`<LifecycleConfiguration/>`)); err != nil {
+					t.Fatalf("Failed to write lifecycle response: %v", err)
+				}
 			case http.MethodDelete:
 				w.WriteHeader(http.StatusNoContent)
 			default:

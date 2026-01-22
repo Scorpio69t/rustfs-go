@@ -80,8 +80,12 @@ func (s *V2Signer) Sign(req *http.Request, accessKey, secretKey, sessionToken, r
 	authHeader := new(bytes.Buffer)
 	fmt.Fprintf(authHeader, "%s %s:", signV2Algorithm, accessKey)
 	encoder := base64.NewEncoder(base64.StdEncoding, authHeader)
-	encoder.Write(hm.Sum(nil))
-	encoder.Close()
+	if _, err := encoder.Write(hm.Sum(nil)); err != nil {
+		return req
+	}
+	if err := encoder.Close(); err != nil {
+		return req
+	}
 
 	// Set Authorization header
 	req.Header.Set("Authorization", authHeader.String())

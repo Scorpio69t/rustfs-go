@@ -31,11 +31,13 @@ func TestComposeSingleSourceCopy(t *testing.T) {
 			gotCopy = true
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CopyObjectResult>
   <ETag>"abc123"</ETag>
   <LastModified>2023-01-01T00:00:00Z</LastModified>
-</CopyObjectResult>`))
+</CopyObjectResult>`)); err != nil {
+				t.Fatalf("Failed to write copy response: %v", err)
+			}
 		default:
 			t.Errorf("unexpected method %s", r.Method)
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -87,24 +89,28 @@ func TestComposeMultipleSources(t *testing.T) {
 			if _, ok := r.URL.Query()["uploads"]; ok {
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <InitiateMultipartUploadResult>
   <Bucket>` + dstBucket + `</Bucket>
   <Key>` + dstObject + `</Key>
   <UploadId>upload-id-1</UploadId>
-</InitiateMultipartUploadResult>`))
+</InitiateMultipartUploadResult>`)); err != nil {
+					t.Fatalf("Failed to write initiate response: %v", err)
+				}
 				return
 			}
 			if r.URL.Query().Get("uploadId") != "" {
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
   <Location>http://example.com/` + dstObject + `</Location>
   <Bucket>` + dstBucket + `</Bucket>
   <Key>` + dstObject + `</Key>
   <ETag>"etag-final"</ETag>
-</CompleteMultipartUploadResult>`))
+</CompleteMultipartUploadResult>`)); err != nil {
+					t.Fatalf("Failed to write complete response: %v", err)
+				}
 				return
 			}
 			t.Errorf("unexpected POST query %s", r.URL.RawQuery)
@@ -124,11 +130,13 @@ func TestComposeMultipleSources(t *testing.T) {
 			partCopyCount++
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CopyPartResult>
   <ETag>"etag-part"</ETag>
   <LastModified>2023-01-01T00:00:00Z</LastModified>
-</CopyPartResult>`))
+</CopyPartResult>`)); err != nil {
+				t.Fatalf("Failed to write copy part response: %v", err)
+			}
 		default:
 			t.Errorf("unexpected method %s", r.Method)
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -172,24 +180,28 @@ func TestComposeConditionalRange(t *testing.T) {
 			if _, ok := r.URL.Query()["uploads"]; ok {
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <InitiateMultipartUploadResult>
   <Bucket>` + dstBucket + `</Bucket>
   <Key>` + dstObject + `</Key>
   <UploadId>upload-id-2</UploadId>
-</InitiateMultipartUploadResult>`))
+</InitiateMultipartUploadResult>`)); err != nil {
+					t.Fatalf("Failed to write initiate response: %v", err)
+				}
 				return
 			}
 			if r.URL.Query().Get("uploadId") != "" {
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
   <Location>http://example.com/` + dstObject + `</Location>
   <Bucket>` + dstBucket + `</Bucket>
   <Key>` + dstObject + `</Key>
   <ETag>"etag-final"</ETag>
-</CompleteMultipartUploadResult>`))
+</CompleteMultipartUploadResult>`)); err != nil {
+					t.Fatalf("Failed to write complete response: %v", err)
+				}
 				return
 			}
 			t.Errorf("unexpected POST query %s", r.URL.RawQuery)
@@ -208,11 +220,13 @@ func TestComposeConditionalRange(t *testing.T) {
 			}
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CopyPartResult>
   <ETag>"etag-part"</ETag>
   <LastModified>2023-01-01T00:00:00Z</LastModified>
-</CopyPartResult>`))
+</CopyPartResult>`)); err != nil {
+				t.Fatalf("Failed to write copy part response: %v", err)
+			}
 		default:
 			t.Errorf("unexpected method %s", r.Method)
 			w.WriteHeader(http.StatusMethodNotAllowed)

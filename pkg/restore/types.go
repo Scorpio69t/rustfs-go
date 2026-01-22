@@ -61,7 +61,7 @@ type Tagging struct {
 
 // S3 holds properties of the restored object copy.
 type S3 struct {
-	AccessControlList *acl.ACL       `xml:"AccessControlList,omitempty"`
+	AccessControlList *acl.ACL       `xml:"AccessControlPolicy,omitempty"`
 	BucketName        string         `xml:"BucketName,omitempty"`
 	Prefix            string         `xml:"Prefix,omitempty"`
 	CannedACL         *string        `xml:"CannedACL,omitempty"`

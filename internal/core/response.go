@@ -26,10 +26,9 @@ func (p *ResponseParser) ParseXML(resp *http.Response, v interface{}) error {
 	if resp.Body == nil {
 		return errors.NewAPIError(errors.ErrCodeInternalError, "empty response body", resp.StatusCode)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			// Optionally log or handle close error
+	defer func(body io.ReadCloser) {
+		if err := body.Close(); err != nil {
+			_ = err
 		}
 	}(resp.Body)
 

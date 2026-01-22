@@ -113,7 +113,7 @@ type STSAssumeRoleOptions struct {
 // Credentials object wrapping the STSAssumeRole.
 func NewSTSAssumeRole(stsEndpoint string, opts STSAssumeRoleOptions) (*Credentials, error) {
 	if opts.AccessKey == "" || opts.SecretKey == "" {
-		return nil, errors.New("AssumeRole credentials access/secretkey is mandatory")
+		return nil, errors.New("assume role credentials access/secret key is mandatory")
 	}
 	return New(&STSAssumeRole{
 		STSEndpoint: stsEndpoint,
@@ -138,8 +138,12 @@ func closeResponse(resp *http.Response) {
 		// Without this closing connection would disallow re-using
 		// the same connection for future uses.
 		//  - http://stackoverflow.com/a/17961593/4465767
-		io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
+		if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+			_ = err
+		}
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
 	}
 }
 
@@ -179,7 +183,9 @@ func getAssumeRoleCredentials(clnt *http.Client, endpoint string, opts STSAssume
 	if _, err = io.Copy(hash, postBody); err != nil {
 		return AssumeRoleResponse{}, err
 	}
-	postBody.Seek(0, 0)
+	if _, err = postBody.Seek(0, 0); err != nil {
+		return AssumeRoleResponse{}, err
+	}
 
 	req, err := http.NewRequest(http.MethodPost, u.String(), postBody)
 	if err != nil {
@@ -243,7 +249,7 @@ func (m *STSAssumeRole) RetrieveWithCredContext(cc *CredContext) (Value, error) 
 		stsEndpoint = cc.Endpoint
 	}
 	if stsEndpoint == "" {
-		return Value{}, errors.New("STS endpoint unknown")
+		return Value{}, errors.New("sts endpoint unknown")
 	}
 
 	a, err := getAssumeRoleCredentials(client, stsEndpoint, m.Options)

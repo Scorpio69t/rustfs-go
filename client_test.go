@@ -95,7 +95,7 @@ func TestClientMethods(t *testing.T) {
 	t.Run("EndpointURL", func(t *testing.T) {
 		url := client.EndpointURL()
 		if url == nil {
-			t.Error("EndpointURL() returned nil")
+			t.Fatal("EndpointURL() returned nil")
 		}
 		if url.Host != "127.0.0.1:9000" {
 			t.Errorf("EndpointURL() host = %s, want 127.0.0.1:9000", url.Host)
