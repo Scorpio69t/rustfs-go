@@ -249,18 +249,21 @@
 ## Phase 6: Testing & Quality Assurance
 
 ### 6.1 单元测试
-- [x] 6.1.1 所有新功能单元测试（目标覆盖率 >80%）
-- [x] 6.1.2 边界条件测试
+- [ ] 6.1.1 所有新功能单元测试（目标覆盖率 >80%）
+  - [x] go test ./... -coverprofile (total coverage 52.9%)
+- [ ] 6.1.2 边界条件测试
   - [x] restore request normalization and XML coverage
   - [x] select request header handling coverage
   - [x] types validation helpers coverage
   - [x] credentials expiry window coverage
-- [x] 6.1.3 错误处理测试
+- [ ] 6.1.3 错误处理测试
   - [x] replication config validation errors
 
 ### 6.2 集成测试
-- [ ] 6.2.1 与真实 RustFS 服务器测试
-- [ ] 6.2.2 端到端场景测试
+- [x] 6.2.1 与真实 RustFS 服务器测试
+  - [x] go run ./tmp_integration (bucket create/put/get/delete)
+- [x] 6.2.2 与 MinIO 服务器兼容性测试（取消）
+- [ ] 6.2.3 端到端场景测试
 
 ### 6.3 性能测试
 - [ ] 6.3.1 加密性能测试
@@ -271,6 +274,7 @@
 - [ ] 6.4.1 代码审查
 - [ ] 6.4.2 静态分析（golangci-lint）
   - [x] go vet ./... (baseline static analysis)
+  - [ ] golangci-lint run ./... (errcheck/staticcheck/unused findings)
 - [ ] 6.4.3 文档完整性检查
   - [x] examples/s3 README example index refresh
 
