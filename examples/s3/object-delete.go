@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：删除对象
-// 演示如何使用 RustFS Go SDK 删除一个对象
+// Example: Delete an object
+// Demonstrates how to delete an object using the RustFS Go SDK
 package main
 
 import (
@@ -14,38 +14,38 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Object 服务
+	// Get Object service
 	objectSvc := client.Object()
 
-	// 要删除的对象
+	// Object to delete
 	bucketName := YOURBUCKET
 	objectName := "object-to-delete.txt"
 
-	// 删除对象
+	// Delete the object
 	err = objectSvc.Delete(ctx, bucketName, objectName)
 	if err != nil {
-		log.Fatalf("删除对象失败: %v", err)
+		log.Fatalf("Failed to delete object: %v", err)
 	}
 
-	log.Printf("✅ 成功删除对象: %s/%s", bucketName, objectName)
-	log.Println("\n注意：删除不存在的对象不会报错")
+	log.Printf("✅ Deleted object: %s/%s", bucketName, objectName)
+	log.Println("\nNote: Deleting a non-existent object does not return an error")
 }

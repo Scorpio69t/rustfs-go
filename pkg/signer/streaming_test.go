@@ -283,8 +283,12 @@ func BenchmarkStreamingReader(b *testing.B) {
 			"4f232c4386841ef735655705268965c44a0e4690baa4adea153f7db9fa80a0a9",
 		)
 
-		io.Copy(io.Discard, streamReader)
-		streamReader.Close()
+		if _, err := io.Copy(io.Discard, streamReader); err != nil {
+			b.Fatalf("Failed to read stream: %v", err)
+		}
+		if err := streamReader.Close(); err != nil {
+			b.Fatalf("Failed to close stream reader: %v", err)
+		}
 	}
 }
 

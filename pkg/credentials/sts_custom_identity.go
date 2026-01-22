@@ -86,7 +86,7 @@ func (c *CustomTokenIdentity) RetrieveWithCredContext(cc *CredContext) (value Va
 		stsEndpoint = cc.Endpoint
 	}
 	if stsEndpoint == "" {
-		return Value{}, errors.New("STS endpoint unknown")
+		return Value{}, errors.New("sts endpoint unknown")
 	}
 
 	u, err := url.Parse(stsEndpoint)
@@ -126,7 +126,11 @@ func (c *CustomTokenIdentity) RetrieveWithCredContext(cc *CredContext) (value Va
 		return value, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return value, errors.New(resp.Status)
 	}

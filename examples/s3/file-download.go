@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：下载对象到文件
-// 演示如何使用 RustFS Go SDK 将对象下载到本地文件
+// Example: Download an object to a file
+// Demonstrates how to download an object to a local file using the RustFS Go SDK
 package main
 
 import (
@@ -14,45 +14,45 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Object 服务
+	// Get Object service
 	objectSvc := client.Object()
 
-	// 下载参数
+	// Download parameters
 	bucketName := YOURBUCKET
 	objectName := "my-test-object.txt"
 	localFilePath := "downloaded-file.txt"
 
-	// 下载对象到文件
+	// Download object to a file
 	objInfo, err := objectSvc.FGet(ctx, bucketName, objectName, localFilePath)
 	if err != nil {
-		log.Fatalf("下载文件失败: %v", err)
+		log.Fatalf("Failed to download file: %v", err)
 	}
 
-	// 显示下载结果
-	log.Println("✅ 文件下载成功!")
-	log.Printf("   对象名: %s", objInfo.Key)
-	log.Printf("   保存到: %s", localFilePath)
-	log.Printf("   大小: %d 字节", objInfo.Size)
-	log.Printf("   类型: %s", objInfo.ContentType)
+	// Show download result
+	log.Println("✅ File downloaded successfully!")
+	log.Printf("   Object: %s", objInfo.Key)
+	log.Printf("   Saved to: %s", localFilePath)
+	log.Printf("   Size: %d bytes", objInfo.Size)
+	log.Printf("   Content-Type: %s", objInfo.ContentType)
 	log.Printf("   ETag: %s", objInfo.ETag)
-	log.Printf("   修改时间: %s", objInfo.LastModified.Format("2006-01-02 15:04:05"))
+	log.Printf("   LastModified: %s", objInfo.LastModified.Format("2006-01-02 15:04:05"))
 }

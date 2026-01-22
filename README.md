@@ -31,6 +31,8 @@ RustFS Go SDK is a comprehensive Go client library for interacting with the Rust
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
 - ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers (see `examples/rustfs/data_protection.go`)
+- ✅ **Security & Compliance** - SSE-S3/SSE-C, bucket encryption, object lock, ACL, and CORS helpers
+- ✅ **Advanced Features** - Post policies, object select, compose, append, and restore helpers
 
 ## 🚀 Installation
 
@@ -365,16 +367,26 @@ Advanced examples demonstrating RustFS features:
 
 ### 📦 S3 Compatible Examples ([examples/s3](examples/s3/))
 
-Standard S3 API examples (35 examples covering all common operations):
+Standard S3 API examples (65 examples covering common operations):
 
 - **Bucket Operations** (5): create, delete, list, exists, location
-- **Object Operations** (11): put, get, copy, delete, stat, list, list versions, file upload/download, batch delete, streaming, progress
+- **Object Operations** (10): put, get, copy, delete, batch delete, stat, list, list versions, streaming, progress
+- **File Operations** (2): upload, download
 - **Versioning** (3): enable, suspend, status
 - **Tagging** (4): set, get, delete tags, put with tags
 - **Bucket Policy** (3): set, get, delete policies
 - **Lifecycle Management** (3): set, get, delete lifecycle rules
-- **Presigned URLs** (3): GET, PUT, and GET with response header override
+- **Presigned URLs** (4): GET, PUT, GET with response header override, POST policy
 - **Health Check** (1): service health monitoring
+- **Encryption** (7): SSE-S3, SSE-C, bucket encryption configuration
+- **Object Lock** (6): config, legal hold, retention
+- **CORS** (3): set, get, delete
+- **ACL** (2): set, get
+- **Replication** (3): set, get, metrics
+- **Notifications** (3): set, get, listen
+- **Object Select** (2): CSV, JSON
+- **Object Composition** (1): compose
+- **Object Append** (1): append
 
 See [examples/s3/README.md](examples/s3/README.md) for complete list and usage instructions.
 

@@ -69,12 +69,12 @@ func TestCredentialsGet(t *testing.T) {
 }
 
 func TestCredentialsGetWithError(t *testing.T) {
-	c := New(&credProvider{err: errors.New("Custom error")})
+	c := New(&credProvider{err: errors.New("custom error")})
 
 	_, err := c.GetWithContext(defaultCredContext)
 	if err != nil {
-		if err.Error() != "Custom error" {
-			t.Errorf("Expected \"Custom error\", got %s", err.Error())
+		if err.Error() != "custom error" {
+			t.Errorf("Expected \"custom error\", got %s", err.Error())
 		}
 	}
 }

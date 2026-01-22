@@ -51,7 +51,9 @@ func TestTaggingCRUD(t *testing.T) {
 		case http.MethodGet:
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`<Tagging><TagSet><Tag><Key>env</Key><Value>dev</Value></Tag><Tag><Key>team</Key><Value>storage</Value></Tag></TagSet></Tagging>`))
+			if _, err := w.Write([]byte(`<Tagging><TagSet><Tag><Key>env</Key><Value>dev</Value></Tag><Tag><Key>team</Key><Value>storage</Value></Tag></TagSet></Tagging>`)); err != nil {
+				t.Fatalf("Failed to write tagging response: %v", err)
+			}
 		case http.MethodDelete:
 			w.WriteHeader(http.StatusNoContent)
 		default:
@@ -97,7 +99,9 @@ func TestFPutFGet(t *testing.T) {
 		case http.MethodGet:
 			w.Header().Set("Content-Length", "17")
 			w.WriteHeader(http.StatusOK)
-			w.Write(content)
+			if _, err := w.Write(content); err != nil {
+				t.Fatalf("Failed to write get response: %v", err)
+			}
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}

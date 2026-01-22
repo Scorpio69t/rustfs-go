@@ -104,7 +104,10 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 
 	// If HEAD returns 501, fallback to GET
 	if resp.StatusCode == http.StatusNotImplemented {
-		resp.Body.Close() // close first response
+		if err := resp.Body.Close(); err != nil {
+			result.Error = fmt.Errorf("failed to close health check response: %w", err)
+			return result
+		}
 
 		req, err = http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 		if err != nil {
@@ -125,7 +128,11 @@ func (e *Executor) HealthCheck(opts *HealthCheckOptions) *HealthCheckResult {
 	}
 
 	// Ensure response body closed
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil && result.Error == nil {
+			result.Error = fmt.Errorf("failed to close health check response: %w", err)
+		}
+	}()
 
 	// Determine health:
 	// 2xx/3xx considered healthy

@@ -144,7 +144,9 @@ func TestGet(t *testing.T) {
 				w.Header().Set("ETag", "\"abc123\"")
 				w.Header().Set("Content-Length", string(rune(len(tt.response))))
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.response))
+				if _, err := w.Write([]byte(tt.response)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 			}))
 			defer server.Close()
 
@@ -157,8 +159,15 @@ func TestGet(t *testing.T) {
 			}
 
 			if !tt.wantErr && reader != nil {
-				defer reader.Close()
-				data, _ := io.ReadAll(reader)
+				defer func() {
+					if err := reader.Close(); err != nil {
+						t.Fatalf("Failed to close reader: %v", err)
+					}
+				}()
+				data, err := io.ReadAll(reader)
+				if err != nil {
+					t.Fatalf("Failed to read response: %v", err)
+				}
 				if string(data) != tt.response {
 					t.Errorf("Get() data = %s, want %s", string(data), tt.response)
 				}
@@ -326,7 +335,9 @@ func BenchmarkGet(b *testing.B) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Header().Set("ETag", "\"abc123\"")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(response))
+		if _, err := w.Write([]byte(response)); err != nil {
+			b.Fatalf("Failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -350,8 +361,12 @@ func BenchmarkGet(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		reader, _, _ := service.Get(ctx, "test-bucket", "test-object.txt")
 		if reader != nil {
-			io.Copy(io.Discard, reader)
-			reader.Close()
+			if _, err := io.Copy(io.Discard, reader); err != nil {
+				b.Fatalf("Failed to discard response: %v", err)
+			}
+			if err := reader.Close(); err != nil {
+				b.Fatalf("Failed to close reader: %v", err)
+			}
 		}
 	}
 }

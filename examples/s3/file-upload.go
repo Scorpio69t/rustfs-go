@@ -1,8 +1,9 @@
 //go:build example
 // +build example
 
-// 示例：从文件上传对象
-// 演示如何使用 RustFS Go SDK 将本地文件上传为对象
+// Example: Upload an object from a file
+//
+// Demonstrates how to upload a local file as an object using the RustFS Go SDK.
 package main
 
 import (
@@ -16,40 +17,40 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
-		YOURENDPOINT        = "127.0.0.1:9000"
-		YOURBUCKET          = "mybucket"
+		ACCESS_KEY = "rustfsadmin"
+		SECRET_KEY = "rustfsadmin"
+		ENDPOINT   = "127.0.0.1:9000"
+		BUCKET     = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
-	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
-		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
+	// Initialize RustFS client
+	client, err := rustfs.New(ENDPOINT, &rustfs.Options{
+		Credentials: credentials.NewStaticV4(ACCESS_KEY, SECRET_KEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Object 服务
+	// Get Object service
 	objectSvc := client.Object()
 
-	// 上传参数
-	bucketName := YOURBUCKET
+	// Upload parameters
+	bucketName := BUCKET
 	objectName := "uploaded-file.txt"
-	filePath := "test-file.txt" // 要上传的本地文件路径
+	filePath := "test-file.txt" // local file to upload
 
-	// 创建测试文件（如果不存在）
+	// Create a test file if it does not exist
 	if err := createTestFile(filePath); err != nil {
-		log.Fatalf("创建测试文件失败: %v", err)
+		log.Fatalf("Failed to create test file: %v", err)
 	}
 
-	// 从文件上传对象
-	// FPut 会自动检测文件大小和内容类型
+	// Upload file to object
+	// FPut detects file size and content type automatically
 	uploadInfo, err := objectSvc.FPut(ctx, bucketName, objectName, filePath,
 		object.WithContentType("text/plain"),
 		object.WithUserMetadata(map[string]string{
@@ -57,33 +58,33 @@ func main() {
 		}),
 	)
 	if err != nil {
-		log.Fatalf("文件上传失败: %v", err)
+		log.Fatalf("File upload failed: %v", err)
 	}
 
-	// 显示上传结果
-	log.Println("✅ 文件上传成功!")
-	log.Printf("   本地文件: %s", filePath)
-	log.Printf("   存储桶: %s", uploadInfo.Bucket)
-	log.Printf("   对象名: %s", uploadInfo.Key)
+	// Print upload result
+	log.Println("✅ File uploaded successfully!")
+	log.Printf("   Local file: %s", filePath)
+	log.Printf("   Bucket: %s", uploadInfo.Bucket)
+	log.Printf("   Object: %s", uploadInfo.Key)
 	log.Printf("   ETag: %s", uploadInfo.ETag)
-	log.Printf("   大小: %d 字节", uploadInfo.Size)
+	log.Printf("   Size: %d bytes", uploadInfo.Size)
 
 	if uploadInfo.VersionID != "" {
-		log.Printf("   版本ID: %s", uploadInfo.VersionID)
+		log.Printf("   VersionID: %s", uploadInfo.VersionID)
 	}
 
-	log.Println("\n提示：使用 file-download.go 示例下载此对象到文件")
+	log.Println("\nTip: use file-download.go to download this object to a file")
 }
 
-// createTestFile 创建测试文件
+// createTestFile creates a test file
 func createTestFile(filePath string) error {
-	// 检查文件是否已存在
+	// If file exists, reuse it
 	if _, err := os.Stat(filePath); err == nil {
-		log.Printf("使用现有文件: %s", filePath)
+		log.Printf("Using existing file: %s", filePath)
 		return nil
 	}
 
-	// 创建新文件
+	// Create new file
 	content := "This is a test file for upload demonstration.\n" +
 		"RustFS Go SDK - File Upload Example\n" +
 		"Generated automatically for testing purposes.\n"
@@ -92,6 +93,6 @@ func createTestFile(filePath string) error {
 		return err
 	}
 
-	log.Printf("已创建测试文件: %s", filePath)
+	log.Printf("Created test file: %s", filePath)
 	return nil
 }

@@ -1,6 +1,17 @@
 //go:build example
 // +build example
 
+/*
+ * @Author: Scorpio69t 18728163854@163.com
+ * @Date: 2025-12-05 14:19:14
+ * @LastEditors: Scorpio69t 18728163854@163.com
+ * @LastEditTime: 2026-01-22 10:08:54
+ * @FilePath: \rustfs-go\examples\rustfs\presigned.go
+ * @Description:
+ *
+ * Copyright (c) 2026 by ${git_name_email}, All Rights Reserved.
+ */
+
 // presigned.go - Presigned URL examples using the new Object service API
 package main
 
@@ -17,8 +28,8 @@ import (
 
 func main() {
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
 	)

@@ -222,7 +222,9 @@ func TestList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.response))
+				if _, err := w.Write([]byte(tt.response)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 			}))
 			defer server.Close()
 
@@ -278,7 +280,9 @@ func TestGetLocation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.response))
+				if _, err := w.Write([]byte(tt.response)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 			}))
 			defer server.Close()
 
@@ -494,7 +498,9 @@ func BenchmarkList(b *testing.B) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(response))
+		if _, err := w.Write([]byte(response)); err != nil {
+			b.Fatalf("Failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 

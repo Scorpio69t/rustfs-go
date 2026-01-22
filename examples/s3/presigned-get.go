@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：生成预签名 GET URL
-// 演示如何使用 RustFS Go SDK 生成预签名 URL 以便临时访问对象
+// Example: Generate a presigned GET URL
+// Demonstrates how to generate a presigned URL for temporary access to an object
 package main
 
 import (
@@ -18,8 +18,8 @@ import (
 func main() {
 	// 配置连接参数
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "mybucket"
 	)
@@ -30,7 +30,7 @@ func main() {
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
@@ -42,33 +42,33 @@ func main() {
 	bucketName := YOURBUCKET
 	objectName := "my-test-object.txt"
 
-	// 设置 URL 过期时间（7天）
+	// Set URL expiration (7 days)
 	expires := 7 * 24 * time.Hour
 
-	// 可选：添加请求参数（如响应头覆盖）
+	// Optional: add request parameters (e.g. response header overrides)
 	reqParams := make(url.Values)
-	// 覆盖响应头示例：
+	// Example header overrides:
 	// reqParams.Set("response-content-type", "application/json")
 	// reqParams.Set("response-content-disposition", "attachment; filename=\"downloaded-file.txt\"")
 
 	// 生成预签名 GET URL
 	presignedURL, headers, err := objectSvc.PresignGet(ctx, bucketName, objectName, expires, reqParams)
 	if err != nil {
-		log.Fatalf("生成预签名 URL 失败: %v", err)
+		log.Fatalf("Failed to generate presigned URL: %v", err)
 	}
 
-	// 显示结果
-	log.Println("✅ 预签名 URL 生成成功!")
-	log.Printf("   对象: %s/%s", bucketName, objectName)
-	log.Printf("   有效期: %v", expires)
-	log.Println("\n预签名 URL:")
+	// Show results
+	log.Println("✅ Presigned URL generated successfully!")
+	log.Printf("   Object: %s/%s", bucketName, objectName)
+	log.Printf("   Expires in: %v", expires)
+	log.Println("\nPresigned URL:")
 	log.Println("----------------------------------------")
 	log.Println(presignedURL.String())
 	log.Println("----------------------------------------")
 
-	// 显示签名的请求头（如果有）
+	// Show signed request headers (if any)
 	if len(headers) > 0 {
-		log.Println("\n签名的请求头:")
+		log.Println("\nSigned request headers:")
 		for key, values := range headers {
 			for _, value := range values {
 				log.Printf("   %s: %s", key, value)
@@ -76,9 +76,9 @@ func main() {
 		}
 	}
 
-	log.Println("\n使用方法:")
-	log.Println("1. 复制上面的 URL")
-	log.Println("2. 在浏览器中打开或使用 curl 访问:")
+	log.Println("\nHow to use:")
+	log.Println("1. Copy the URL above")
+	log.Println("2. Open it in a browser or use curl to access:")
 	log.Printf("   curl -X GET \"%s\"", presignedURL.String())
-	log.Println("\n注意：此 URL 将在 7 天后失效")
+	log.Println("\nNote: This URL will expire after 7 days")
 }

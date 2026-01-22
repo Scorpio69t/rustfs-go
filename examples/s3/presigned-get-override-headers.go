@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：生成带响应头覆盖的预签名 URL
-// 演示如何通过预签名 URL 自定义响应头
+// Example: Generate a presigned URL with response header overrides
+// Demonstrates how to customize response headers via a presigned URL
 package main
 
 import (
@@ -18,13 +18,13 @@ import (
 
 const (
 	endpoint  = "127.0.0.1:9000"
-	accessKey = "XhJOoEKn3BM6cjD2dVmx"
-	secretKey = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+	accessKey = "rustfsadmin"
+	secretKey = "rustfsadmin"
 	bucket    = "mybucket"
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -46,9 +46,9 @@ func main() {
 	params.Set("response-cache-control", "no-cache, no-store, must-revalidate")
 	params.Set("response-expires", time.Now().Add(1*time.Hour).Format(time.RFC1123))
 
-	fmt.Printf("为对象 '%s' 生成带响应头覆盖的预签名 URL...\n", objectName)
+	fmt.Printf("Generating a presigned URL with response header overrides for object '%s'...\n", objectName)
 
-	// 生成预签名 GET URL（有效期 15 分钟）
+	// Generate presigned GET URL (expires in 15 minutes)
 	presignedURL, headers, err := service.PresignGet(
 		ctx,
 		bucket,
@@ -57,14 +57,13 @@ func main() {
 		params,
 	)
 	if err != nil {
-		log.Fatalf("生成预签名 URL 失败: %v\n", err)
+		log.Fatalf("Failed to generate presigned URL: %v\n", err)
 	}
-
-	fmt.Println("\n✅ 预签名 URL 生成成功")
+	fmt.Println("\n✅ Presigned URL generated")
 	fmt.Printf("URL: %s\n", presignedURL.String())
 
 	if len(headers) > 0 {
-		fmt.Println("\n需要包含的请求头:")
+		fmt.Println("\nRequired request headers:")
 		for key, values := range headers {
 			for _, value := range values {
 				fmt.Printf("  %s: %s\n", key, value)
@@ -72,12 +71,12 @@ func main() {
 		}
 	}
 
-	fmt.Println("\n使用此 URL 下载文件时，响应头将被覆盖:")
+	fmt.Println("\nWhen downloading with this URL, response headers will be overridden:")
 	fmt.Println("  Content-Type: application/octet-stream")
 	fmt.Println("  Content-Disposition: attachment; filename=\"downloaded-file.txt\"")
 	fmt.Println("  Cache-Control: no-cache, no-store, must-revalidate")
 	fmt.Printf("  Expires: %s\n", params.Get("response-expires"))
 
-	fmt.Println("\n示例用法:")
+	fmt.Println("\nExample usage:")
 	fmt.Printf("  curl -O \"%s\"\n", presignedURL.String())
 }

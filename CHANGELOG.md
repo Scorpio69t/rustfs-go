@@ -41,17 +41,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Location cache optimization (fewer GetBucketLocation calls)
 - Smart retry policy (network errors and selected HTTP status codes)
 - Automatic path-style selection for IP endpoints
+- Server-side encryption (SSE-S3/SSE-C) helpers
+- Object lock, legal hold, and retention helpers
+- CORS and ACL configuration helpers
+- Post policy helpers for browser uploads
+- Object select helpers for CSV/JSON queries
+- Object compose and append helpers
 
 #### Examples
-- **35 S3 API examples** – comprehensive examples for standard S3 operations in `examples/s3/`:
+- **65 S3 API examples** – comprehensive examples for standard S3 operations in `examples/s3/`:
   - Bucket operations (5): create, delete, list, exists, location
-  - Object operations (11): put, get, copy, delete, stat, list, list versions, file upload/download, batch delete, streaming, progress
+  - Object operations (10): put, get, copy, delete, batch delete, stat, list, list versions, streaming, progress
+  - File operations (2): upload, download
   - Versioning (3): enable, suspend, status
   - Object tagging (4): set, get, delete tags, put with tags
   - Bucket policies (3): set, get, delete policies
   - Lifecycle management (3): set, get, delete lifecycle rules
-  - Presigned URLs (3): GET, PUT, and GET with response header override
+  - Presigned URLs (4): GET, PUT, GET with response header override, POST policy
   - Health check (1): service health monitoring
+  - Encryption (7): SSE-S3, SSE-C, bucket encryption configuration
+  - Object lock (6): config, legal hold, retention
+  - CORS (3): set, get, delete
+  - ACL (2): set, get
+  - Replication (3): set, get, metrics
+  - Notifications (3): set, get, listen
+  - Object select (2): CSV, JSON
+  - Object composition (1): compose
+  - Object append (1): append
 - **8 RustFS examples** – advanced features in `examples/rustfs/`:
   - Bucket and object operations
   - Multipart upload
@@ -67,6 +83,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `internal/core/` – core executor and health checks
 - `bucket/` – bucket service
 - `object/` – object service
+- `pkg/sse/` – server-side encryption helpers
+- `pkg/objectlock/` – object lock and retention types
+- `pkg/cors/` – CORS configuration types
+- `pkg/acl/` – ACL configuration types
+- `pkg/replication/` – replication configuration and metrics
+- `pkg/notification/` – notification configuration and events
+- `pkg/select/` – select input/output and result helpers
+- `pkg/policy/` – post policy helpers
+- `pkg/restore/` – restore request types
 
 #### Test Coverage
 - Unit test coverage > 60%

@@ -1,8 +1,9 @@
 //go:build example
 // +build example
 
-// 示例：创建存储桶
-// 演示如何使用 RustFS Go SDK 创建一个新的存储桶
+// Example: Create a bucket
+//
+// Demonstrates how to create a new bucket using the RustFS Go SDK.
 package main
 
 import (
@@ -15,49 +16,48 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
-		YOURENDPOINT        = "127.0.0.1:9000"
-		YOURBUCKET          = "mybucket"
+		ACCESS_KEY = "rustfsadmin"
+		SECRET_KEY = "rustfsadmin"
+		ENDPOINT   = "127.0.0.1:9000"
+		BUCKET     = "mybucket"
 	)
 
-	// 初始化 RustFS 客户端
-	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
-		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
-		Secure:      false, // 本地测试使用 HTTP，生产环境设置为 true
+	// Initialize RustFS client
+	client, err := rustfs.New(ENDPOINT, &rustfs.Options{
+		Credentials: credentials.NewStaticV4(ACCESS_KEY, SECRET_KEY, ""),
+		Secure:      false, // Use HTTP for local testing, set to true in production
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Bucket 服务
+	// Get Bucket service
 	bucketSvc := client.Bucket()
 
-	// 要创建的存储桶名称
-	bucketName := YOURBUCKET
+	// Bucket to create
+	bucketName := BUCKET
 
-	// 创建存储桶
-	// 使用选项函数设置区域
+	// Create bucket with options (set region)
 	err = bucketSvc.Create(ctx, bucketName,
 		bucket.WithRegion("us-east-1"),
 	)
 	if err != nil {
-		log.Fatalf("创建存储桶失败: %v", err)
+		log.Fatalf("Failed to create bucket: %v", err)
 	}
 
-	log.Printf("✅ 成功创建存储桶: %s", bucketName)
+	log.Printf("✅ Bucket created: %s", bucketName)
 
-	// 验证存储桶是否存在
+	// Verify bucket exists
 	exists, err := bucketSvc.Exists(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("检查存储桶失败: %v", err)
+		log.Fatalf("Failed to check bucket: %v", err)
 	}
 
 	if exists {
-		log.Printf("✅ 存储桶 '%s' 已确认存在", bucketName)
+		log.Printf("✅ Bucket '%s' exists", bucketName)
 	}
 }

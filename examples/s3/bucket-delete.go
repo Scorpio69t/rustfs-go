@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：删除存储桶
-// 演示如何使用 RustFS Go SDK 删除一个存储桶
+// Example: Delete a bucket
+// Demonstrates how to delete a bucket using the RustFS Go SDK
 package main
 
 import (
@@ -14,38 +14,38 @@ import (
 )
 
 func main() {
-	// 配置连接参数
+	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 	)
 
-	// 初始化 RustFS 客户端
+	// Initialize RustFS client
 	client, err := rustfs.New(YOURENDPOINT, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(YOURACCESSKEYID, YOURSECRETACCESSKEY, ""),
 		Secure:      false,
 	})
 	if err != nil {
-		log.Fatalf("无法创建客户端: %v", err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 获取 Bucket 服务
+	// Get Bucket service
 	bucketSvc := client.Bucket()
 
-	// 要删除的存储桶名称
+	// Name of the bucket to delete
 	bucketName := "test-bucket-to-delete"
 
-	// 删除存储桶
-	// 注意：存储桶必须为空才能删除
+	// Delete the bucket
+	// Note: bucket must be empty to be deleted
 	err = bucketSvc.Delete(ctx, bucketName)
 	if err != nil {
-		log.Fatalf("删除存储桶失败: %v", err)
+		log.Fatalf("Failed to delete bucket: %v", err)
 	}
 
-	log.Printf("✅ 成功删除存储桶: %s", bucketName)
-	log.Println("\n注意：只有空存储桶才能被删除")
-	log.Println("如果存储桶包含对象，请先删除所有对象")
+	log.Printf("✅ Bucket deleted: %s", bucketName)
+	log.Println("\nNote: Only empty buckets can be deleted")
+	log.Println("If the bucket contains objects, delete them first")
 }

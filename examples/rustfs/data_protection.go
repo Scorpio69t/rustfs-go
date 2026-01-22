@@ -18,8 +18,8 @@ import (
 
 func main() {
 	const (
-		ACCESS_KEY = "XhJOoEKn3BM6cjD2dVmx"
-		SECRET_KEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		ACCESS_KEY = "rustfsadmin"
+		SECRET_KEY = "rustfsadmin"
 		ENDPOINT   = "127.0.0.1:9000"
 		BUCKET     = "demo-versioned-bucket"
 		OBJECT_KEY = "demo.txt"

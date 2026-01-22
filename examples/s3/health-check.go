@@ -1,8 +1,8 @@
 //go:build example
 // +build example
 
-// 示例：服务健康检查
-// 演示如何检查 RustFS 服务的健康状态
+// Example: Service health check
+// Demonstrates how to check the health status of a RustFS service
 package main
 
 import (
@@ -19,12 +19,12 @@ import (
 
 const (
 	endpoint  = "127.0.0.1:9000"
-	accessKey = "XhJOoEKn3BM6cjD2dVmx"
-	secretKey = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+	accessKey = "rustfsadmin"
+	secretKey = "rustfsadmin"
 )
 
 func main() {
-	// 创建客户端
+	// Create client
 	client, err := rustfs.New(endpoint, &rustfs.Options{
 		Credentials: credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure:      false,
@@ -33,16 +33,16 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("执行 RustFS 服务健康检查...")
+	fmt.Println("Running RustFS service health checks...")
 	fmt.Println(strings.Repeat("=", 50))
 
-	// 1. 基本健康检查
-	fmt.Println("\n1️⃣ 基本健康检查")
+	// 1. Basic health check
+	fmt.Println("\n1) Basic health check")
 	result := client.HealthCheck(nil)
 	printHealthResult(result)
 
-	// 2. 带超时的健康检查
-	fmt.Println("\n2️⃣ 带超时的健康检查 (5秒超时)")
+	// 2. Health check with timeout
+	fmt.Println("\n2) Health check with timeout (5s)")
 	opts := &core.HealthCheckOptions{
 		Timeout: 5 * time.Second,
 		Context: context.Background(),
@@ -50,15 +50,15 @@ func main() {
 	result = client.HealthCheck(opts)
 	printHealthResult(result)
 
-	// 3. 带重试的健康检查
-	fmt.Println("\n3️⃣ 带重试的健康检查 (最多3次)")
+	// 3. Health check with retry
+	fmt.Println("\n3) Health check with retry (up to 3 attempts)")
 	result = client.HealthCheckWithRetry(opts, 3)
 	printHealthResult(result)
 
-	// 4. 连续监控（演示）
-	fmt.Println("\n4️⃣ 连续监控 (每5秒检查一次，共3次)")
+	// 4. Continuous monitoring (demo)
+	fmt.Println("\n4) Continuous monitoring (every 5s, 3 checks)")
 	for i := 1; i <= 3; i++ {
-		fmt.Printf("\n检查 #%d:\n", i)
+		fmt.Printf("\nCheck #%d:\n", i)
 		result = client.HealthCheck(opts)
 		printHealthResult(result)
 		if i < 3 {
@@ -71,13 +71,13 @@ func main() {
 
 func printHealthResult(result *core.HealthCheckResult) {
 	if result.Healthy {
-		fmt.Printf("✅ 服务健康\n")
-		fmt.Printf("   响应时间: %v\n", result.ResponseTime)
-		fmt.Printf("   检查时间: %s\n", result.CheckedAt.Format("2006-01-02 15:04:05"))
+		fmt.Printf("✅ Service healthy\n")
+		fmt.Printf("   Response time: %v\n", result.ResponseTime)
+		fmt.Printf("   Checked at: %s\n", result.CheckedAt.Format("2006-01-02 15:04:05"))
 	} else {
-		fmt.Printf("❌ 服务不健康\n")
-		fmt.Printf("   错误信息: %v\n", result.Error)
-		fmt.Printf("   响应时间: %v\n", result.ResponseTime)
-		fmt.Printf("   检查时间: %s\n", result.CheckedAt.Format("2006-01-02 15:04:05"))
+		fmt.Printf("❌ Service unhealthy\n")
+		fmt.Printf("   Error: %v\n", result.Error)
+		fmt.Printf("   Response time: %v\n", result.ResponseTime)
+		fmt.Printf("   Checked at: %s\n", result.CheckedAt.Format("2006-01-02 15:04:05"))
 	}
 }
