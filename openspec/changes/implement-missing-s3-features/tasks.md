@@ -191,15 +191,15 @@
   - [x] encryption-bucket-delete.go
 
 ### 5.2 对象锁定示例
-- [ ] 5.2.1 对象锁定配置示例
-  - [ ] object-lock-config-set.go
-  - [ ] object-lock-config-get.go
-- [ ] 5.2.2 法律保留示例
-  - [ ] object-legal-hold-set.go
-  - [ ] object-legal-hold-get.go
-- [ ] 5.2.3 对象保留示例
-  - [ ] object-retention-set.go
-  - [ ] object-retention-get.go
+- [x] 5.2.1 对象锁定配置示例
+  - [x] object-lock-config-set.go
+  - [x] object-lock-config-get.go
+- [x] 5.2.2 法律保留示例
+  - [x] object-legal-hold-set.go
+  - [x] object-legal-hold-get.go
+- [x] 5.2.3 对象保留示例
+  - [x] object-retention-set.go
+  - [x] object-retention-get.go
 
 ### 5.3 CORS 示例
 - [x] 5.3.1 CORS 配置示例
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 4/7 子任务完成
+- Phase 5: 5/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
