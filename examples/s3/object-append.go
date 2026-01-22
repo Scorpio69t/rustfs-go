@@ -20,8 +20,8 @@ import (
 func main() {
 	// Connection configuration
 	const (
-		YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-		YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		YOURACCESSKEYID     = "rustfsadmin"
+		YOURSECRETACCESSKEY = "rustfsadmin"
 		YOURENDPOINT        = "127.0.0.1:9000"
 		YOURBUCKET          = "append-bucket"
 	)
