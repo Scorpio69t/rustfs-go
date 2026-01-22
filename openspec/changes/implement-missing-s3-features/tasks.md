@@ -251,7 +251,12 @@
 ### 6.1 单元测试
 - [ ] 6.1.1 所有新功能单元测试（目标覆盖率 >80%）
 - [ ] 6.1.2 边界条件测试
+  - [x] restore request normalization and XML coverage
+  - [x] select request header handling coverage
+  - [x] types validation helpers coverage
+  - [x] credentials expiry window coverage
 - [ ] 6.1.3 错误处理测试
+  - [x] replication config validation errors
 
 ### 6.2 集成测试
 - [ ] 6.2.1 与真实 RustFS 服务器测试
@@ -266,6 +271,7 @@
 ### 6.4 代码质量
 - [ ] 6.4.1 代码审查
 - [ ] 6.4.2 静态分析（golangci-lint）
+  - [x] go vet ./... (baseline static analysis)
 - [ ] 6.4.3 文档完整性检查
 
 ## 进度跟踪
