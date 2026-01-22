@@ -202,10 +202,10 @@
   - [ ] object-retention-get.go
 
 ### 5.3 CORS 示例
-- [ ] 5.3.1 CORS 配置示例
-  - [ ] cors-set.go
-  - [ ] cors-get.go
-  - [ ] cors-delete.go
+- [x] 5.3.1 CORS 配置示例
+  - [x] cors-set.go
+  - [x] cors-get.go
+  - [x] cors-delete.go
 
 ### 5.4 复制和通知示例
 - [ ] 5.4.1 复制配置示例
@@ -275,7 +275,7 @@
 - Phase 2: 3/3 子任务完成
 - Phase 3: 4/4 子任务完成
 - Phase 4: 3/3 子任务完成
-- Phase 5: 3/7 子任务完成
+- Phase 5: 4/7 子任务完成
 - Phase 6: 0/4 子任务完成
 
 ### 优先级说明
