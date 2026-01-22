@@ -111,7 +111,7 @@ func (i *STSCertificateIdentity) RetrieveWithCredContext(cc *CredContext) (Value
 		stsEndpoint = cc.Endpoint
 	}
 	if stsEndpoint == "" {
-		return Value{}, errors.New("STS endpoint unknown")
+		return Value{}, errors.New("sts endpoint unknown")
 	}
 
 	endpointURL, err := url.Parse(stsEndpoint)
@@ -163,7 +163,11 @@ func (i *STSCertificateIdentity) RetrieveWithCredContext(cc *CredContext) (Value
 		return Value{}, err
 	}
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				_ = err
+			}
+		}()
 	}
 	if resp.StatusCode != http.StatusOK {
 		var errResp ErrorResponse

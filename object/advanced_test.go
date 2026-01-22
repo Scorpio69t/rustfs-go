@@ -102,7 +102,9 @@ func TestList(t *testing.T) {
 				}
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(tt.responseXML))
+				if _, err := w.Write([]byte(tt.responseXML)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 			}))
 			defer server.Close()
 
@@ -161,7 +163,9 @@ func TestListStopChannel(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/xml")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(responseXML))
+		if _, err := w.Write([]byte(responseXML)); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -245,11 +249,13 @@ func TestCopy(t *testing.T) {
 				}
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CopyObjectResult>
     <ETag>"abc123"</ETag>
     <LastModified>2023-01-01T00:00:00Z</LastModified>
-</CopyObjectResult>`))
+</CopyObjectResult>`)); err != nil {
+					t.Fatalf("Failed to write copy response: %v", err)
+				}
 			}))
 			defer server.Close()
 
@@ -296,12 +302,14 @@ func TestInitiateMultipartUpload(t *testing.T) {
 				if r.URL.Query().Get("uploads") != "" || r.URL.Path == "/test-bucket/test-object.txt" {
 					w.Header().Set("Content-Type", "application/xml")
 					w.WriteHeader(tt.statusCode)
-					w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+					if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <InitiateMultipartUploadResult>
     <Bucket>test-bucket</Bucket>
     <Key>test-object.txt</Key>
     <UploadId>test-upload-id-123</UploadId>
-</InitiateMultipartUploadResult>`))
+</InitiateMultipartUploadResult>`)); err != nil {
+						t.Fatalf("Failed to write initiate response: %v", err)
+					}
 				}
 			}))
 			defer server.Close()
@@ -422,13 +430,15 @@ func TestCompleteMultipartUpload(t *testing.T) {
 				}
 				w.Header().Set("Content-Type", "application/xml")
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+				if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
     <Location>http://test-bucket.s3.amazonaws.com/test-object.txt</Location>
     <Bucket>test-bucket</Bucket>
     <Key>test-object.txt</Key>
     <ETag>"abc123-2"</ETag>
-</CompleteMultipartUploadResult>`))
+</CompleteMultipartUploadResult>`)); err != nil {
+					t.Fatalf("Failed to write complete response: %v", err)
+				}
 			}))
 			defer server.Close()
 

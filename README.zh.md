@@ -300,25 +300,48 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 📝 示例代码
 
-更多示例代码请查看 [examples/rustfs](examples/rustfs/) 目录：
+我们在两个目录中提供了全面的示例：
 
-- [存储桶操作示例](examples/rustfs/bucketops.go)
-- [对象操作示例](examples/rustfs/objectops.go)
-- [分片上传示例](examples/rustfs/multipart.go)
-- [健康检查示例](examples/rustfs/health.go)
-- [HTTP 追踪示例](examples/rustfs/trace.go)
+### 🔧 RustFS 示例 ([examples/rustfs](examples/rustfs/))
+
+演示 RustFS 高级功能的示例：
+
+- [存储桶操作示例](examples/rustfs/bucketops.go) - 创建、列出、删除存储桶
+- [对象操作示例](examples/rustfs/objectops.go) - 上传、下载、复制对象
+- [分片上传示例](examples/rustfs/multipart.go) - 大文件多部分上传
+- [健康检查示例](examples/rustfs/health.go) - 服务健康监控
+- [HTTP 追踪示例](examples/rustfs/trace.go) - 请求追踪和调试
+- [对象标签示例](examples/rustfs/object_tagging.go) - 标签管理
+- [存储桶策略与生命周期](examples/rustfs/bucket_policy_lifecycle.go) - 策略和生命周期配置
+- [数据保护示例](examples/rustfs/data_protection.go) - 版本控制、复制、通知、日志
+
+### 📦 S3 兼容示例 ([examples/s3](examples/s3/))
+
+标准 S3 API 示例（35 个示例涵盖所有常用操作）：
+
+- **存储桶操作** (5个): 创建、删除、列出、检查存在、获取位置
+- **对象操作** (11个): 上传、下载、复制、删除、统计、列出、列出版本、文件上传/下载、批量删除、流式上传、进度显示
+- **版本控制** (3个): 启用、暂停、状态
+- **对象标签** (4个): 设置、获取、删除标签、上传带标签对象
+- **存储桶策略** (3个): 设置、获取、删除策略
+- **生命周期管理** (3个): 设置、获取、删除生命周期规则
+- **预签名 URL** (3个): GET、PUT 和带响应头覆盖的 GET
+- **健康检查** (1个): 服务健康监控
+
+完整列表和使用说明请查看 [examples/s3/README.md](examples/s3/README.md)。
 
 ### 运行示例
 
 ```bash
+# RustFS 示例
 cd examples/rustfs
-
-# 运行示例
 go run -tags example bucketops.go
 go run -tags example objectops.go
-go run -tags example multipart.go
-go run -tags example health.go
-go run -tags example trace.go
+
+# S3 示例
+cd examples/s3
+go run -tags example bucket-create.go
+go run -tags example object-put.go
 ```
 
 > **💡 提示**: 运行示例前，请确保：

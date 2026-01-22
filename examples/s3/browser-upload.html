@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Presigned POST Upload</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+        margin: 24px;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 2px 4px;
+      }
+      label {
+        display: block;
+        margin: 8px 0 4px;
+      }
+      input[type="text"], input[type="url"] {
+        width: 100%;
+        max-width: 720px;
+        padding: 6px 8px;
+      }
+      .row {
+        margin-bottom: 12px;
+      }
+      .hint {
+        color: #666;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Presigned POST Upload</h1>
+    <p>
+      Run <code>presigned-post-policy.go</code> and paste the POST URL and fields below.
+    </p>
+
+    <form action="https://example.com" method="post" enctype="multipart/form-data">
+      <div class="row">
+        <label for="post-url">POST URL (form action)</label>
+        <input id="post-url" type="url" placeholder="https://your-endpoint/bucket" oninput="this.form.action=this.value">
+        <div class="hint">This updates the form action automatically.</div>
+      </div>
+
+      <div class="row">
+        <label for="key">key</label>
+        <input id="key" type="text" name="key" value="uploads/${filename}">
+      </div>
+      <div class="row">
+        <label for="policy">policy</label>
+        <input id="policy" type="text" name="policy">
+      </div>
+      <div class="row">
+        <label for="algorithm">x-amz-algorithm</label>
+        <input id="algorithm" type="text" name="x-amz-algorithm">
+      </div>
+      <div class="row">
+        <label for="credential">x-amz-credential</label>
+        <input id="credential" type="text" name="x-amz-credential">
+      </div>
+      <div class="row">
+        <label for="date">x-amz-date</label>
+        <input id="date" type="text" name="x-amz-date">
+      </div>
+      <div class="row">
+        <label for="signature">x-amz-signature</label>
+        <input id="signature" type="text" name="x-amz-signature">
+      </div>
+      <div class="row">
+        <label for="token">x-amz-security-token (optional)</label>
+        <input id="token" type="text" name="x-amz-security-token">
+      </div>
+
+      <div class="row">
+        <label for="file">file</label>
+        <input id="file" type="file" name="file">
+      </div>
+
+      <button type="submit">Upload</button>
+    </form>
+
+    <p class="hint">
+      If you are using signature V2, replace the x-amz-* fields with
+      <code>AWSAccessKeyId</code> and <code>signature</code> from the output.
+    </p>
+  </body>
+</html>

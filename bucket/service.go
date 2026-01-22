@@ -4,6 +4,12 @@ package bucket
 import (
 	"context"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/acl"
+	"github.com/Scorpio69t/rustfs-go/pkg/cors"
+	"github.com/Scorpio69t/rustfs-go/pkg/notification"
+	"github.com/Scorpio69t/rustfs-go/pkg/objectlock"
+	"github.com/Scorpio69t/rustfs-go/pkg/replication"
+	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
@@ -57,6 +63,9 @@ type Service interface {
 	// DeleteReplication removes bucket replication configuration
 	DeleteReplication(ctx context.Context, bucketName string) error
 
+	// GetReplicationMetrics retrieves replication metrics for a bucket
+	GetReplicationMetrics(ctx context.Context, bucketName string) (replication.Metrics, error)
+
 	// SetNotification sets bucket event notification configuration
 	SetNotification(ctx context.Context, bucketName string, config []byte) error
 
@@ -66,6 +75,9 @@ type Service interface {
 	// DeleteNotification removes bucket event notification configuration
 	DeleteNotification(ctx context.Context, bucketName string) error
 
+	// ListenNotification listens for bucket notification events.
+	ListenNotification(ctx context.Context, bucketName, prefix, suffix string, events []notification.EventType) <-chan notification.Info
+
 	// SetLogging sets bucket access logging configuration
 	SetLogging(ctx context.Context, bucketName string, config []byte) error
 
@@ -74,6 +86,45 @@ type Service interface {
 
 	// DeleteLogging removes bucket access logging configuration
 	DeleteLogging(ctx context.Context, bucketName string) error
+
+	// SetEncryption sets bucket default encryption configuration
+	SetEncryption(ctx context.Context, bucketName string, config sse.Configuration) error
+
+	// GetEncryption retrieves bucket default encryption configuration
+	GetEncryption(ctx context.Context, bucketName string) (sse.Configuration, error)
+
+	// DeleteEncryption removes bucket default encryption configuration
+	DeleteEncryption(ctx context.Context, bucketName string) error
+
+	// SetCORS sets bucket CORS configuration
+	SetCORS(ctx context.Context, bucketName string, config cors.Config) error
+
+	// GetCORS retrieves bucket CORS configuration
+	GetCORS(ctx context.Context, bucketName string) (cors.Config, error)
+
+	// DeleteCORS removes bucket CORS configuration
+	DeleteCORS(ctx context.Context, bucketName string) error
+
+	// SetTagging sets bucket tags
+	SetTagging(ctx context.Context, bucketName string, tags map[string]string) error
+
+	// GetTagging retrieves bucket tags
+	GetTagging(ctx context.Context, bucketName string) (map[string]string, error)
+
+	// DeleteTagging removes bucket tags
+	DeleteTagging(ctx context.Context, bucketName string) error
+
+	// SetACL sets bucket ACL
+	SetACL(ctx context.Context, bucketName string, policy acl.ACL) error
+
+	// GetACL retrieves bucket ACL
+	GetACL(ctx context.Context, bucketName string) (acl.ACL, error)
+
+	// SetObjectLockConfig sets bucket object lock configuration
+	SetObjectLockConfig(ctx context.Context, bucketName string, config objectlock.Config) error
+
+	// GetObjectLockConfig retrieves bucket object lock configuration
+	GetObjectLockConfig(ctx context.Context, bucketName string) (objectlock.Config, error)
 }
 
 // CreateOption create bucket options function

@@ -103,7 +103,7 @@ type STSWebIdentity struct {
 // Credentials object wrapping the STSWebIdentity.
 func NewSTSWebIdentity(stsEndpoint string, getWebIDTokenExpiry func() (*WebIdentityToken, error), opts ...func(*STSWebIdentity)) (*Credentials, error) {
 	if getWebIDTokenExpiry == nil {
-		return nil, errors.New("Web ID token and expiry retrieval function should be defined")
+		return nil, errors.New("web ID token and expiry retrieval function should be defined")
 	}
 	i := &STSWebIdentity{
 		STSEndpoint:         stsEndpoint,
@@ -193,7 +193,11 @@ func getWebIdentityCredentials(clnt *http.Client, endpoint, roleARN, roleSession
 		return AssumeRoleWithWebIdentityResponse{}, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		var errResp ErrorResponse
 		buf, err := io.ReadAll(resp.Body)
@@ -240,7 +244,7 @@ func (m *STSWebIdentity) RetrieveWithCredContext(cc *CredContext) (Value, error)
 		stsEndpoint = cc.Endpoint
 	}
 	if stsEndpoint == "" {
-		return Value{}, errors.New("STS endpoint unknown")
+		return Value{}, errors.New("sts endpoint unknown")
 	}
 
 	a, err := getWebIdentityCredentials(client, stsEndpoint, m.RoleARN, m.roleSessionName, m.Policy, m.GetWebIDTokenExpiry, m.TokenRevokeType)

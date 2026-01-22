@@ -93,7 +93,7 @@ type STSClientGrants struct {
 // Credentials object wrapping the STSClientGrants.
 func NewSTSClientGrants(stsEndpoint string, getClientGrantsTokenExpiry func() (*ClientGrantsToken, error)) (*Credentials, error) {
 	if getClientGrantsTokenExpiry == nil {
-		return nil, errors.New("Client grants access token and expiry retrieval function should be defined")
+		return nil, errors.New("client grants access token and expiry retrieval function should be defined")
 	}
 	return New(&STSClientGrants{
 		STSEndpoint:                stsEndpoint,
@@ -131,7 +131,11 @@ func getClientGrantsCredentials(clnt *http.Client, endpoint string,
 	if err != nil {
 		return AssumeRoleWithClientGrantsResponse{}, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		var errResp ErrorResponse
 		buf, err := io.ReadAll(resp.Body)
@@ -177,7 +181,7 @@ func (m *STSClientGrants) RetrieveWithCredContext(cc *CredContext) (Value, error
 		stsEndpoint = cc.Endpoint
 	}
 	if stsEndpoint == "" {
-		return Value{}, errors.New("STS endpoint unknown")
+		return Value{}, errors.New("sts endpoint unknown")
 	}
 
 	a, err := getClientGrantsCredentials(client, stsEndpoint, m.GetClientGrantsTokenExpiry)

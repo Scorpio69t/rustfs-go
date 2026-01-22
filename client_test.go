@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	YOURACCESSKEYID     = "XhJOoEKn3BM6cjD2dVmx"
-	YOURSECRETACCESSKEY = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+	YOURACCESSKEYID     = "rustfsadmin"
+	YOURSECRETACCESSKEY = "rustfsadmin"
 	YOURENDPOINT        = "127.0.0.1:9000"
 	YOURBUCKET          = "mybucket" // 'mc mb play/mybucket' if it does not exist.
 )
@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 			name:     "Valid client creation",
 			endpoint: "127.0.0.1:9000",
 			opts: &Options{
-				Credentials: credentials.NewStaticV4("XhJOoEKn3BM6cjD2dVmx", "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf", ""),
+				Credentials: credentials.NewStaticV4("rustfsadmin", "rustfsadmin", ""),
 				Secure:      false,
 			},
 			wantErr: false,
@@ -95,7 +95,7 @@ func TestClientMethods(t *testing.T) {
 	t.Run("EndpointURL", func(t *testing.T) {
 		url := client.EndpointURL()
 		if url == nil {
-			t.Error("EndpointURL() returned nil")
+			t.Fatal("EndpointURL() returned nil")
 		}
 		if url.Host != "127.0.0.1:9000" {
 			t.Errorf("EndpointURL() host = %s, want 127.0.0.1:9000", url.Host)

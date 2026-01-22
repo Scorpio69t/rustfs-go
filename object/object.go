@@ -28,6 +28,11 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 // - list.go: List method
 // - copy.go: Copy method
 // - multipart.go: InitiateMultipartUpload, UploadPart, CompleteMultipartUpload, AbortMultipartUpload methods
+// - compose.go: Compose method
+// - append.go: Append method
+// - select.go: Select method
+// - restore.go: Restore method
+// - post_policy.go: PresignedPostPolicy method
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {
@@ -79,6 +84,24 @@ func applyListOptions(opts []ListOption) ListOptions {
 // applyCopyOptions applies copy options
 func applyCopyOptions(opts []CopyOption) CopyOptions {
 	options := CopyOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
+// applyLegalHoldOptions applies legal hold options.
+func applyLegalHoldOptions(opts []LegalHoldOption) LegalHoldOptions {
+	options := LegalHoldOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
+// applyRetentionOptions applies retention options.
+func applyRetentionOptions(opts []RetentionOption) RetentionOptions {
+	options := RetentionOptions{}
 	for _, opt := range opts {
 		opt(&options)
 	}

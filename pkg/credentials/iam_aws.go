@@ -286,7 +286,11 @@ func listRoleNames(client *http.Client, u *url.URL, token string) ([]string, err
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(resp.Status)
 	}
@@ -318,7 +322,11 @@ func getEcsTaskCredentials(client *http.Client, endpoint, token string) (ec2Role
 	if err != nil {
 		return ec2RoleCredRespBody{}, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return ec2RoleCredRespBody{}, errors.New(resp.Status)
 	}
@@ -356,7 +364,11 @@ func fetchIMDSToken(client *http.Client, endpoint string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -399,7 +411,7 @@ func getCredentials(client *http.Client, endpoint string) (ec2RoleCredRespBody, 
 	}
 
 	if len(roleNames) == 0 {
-		return ec2RoleCredRespBody{}, errors.New("No IAM roles attached to this EC2 service")
+		return ec2RoleCredRespBody{}, errors.New("no IAM roles attached to this EC2 service")
 	}
 
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
@@ -425,7 +437,11 @@ func getCredentials(client *http.Client, endpoint string) (ec2RoleCredRespBody, 
 	if err != nil {
 		return ec2RoleCredRespBody{}, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return ec2RoleCredRespBody{}, errors.New(resp.Status)
 	}

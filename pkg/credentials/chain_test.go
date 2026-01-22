@@ -46,8 +46,8 @@ func (s *testCredProvider) IsExpired() bool {
 func TestChainGet(t *testing.T) {
 	p := &Chain{
 		Providers: []Provider{
-			&credProvider{err: errors.New("FirstError")},
-			&credProvider{err: errors.New("SecondError")},
+			&credProvider{err: errors.New("first error")},
+			&credProvider{err: errors.New("second error")},
 			&testCredProvider{
 				creds: Value{
 					AccessKeyID:     "AKIF",
@@ -128,8 +128,8 @@ func TestChainWithNoProvider(t *testing.T) {
 
 func TestChainProviderWithNoValidProvider(t *testing.T) {
 	errs := []error{
-		errors.New("FirstError"),
-		errors.New("SecondError"),
+		errors.New("first error"),
+		errors.New("second error"),
 	}
 	p := &Chain{
 		Providers: []Provider{
@@ -144,7 +144,7 @@ func TestChainProviderWithNoValidProvider(t *testing.T) {
 
 	_, err := p.RetrieveWithCredContext(defaultCredContext)
 	if err != nil {
-		if err.Error() != "No valid providers found [FirstError SecondError]" {
+		if err.Error() != "No valid providers found [first error second error]" {
 			t.Error(err)
 		}
 	}

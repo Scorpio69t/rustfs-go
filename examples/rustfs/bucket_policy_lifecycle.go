@@ -15,8 +15,8 @@ import (
 
 func main() {
 	const (
-		accessKey  = "XhJOoEKn3BM6cjD2dVmx"
-		secretKey  = "yXKl1p5FNjgWdqHzYV8s3LTuoxAEBwmb67DnchRf"
+		accessKey  = "rustfsadmin"
+		secretKey  = "rustfsadmin"
 		endpoint   = "127.0.0.1:9000"
 		bucketName = "mybucket"
 	)

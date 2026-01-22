@@ -31,6 +31,8 @@ RustFS Go SDK is a comprehensive Go client library for interacting with the Rust
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
 - ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers (see `examples/rustfs/data_protection.go`)
+- ✅ **Security & Compliance** - SSE-S3/SSE-C, bucket encryption, object lock, ACL, and CORS helpers
+- ✅ **Advanced Features** - Post policies, object select, compose, append, and restore helpers
 
 ## 🚀 Installation
 
@@ -348,25 +350,58 @@ client, err := rustfs.New("rustfs.example.com", &rustfs.Options{
 
 ## 📝 Examples
 
-More example code can be found in the [examples/rustfs](examples/rustfs/) directory:
+We provide comprehensive examples in two directories:
 
-- [Bucket Operations](examples/rustfs/bucketops.go)
-- [Object Operations](examples/rustfs/objectops.go)
-- [Multipart Upload](examples/rustfs/multipart.go)
-- [Health Check](examples/rustfs/health.go)
-- [HTTP Tracing](examples/rustfs/trace.go)
+### 🔧 RustFS Examples ([examples/rustfs](examples/rustfs/))
+
+Advanced examples demonstrating RustFS features:
+
+- [Bucket Operations](examples/rustfs/bucketops.go) - Create, list, delete buckets
+- [Object Operations](examples/rustfs/objectops.go) - Upload, download, copy objects
+- [Multipart Upload](examples/rustfs/multipart.go) - Large file upload with multipart
+- [Health Check](examples/rustfs/health.go) - Service health monitoring
+- [HTTP Tracing](examples/rustfs/trace.go) - Request tracing and debugging
+- [Object Tagging](examples/rustfs/object_tagging.go) - Tag management
+- [Bucket Policy & Lifecycle](examples/rustfs/bucket_policy_lifecycle.go) - Policy and lifecycle configuration
+- [Data Protection](examples/rustfs/data_protection.go) - Versioning, replication, notifications, logging
+
+### 📦 S3 Compatible Examples ([examples/s3](examples/s3/))
+
+Standard S3 API examples (65 examples covering common operations):
+
+- **Bucket Operations** (5): create, delete, list, exists, location
+- **Object Operations** (10): put, get, copy, delete, batch delete, stat, list, list versions, streaming, progress
+- **File Operations** (2): upload, download
+- **Versioning** (3): enable, suspend, status
+- **Tagging** (4): set, get, delete tags, put with tags
+- **Bucket Policy** (3): set, get, delete policies
+- **Lifecycle Management** (3): set, get, delete lifecycle rules
+- **Presigned URLs** (4): GET, PUT, GET with response header override, POST policy
+- **Health Check** (1): service health monitoring
+- **Encryption** (7): SSE-S3, SSE-C, bucket encryption configuration
+- **Object Lock** (6): config, legal hold, retention
+- **CORS** (3): set, get, delete
+- **ACL** (2): set, get
+- **Replication** (3): set, get, metrics
+- **Notifications** (3): set, get, listen
+- **Object Select** (2): CSV, JSON
+- **Object Composition** (1): compose
+- **Object Append** (1): append
+
+See [examples/s3/README.md](examples/s3/README.md) for complete list and usage instructions.
 
 ### Run the examples
 
 ```bash
+# RustFS examples
 cd examples/rustfs
-
-# Run examples
 go run -tags example bucketops.go
 go run -tags example objectops.go
-go run -tags example multipart.go
-go run -tags example health.go
-go run -tags example trace.go
+
+# S3 examples
+cd examples/s3
+go run -tags example bucket-create.go
+go run -tags example object-put.go
 ```
 
 > **💡 Tip**: Before running examples, make sure:

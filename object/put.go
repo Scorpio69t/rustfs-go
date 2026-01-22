@@ -118,8 +118,13 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		}
 	}
 
-	// Set SSE-C headers if provided
-	applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
+	// Apply server-side encryption headers
+	if options.SSE != nil {
+		options.SSE.ApplyHeaders(meta.CustomHeader)
+	} else {
+		// Fallback to legacy SSE-C headers if SSE field not set
+		applySSECustomerHeaders(&meta, options.SSECustomerAlgorithm, options.SSECustomerKey, options.SSECustomerKeyMD5)
+	}
 
 	// Create PUT request
 	req := core.NewRequest(ctx, http.MethodPut, meta)
@@ -143,13 +148,13 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		return types.UploadInfo{}, err
 	}
 
-	// Get object size (if present in response)
+	// Set object size (use request size, override if response provides valid Content-Length)
+	uploadInfo.Size = objectSize
 	if contentLength := resp.Header.Get("Content-Length"); contentLength != "" {
-		if size, err := strconv.ParseInt(contentLength, 10, 64); err == nil {
+		if size, err := strconv.ParseInt(contentLength, 10, 64); err == nil && size > 0 {
+			// Only use Content-Length if it's greater than 0
 			uploadInfo.Size = size
 		}
-	} else {
-		uploadInfo.Size = objectSize
 	}
 
 	return uploadInfo, nil
