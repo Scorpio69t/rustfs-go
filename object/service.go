@@ -63,8 +63,17 @@ type Service interface {
 	// PresignGet creates a presigned GET URL with optional signed headers
 	PresignGet(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
 
+	// PresignHead creates a presigned HEAD URL with optional signed headers
+	PresignHead(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
+
 	// PresignPut creates a presigned PUT URL with optional signed headers
 	PresignPut(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error)
+
+	// ListMultipartUploads lists in-progress multipart uploads for a bucket
+	ListMultipartUploads(ctx context.Context, bucketName string, opts ...MultipartListOption) (ListMultipartUploadsResult, error)
+
+	// ListObjectParts lists parts for a specific multipart upload
+	ListObjectParts(ctx context.Context, bucketName, objectName, uploadID string, opts ...ListPartsOption) (ListPartsResult, error)
 
 	// SetTagging sets object tags
 	SetTagging(ctx context.Context, bucketName, objectName string, tags map[string]string) error
@@ -114,6 +123,12 @@ type CopyOption func(*CopyOptions)
 
 // PresignOption applies presign options
 type PresignOption func(*PresignOptions)
+
+// MultipartListOption applies multipart upload listing options
+type MultipartListOption func(*ListMultipartUploadsOptions)
+
+// ListPartsOption applies list parts options
+type ListPartsOption func(*ListPartsOptions)
 
 // LegalHoldOption applies legal hold options
 type LegalHoldOption func(*LegalHoldOptions)

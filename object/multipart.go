@@ -71,6 +71,7 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 		ObjectName:   objectName,
 		QueryValues:  url.Values{},
 		CustomHeader: make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Add uploads query parameter
@@ -118,6 +119,9 @@ func (s *objectService) InitiateMultipartUpload(ctx context.Context, bucketName,
 			meta.CustomHeader.Set("x-amz-tagging", tags)
 		}
 	}
+
+	// Set checksum headers
+	applyChecksumHeaders(&meta, options)
 
 	// Merge custom headers
 	if options.CustomHeaders != nil {
@@ -187,11 +191,15 @@ func (s *objectService) UploadPart(ctx context.Context, bucketName, objectName, 
 		ContentLength: partSize,
 		QueryValues:   url.Values{},
 		CustomHeader:  make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Set query parameters
 	meta.QueryValues.Set("uploadId", uploadID)
 	meta.QueryValues.Set("partNumber", strconv.Itoa(partNumber))
+
+	// Set checksum headers
+	applyChecksumHeaders(&meta, options)
 
 	// Merge custom headers
 	if options.CustomHeaders != nil {
@@ -288,6 +296,7 @@ func (s *objectService) CompleteMultipartUpload(ctx context.Context, bucketName,
 		ContentLength: int64(len(xmlData)),
 		QueryValues:   url.Values{},
 		CustomHeader:  make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Set query parameters

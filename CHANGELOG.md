@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Presigned HEAD URL generation and presign header/query helpers.
+- GetObject response header override options.
+- Multipart upload listing APIs (list uploads, list parts) with pagination options.
+- Upload checksum mode and algorithm options.
+- S3 Accelerate endpoint option for compatible object operations.
+- Client-side encryption (CSE) helper package and Put/Get integration.
+- Additional S3 examples covering the new APIs and CSE usage.
+
 ## [v1.0.0] - 2025-01-XX
 
 ### Added

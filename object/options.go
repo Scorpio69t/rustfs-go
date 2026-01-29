@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Scorpio69t/rustfs-go/pkg/cse"
 	"github.com/Scorpio69t/rustfs-go/pkg/sse"
 )
 
@@ -41,6 +42,10 @@ type PutOptions struct {
 	// Storage class
 	StorageClass string
 
+	// Checksum mode and algorithm
+	ChecksumMode      string
+	ChecksumAlgorithm string
+
 	// Custom headers
 	CustomHeaders http.Header
 
@@ -53,6 +58,9 @@ type PutOptions struct {
 	// Server-side encryption
 	SSE sse.Encrypter
 
+	// Client-side encryption helper
+	CSE *cse.Client
+
 	// SSE-S3 / SSE-C options (deprecated, use SSE field)
 	SSECustomerAlgorithm string
 	SSECustomerKey       string
@@ -63,6 +71,9 @@ type PutOptions struct {
 
 	// Number of concurrent uploads
 	NumThreads uint
+
+	// Use S3 Accelerate endpoint
+	UseAccelerate bool
 }
 
 // PresignOptions controls presigned URL generation
@@ -101,8 +112,17 @@ type GetOptions struct {
 	// Custom headers
 	CustomHeaders http.Header
 
+	// Response header overrides (query params like response-content-type)
+	ResponseHeaderOverrides url.Values
+
+	// Use S3 Accelerate endpoint
+	UseAccelerate bool
+
 	// Server-side encryption for encrypted objects
 	SSE sse.Encrypter
+
+	// Client-side encryption helper
+	CSE *cse.Client
 
 	// SSE-C headers for encrypted objects (deprecated, use SSE field)
 	SSECustomerAlgorithm string
@@ -117,6 +137,9 @@ type StatOptions struct {
 
 	// Custom headers
 	CustomHeaders http.Header
+
+	// Use S3 Accelerate endpoint
+	UseAccelerate bool
 }
 
 // DeleteOptions controls object deletion
@@ -159,6 +182,24 @@ type ListOptions struct {
 
 	// Custom headers
 	CustomHeaders http.Header
+
+	// Use S3 Accelerate endpoint
+	UseAccelerate bool
+}
+
+// ListMultipartUploadsOptions controls multipart upload listing.
+type ListMultipartUploadsOptions struct {
+	Prefix         string
+	Delimiter      string
+	KeyMarker      string
+	UploadIDMarker string
+	MaxUploads     int
+}
+
+// ListPartsOptions controls list parts behavior.
+type ListPartsOptions struct {
+	PartNumberMarker int
+	MaxParts         int
 }
 
 // CopyOptions controls server-side copy behavior
@@ -192,6 +233,9 @@ type CopyOptions struct {
 
 	// Custom headers
 	CustomHeaders http.Header
+
+	// Use S3 Accelerate endpoint
+	UseAccelerate bool
 }
 
 // WithContentType sets Content-Type
@@ -287,6 +331,20 @@ func WithStorageClass(class string) PutOption {
 	}
 }
 
+// WithChecksumMode sets checksum mode (e.g., ENABLED).
+func WithChecksumMode(mode string) PutOption {
+	return func(opts *PutOptions) {
+		opts.ChecksumMode = mode
+	}
+}
+
+// WithChecksumAlgorithm sets the checksum algorithm (e.g., CRC32C).
+func WithChecksumAlgorithm(algorithm string) PutOption {
+	return func(opts *PutOptions) {
+		opts.ChecksumAlgorithm = algorithm
+	}
+}
+
 // WithPartSize sets multipart part size
 func WithPartSize(size uint64) PutOption {
 	return func(opts *PutOptions) {
@@ -337,6 +395,13 @@ func WithSSEKMS(keyID string, context map[string]string) PutOption {
 	}
 }
 
+// WithPutCSE enables client-side encryption for uploads.
+func WithPutCSE(client *cse.Client) PutOption {
+	return func(opts *PutOptions) {
+		opts.CSE = client
+	}
+}
+
 // WithGetRange sets byte range for downloads
 func WithGetRange(start, end int64) GetOption {
 	return func(opts *GetOptions) {
@@ -371,6 +436,27 @@ func WithGetSSEC(key []byte) GetOption {
 			return
 		}
 		opts.SSE = enc
+	}
+}
+
+// WithGetCSE enables client-side decryption for downloads.
+func WithGetCSE(client *cse.Client) GetOption {
+	return func(opts *GetOptions) {
+		opts.CSE = client
+	}
+}
+
+// WithGetResponseHeaders sets response header override query parameters.
+func WithGetResponseHeaders(values url.Values) GetOption {
+	return func(opts *GetOptions) {
+		if opts.ResponseHeaderOverrides == nil {
+			opts.ResponseHeaderOverrides = make(url.Values)
+		}
+		for k, v := range values {
+			for _, vv := range v {
+				opts.ResponseHeaderOverrides.Add(k, vv)
+			}
+		}
 	}
 }
 
@@ -432,6 +518,106 @@ func WithListVersions() ListOption {
 func WithListMetadata(include bool) ListOption {
 	return func(opts *ListOptions) {
 		opts.WithMetadata = include
+	}
+}
+
+// WithAccelerate enables S3 Accelerate for compatible object operations.
+func WithAccelerate() interface{} {
+	return struct {
+		PutOption
+		GetOption
+		StatOption
+		CopyOption
+	}{
+		PutOption: func(opts *PutOptions) {
+			opts.UseAccelerate = true
+		},
+		GetOption: func(opts *GetOptions) {
+			opts.UseAccelerate = true
+		},
+		StatOption: func(opts *StatOptions) {
+			opts.UseAccelerate = true
+		},
+		CopyOption: func(opts *CopyOptions) {
+			opts.UseAccelerate = true
+		},
+	}
+}
+
+// WithPutAccelerate enables S3 Accelerate for Put/Multipart operations.
+func WithPutAccelerate() PutOption {
+	return func(opts *PutOptions) {
+		opts.UseAccelerate = true
+	}
+}
+
+// WithGetAccelerate enables S3 Accelerate for Get operations.
+func WithGetAccelerate() GetOption {
+	return func(opts *GetOptions) {
+		opts.UseAccelerate = true
+	}
+}
+
+// WithStatAccelerate enables S3 Accelerate for Stat operations.
+func WithStatAccelerate() StatOption {
+	return func(opts *StatOptions) {
+		opts.UseAccelerate = true
+	}
+}
+
+// WithCopyAccelerate enables S3 Accelerate for Copy operations.
+func WithCopyAccelerate() CopyOption {
+	return func(opts *CopyOptions) {
+		opts.UseAccelerate = true
+	}
+}
+
+// WithMultipartPrefix filters multipart uploads by prefix.
+func WithMultipartPrefix(prefix string) MultipartListOption {
+	return func(opts *ListMultipartUploadsOptions) {
+		opts.Prefix = prefix
+	}
+}
+
+// WithMultipartDelimiter sets the delimiter for multipart listing.
+func WithMultipartDelimiter(delimiter string) MultipartListOption {
+	return func(opts *ListMultipartUploadsOptions) {
+		opts.Delimiter = delimiter
+	}
+}
+
+// WithMultipartKeyMarker sets the key marker for pagination.
+func WithMultipartKeyMarker(marker string) MultipartListOption {
+	return func(opts *ListMultipartUploadsOptions) {
+		opts.KeyMarker = marker
+	}
+}
+
+// WithMultipartUploadIDMarker sets the upload ID marker for pagination.
+func WithMultipartUploadIDMarker(marker string) MultipartListOption {
+	return func(opts *ListMultipartUploadsOptions) {
+		opts.UploadIDMarker = marker
+	}
+}
+
+// WithMultipartMaxUploads sets the maximum uploads to return.
+func WithMultipartMaxUploads(max int) MultipartListOption {
+	return func(opts *ListMultipartUploadsOptions) {
+		opts.MaxUploads = max
+	}
+}
+
+// WithListPartsMarker sets the part number marker for pagination.
+func WithListPartsMarker(marker int) ListPartsOption {
+	return func(opts *ListPartsOptions) {
+		opts.PartNumberMarker = marker
+	}
+}
+
+// WithListPartsMax sets the maximum parts to return.
+func WithListPartsMax(max int) ListPartsOption {
+	return func(opts *ListPartsOptions) {
+		opts.MaxParts = max
 	}
 }
 

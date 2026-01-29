@@ -69,6 +69,7 @@ go run -tags example bucket-create.go
 |---------|---------|
 | `object-put.go` | 上传对象（从内存） |
 | `object-get.go` | 下载对象 |
+| `object-get-override-headers.go` | Get object with response header overrides |
 | `object-stat.go` | 获取对象信息 |
 | `object-copy.go` | 复制对象 |
 | `object-delete.go` | 删除单个对象 |
@@ -76,8 +77,12 @@ go run -tags example bucket-create.go
 | `object-list.go` | 列出对象 |
 | `object-list-versions.go` | 列出对象版本 |
 | `object-list-max-keys.go` | List objects with max-keys and start-after |
+| `object-list-multipart-uploads.go` | List multipart uploads |
+| `object-list-parts.go` | List multipart upload parts |
 | `object-put-streaming.go` | 流式上传对象 |
 | `object-put-progress.go` | 带进度显示的上传 |
+| `object-put-checksum.go` | Upload with checksum mode |
+| `object-put-s3-accelerate.go` | Upload with S3 Accelerate |
 
 ### 📁 文件操作
 
@@ -108,6 +113,7 @@ go run -tags example bucket-create.go
 | 示例文件 | 功能描述 |
 |---------|---------|
 | `presigned-get.go` | 生成预签名 GET URL |
+| `presigned-head.go` | 生成预签名 HEAD URL |
 | `presigned-put.go` | 生成预签名 PUT URL |
 | `presigned-get-override-headers.go` | 预签名 GET 并覆盖响应头 |
 | `presigned-post-policy.go` | Generate presigned POST policy |
@@ -125,6 +131,8 @@ go run -tags example bucket-create.go
 | `encryption-bucket-delete.go` | Delete bucket encryption |
 | `encryption-bucket-config.go` | Bucket encryption configuration (legacy) |
 | `debug-sse-c.go` | Debug SSE-C headers |
+| `object-put-client-encryption.go` | Upload with client-side encryption (CSE) |
+| `object-get-client-encryption.go` | Download with client-side encryption (CSE) |
 
 ### 📋 存储桶策略和生命周期
 
@@ -216,14 +224,6 @@ go run -tags example bucket-create.go
 | `perf-sse.go` | SSE-S3 upload performance comparison |
 | `perf-large-object.go` | Large object upload/download performance |
 | `perf-concurrent.go` | Concurrent upload performance |
-
-## ⚠️ Not supported yet
-
-Some legacy examples are intentionally omitted because the SDK does not expose these APIs yet:
-- Presigned HEAD URL
-- S3 Accelerate uploads
-- Upload with checksum (ChecksumMode)
-- Client-side encryption (CSE). SSE-S3 and SSE-C are supported.
 
 ## 💡 使用提示
 

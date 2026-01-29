@@ -28,6 +28,7 @@ func (s *objectService) Stat(ctx context.Context, bucketName, objectName string,
 		BucketName:   bucketName,
 		ObjectName:   objectName,
 		CustomHeader: options.CustomHeaders,
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Add version ID query parameter

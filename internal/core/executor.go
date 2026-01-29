@@ -4,6 +4,7 @@ package core
 import (
 	"context"
 	"encoding/xml"
+	stdErrors "errors"
 	"io"
 	"net"
 	"net/http"
@@ -40,6 +41,9 @@ type Executor struct {
 	// Bucket lookup style
 	bucketLookup int
 
+	// Use accelerate endpoints
+	accelerate bool
+
 	// Maximum retry attempts
 	maxRetries int
 
@@ -55,6 +59,7 @@ type ExecutorConfig struct {
 	Region        string
 	Secure        bool
 	BucketLookup  int
+	Accelerate    bool
 	MaxRetries    int
 	LocationCache LocationCache
 }
@@ -73,6 +78,7 @@ func NewExecutor(config ExecutorConfig) *Executor {
 		region:        config.Region,
 		secure:        config.Secure,
 		bucketLookup:  config.BucketLookup,
+		accelerate:    config.Accelerate,
 		maxRetries:    maxRetries,
 		locationCache: config.LocationCache,
 	}
@@ -152,7 +158,8 @@ func (e *Executor) buildHTTPRequest(ctx context.Context, req *Request, meta Requ
 	}
 
 	// Build target URL
-	targetURL, err := e.makeTargetURL(meta.BucketName, meta.ObjectName, location, meta.QueryValues)
+	useAccelerate := e.accelerate || meta.UseAccelerate
+	targetURL, err := e.makeTargetURL(meta.BucketName, meta.ObjectName, location, meta.QueryValues, useAccelerate)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +293,7 @@ func (e *Executor) TargetURL(ctx context.Context, bucketName, objectName string,
 			location = resolved
 		}
 	}
-	return e.makeTargetURL(bucketName, objectName, location, query)
+	return e.makeTargetURL(bucketName, objectName, location, query, false)
 }
 
 // resetRequestBody attempts to rewind the request body for a retry.
@@ -304,7 +311,7 @@ func resetRequestBody(meta *RequestMetadata) bool {
 }
 
 // makeTargetURL builds the final request URL
-func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryValues url.Values) (*url.URL, error) {
+func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryValues url.Values, useAccelerate bool) (*url.URL, error) {
 	host := e.endpointURL.Host
 	scheme := e.endpointURL.Scheme
 
@@ -327,6 +334,18 @@ func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryV
 		// Decide virtual-host vs path-style
 		isVirtualHost := e.isVirtualHostStyleRequest(bucketName)
 
+		if useAccelerate {
+			if !isValidVirtualHostBucket(bucketName, e.endpointURL.Scheme == "https") {
+				return nil, stdErrors.New("accelerate requires DNS-compliant bucket names")
+			}
+			acceleratedHost, err := accelerateHost(host)
+			if err != nil {
+				return nil, err
+			}
+			host = acceleratedHost
+			isVirtualHost = true
+		}
+
 		if isVirtualHost {
 			// Virtual-host style: http://bucket.host/object
 			urlStr = scheme + "://" + bucketName + "." + host + "/"
@@ -348,6 +367,16 @@ func (e *Executor) makeTargetURL(bucketName, objectName, location string, queryV
 	}
 
 	return url.Parse(urlStr)
+}
+
+func accelerateHost(host string) (string, error) {
+	if strings.Contains(host, "s3-accelerate.") {
+		return host, nil
+	}
+	if strings.Contains(host, "s3.") {
+		return strings.Replace(host, "s3.", "s3-accelerate.", 1), nil
+	}
+	return "", stdErrors.New("accelerate is only supported for s3 endpoints")
 }
 
 // isVirtualHostStyleRequest determines whether to use virtual-hosted style

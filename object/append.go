@@ -45,6 +45,7 @@ func (s *objectService) Append(ctx context.Context, bucketName, objectName strin
 		ContentBody:   reader,
 		ContentLength: objectSize,
 		CustomHeader:  make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	if options.ContentType != "" {
@@ -87,6 +88,8 @@ func (s *objectService) Append(ctx context.Context, bucketName, objectName strin
 			meta.CustomHeader.Set("x-amz-tagging", tags)
 		}
 	}
+
+	applyChecksumHeaders(&meta, options)
 
 	if options.CustomHeaders != nil {
 		for k, v := range options.CustomHeaders {

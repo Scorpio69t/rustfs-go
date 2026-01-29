@@ -45,6 +45,9 @@ type RequestMetadata struct {
 
 	// Special handling
 	Expect200OKWithError bool
+
+	// Use accelerate endpoint when supported
+	UseAccelerate bool
 }
 
 // Request encapsulated HTTP request

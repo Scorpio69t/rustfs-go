@@ -33,6 +33,7 @@ func NewService(executor *core.Executor, locationCache *cache.LocationCache) Ser
 // - select.go: Select method
 // - restore.go: Restore method
 // - post_policy.go: PresignedPostPolicy method
+// - presign.go: PresignGet, PresignHead, PresignPut methods
 
 // applyPutOptions applies upload options
 func applyPutOptions(opts []PutOption) PutOptions {
@@ -84,6 +85,28 @@ func applyListOptions(opts []ListOption) ListOptions {
 // applyCopyOptions applies copy options
 func applyCopyOptions(opts []CopyOption) CopyOptions {
 	options := CopyOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
+// applyListMultipartUploadsOptions applies multipart upload listing options.
+func applyListMultipartUploadsOptions(opts []MultipartListOption) ListMultipartUploadsOptions {
+	options := ListMultipartUploadsOptions{
+		MaxUploads: 1000,
+	}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	return options
+}
+
+// applyListPartsOptions applies list parts options.
+func applyListPartsOptions(opts []ListPartsOption) ListPartsOptions {
+	options := ListPartsOptions{
+		MaxParts: 1000,
+	}
 	for _, opt := range opts {
 		opt(&options)
 	}
