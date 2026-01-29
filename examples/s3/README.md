@@ -55,6 +55,14 @@ go run -tags example bucket-create.go
 | `bucket-exists.go` | 检查存储桶是否存在 |
 | `bucket-location.go` | 获取存储桶位置 |
 
+### 🏷️ Bucket Tagging
+
+| 示例文件 | 功能描述 |
+|---------|---------|
+| `bucket-tagging-set.go` | Set bucket tags |
+| `bucket-tagging-get.go` | Get bucket tags |
+| `bucket-tagging-delete.go` | Delete bucket tags |
+
 ### 📦 对象基础操作
 
 | 示例文件 | 功能描述 |
@@ -67,6 +75,7 @@ go run -tags example bucket-create.go
 | `object-delete-multiple.go` | 批量删除对象 |
 | `object-list.go` | 列出对象 |
 | `object-list-versions.go` | 列出对象版本 |
+| `object-list-max-keys.go` | List objects with max-keys and start-after |
 | `object-put-streaming.go` | 流式上传对象 |
 | `object-put-progress.go` | 带进度显示的上传 |
 
@@ -141,6 +150,7 @@ go run -tags example bucket-create.go
 | `replication-set.go` | Set replication configuration |
 | `replication-get.go` | Get replication configuration |
 | `replication-metrics.go` | Get replication metrics |
+| `replication-delete.go` | Delete replication configuration |
 
 ### 🔔 事件通知
 
@@ -149,6 +159,7 @@ go run -tags example bucket-create.go
 | `notification-set.go` | Set notification configuration |
 | `notification-get.go` | Get notification configuration |
 | `notification-listen.go` | Listen for notifications |
+| `notification-delete.go` | Delete notification configuration |
 
 ### 🌐 CORS 配置
 
@@ -182,6 +193,7 @@ go run -tags example bucket-create.go
 |---------|---------|
 | `object-compose.go` | Compose objects |
 | `object-append.go` | Append to object |
+| `object-copy-with-new-tags.go` | Copy object and replace tags |
 
 ### 🔍 Object Select
 
