@@ -31,7 +31,7 @@ RustFS Go SDK is a comprehensive Go client library for interacting with the Rust
 - ✅ **Streaming Support** - Efficient streaming upload/download for large files
 - ✅ **Production Ready** - Well-tested with comprehensive examples
 - ✅ **Data Protection** - Versioning, replication, notifications, and access logging helpers (see `examples/rustfs/data_protection.go`)
-- ✅ **Security & Compliance** - SSE-S3/SSE-C, bucket encryption, object lock, ACL, and CORS helpers
+- ✅ **Security & Compliance** - SSE-S3/SSE-C, client-side encryption (CSE), bucket encryption, object lock, ACL, and CORS helpers
 - ✅ **Advanced Features** - Post policies, object select, compose, append, and restore helpers
 
 ## 🚀 Installation
@@ -367,7 +367,7 @@ Advanced examples demonstrating RustFS features:
 
 ### 📦 S3 Compatible Examples ([examples/s3](examples/s3/))
 
-Standard S3 API examples (65 examples covering common operations):
+Standard S3 API examples (80+ examples covering common operations):
 
 - **Bucket Operations** (5): create, delete, list, exists, location
 - **Object Operations** (10): put, get, copy, delete, batch delete, stat, list, list versions, streaming, progress
@@ -378,7 +378,7 @@ Standard S3 API examples (65 examples covering common operations):
 - **Lifecycle Management** (3): set, get, delete lifecycle rules
 - **Presigned URLs** (4): GET, PUT, GET with response header override, POST policy
 - **Health Check** (1): service health monitoring
-- **Encryption** (7): SSE-S3, SSE-C, bucket encryption configuration
+- **Encryption** (11): SSE-S3, SSE-C, client-side encryption, bucket encryption configuration
 - **Object Lock** (6): config, legal hold, retention
 - **CORS** (3): set, get, delete
 - **ACL** (2): set, get

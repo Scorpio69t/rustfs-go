@@ -122,6 +122,7 @@ func New(endpoint string, opts *Options) (*Client, error) {
 		Credentials:  opts.Credentials,
 		Region:       region,
 		BucketLookup: int(opts.BucketLookup),
+		Accelerate:   opts.Accelerate,
 		MaxRetries:   opts.MaxRetries,
 	})
 

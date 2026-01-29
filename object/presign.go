@@ -26,6 +26,12 @@ func (s *objectService) PresignGet(ctx context.Context, bucketName, objectName s
 	return s.presign(ctx, http.MethodGet, bucketName, objectName, expires, reqParams, opts...)
 }
 
+// PresignHead generates a presigned HEAD URL for the given object.
+// reqParams may include response header overrides such as response-content-type.
+func (s *objectService) PresignHead(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error) {
+	return s.presign(ctx, http.MethodHead, bucketName, objectName, expires, reqParams, opts...)
+}
+
 // PresignPut generates a presigned PUT URL for uploading an object.
 // reqParams can include request constraints like content-type.
 func (s *objectService) PresignPut(ctx context.Context, bucketName, objectName string, expires time.Duration, reqParams url.Values, opts ...PresignOption) (*url.URL, http.Header, error) {

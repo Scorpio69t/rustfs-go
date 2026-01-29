@@ -8,22 +8,32 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/Scorpio69t/rustfs-go/internal/cache"
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
+	"github.com/Scorpio69t/rustfs-go/pkg/cse"
 	"github.com/Scorpio69t/rustfs-go/types"
 )
 
 func TestPut(t *testing.T) {
+	cseClient, err := cse.New(bytes.Repeat([]byte{0x11}, 32))
+	if err != nil {
+		t.Fatalf("Failed to create cse client: %v", err)
+	}
+
 	tests := []struct {
 		name       string
 		bucketName string
 		objectName string
 		data       string
 		opts       []PutOption
+		wantChecksumMode      string
+		wantChecksumAlgorithm string
+		wantCSE bool
 		statusCode int
 		wantErr    bool
 	}{
@@ -42,6 +52,30 @@ func TestPut(t *testing.T) {
 			objectName: "test-object.txt",
 			data:       "test data",
 			opts:       []PutOption{WithUserMetadata(map[string]string{"author": "test"})},
+			statusCode: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name:       "Put with checksum mode",
+			bucketName: "test-bucket",
+			objectName: "test-object.txt",
+			data:       "checksum data",
+			opts: []PutOption{
+				WithChecksumMode("ENABLED"),
+				WithChecksumAlgorithm("CRC32C"),
+			},
+			wantChecksumMode:      "ENABLED",
+			wantChecksumAlgorithm: "CRC32C",
+			statusCode:            http.StatusOK,
+			wantErr:               false,
+		},
+		{
+			name:       "Put with client-side encryption",
+			bucketName: "test-bucket",
+			objectName: "test-object.txt",
+			data:       "secret data",
+			opts:       []PutOption{WithPutCSE(cseClient)},
+			wantCSE:    true,
 			statusCode: http.StatusOK,
 			wantErr:    false,
 		},
@@ -75,6 +109,31 @@ func TestPut(t *testing.T) {
 						t.Error("Content-Type header not set")
 					}
 				}
+				if tt.wantChecksumMode != "" {
+					if got := r.Header.Get("x-amz-checksum-mode"); got != tt.wantChecksumMode {
+						t.Errorf("checksum mode = %q, want %q", got, tt.wantChecksumMode)
+					}
+				}
+				if tt.wantChecksumAlgorithm != "" {
+					if got := r.Header.Get("x-amz-checksum-algorithm"); got != tt.wantChecksumAlgorithm {
+						t.Errorf("checksum algorithm = %q, want %q", got, tt.wantChecksumAlgorithm)
+					}
+				}
+				if tt.wantCSE {
+					if got := r.Header.Get("x-amz-meta-rustfs-cse-algorithm"); got == "" {
+						t.Error("missing cse algorithm metadata header")
+					}
+					if got := r.Header.Get("x-amz-meta-rustfs-cse-nonce"); got == "" {
+						t.Error("missing cse nonce metadata header")
+					}
+					body, err := io.ReadAll(r.Body)
+					if err != nil {
+						t.Fatalf("Failed to read request body: %v", err)
+					}
+					if len(body) <= len(tt.data) {
+						t.Errorf("encrypted payload size = %d, want > %d", len(body), len(tt.data))
+					}
+				}
 				w.Header().Set("ETag", "\"abc123\"")
 				w.WriteHeader(tt.statusCode)
 			}))
@@ -92,12 +151,20 @@ func TestPut(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	cseClient, err := cse.New(bytes.Repeat([]byte{0x22}, 32))
+	if err != nil {
+		t.Fatalf("Failed to create cse client: %v", err)
+	}
+
 	tests := []struct {
 		name       string
 		bucketName string
 		objectName string
 		opts       []GetOption
+		wantQuery  url.Values
+		wantRange  bool
 		response   string
+		cseClient  *cse.Client
 		statusCode int
 		wantErr    bool
 	}{
@@ -114,8 +181,35 @@ func TestGet(t *testing.T) {
 			bucketName: "test-bucket",
 			objectName: "test-object.txt",
 			opts:       []GetOption{WithGetRange(0, 10)},
+			wantRange:  true,
 			response:   "Hello",
 			statusCode: http.StatusPartialContent,
+			wantErr:    false,
+		},
+		{
+			name:       "Get with response overrides",
+			bucketName: "test-bucket",
+			objectName: "test-object.txt",
+			opts: []GetOption{WithGetResponseHeaders(url.Values{
+				"response-content-type":        []string{"text/plain"},
+				"response-content-disposition": []string{"inline"},
+			})},
+			wantQuery: url.Values{
+				"response-content-type":        []string{"text/plain"},
+				"response-content-disposition": []string{"inline"},
+			},
+			response:   "Hello",
+			statusCode: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name:       "Get with client-side encryption",
+			bucketName: "test-bucket",
+			objectName: "secret.txt",
+			opts:       []GetOption{WithGetCSE(cseClient)},
+			response:   "Encrypted payload",
+			cseClient:  cseClient,
+			statusCode: http.StatusOK,
 			wantErr:    false,
 		},
 		{
@@ -134,17 +228,42 @@ func TestGet(t *testing.T) {
 					t.Errorf("Expected GET request, got %s", r.Method)
 				}
 				// verify Range header
-				if len(tt.opts) > 0 {
+				if tt.wantRange {
 					rangeHeader := r.Header.Get("Range")
 					if rangeHeader == "" {
 						t.Error("Range header not set")
 					}
 				}
+				if len(tt.wantQuery) > 0 {
+					for key, values := range tt.wantQuery {
+						got := r.URL.Query()[key]
+						if len(got) != len(values) {
+							t.Errorf("Expected query %s=%v, got %v", key, values, got)
+							continue
+						}
+						for i, v := range values {
+							if got[i] != v {
+								t.Errorf("Expected query %s=%v, got %v", key, values, got)
+								break
+							}
+						}
+					}
+				}
+				body := []byte(tt.response)
+				if tt.cseClient != nil {
+					encrypted, metadata, err := tt.cseClient.Encrypt(strings.NewReader(tt.response))
+					if err != nil {
+						t.Fatalf("Failed to encrypt payload: %v", err)
+					}
+					body = encrypted
+					w.Header().Set("x-amz-meta-rustfs-cse-algorithm", metadata["rustfs-cse-algorithm"])
+					w.Header().Set("x-amz-meta-rustfs-cse-nonce", metadata["rustfs-cse-nonce"])
+				}
 				w.Header().Set("Content-Type", "text/plain")
 				w.Header().Set("ETag", "\"abc123\"")
-				w.Header().Set("Content-Length", string(rune(len(tt.response))))
+				w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 				w.WriteHeader(tt.statusCode)
-				if _, err := w.Write([]byte(tt.response)); err != nil {
+				if _, err := w.Write(body); err != nil {
 					t.Fatalf("Failed to write response: %v", err)
 				}
 			}))

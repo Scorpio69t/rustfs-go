@@ -2,11 +2,13 @@
 package object
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/Scorpio69t/rustfs-go/internal/core"
 	"github.com/Scorpio69t/rustfs-go/types"
@@ -30,6 +32,7 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 		BucketName:   bucketName,
 		ObjectName:   objectName,
 		CustomHeader: make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Set Range header
@@ -56,9 +59,17 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 	}
 
 	// Add version ID query parameter
+	queryValues := url.Values{}
 	if options.VersionID != "" {
-		meta.QueryValues = url.Values{}
-		meta.QueryValues.Set("versionId", options.VersionID)
+		queryValues.Set("versionId", options.VersionID)
+	}
+	for k, v := range options.ResponseHeaderOverrides {
+		for _, vv := range v {
+			queryValues.Add(k, vv)
+		}
+	}
+	if len(queryValues) > 0 {
+		meta.QueryValues = queryValues
 	}
 
 	// Set SSE-C headers when downloading encrypted objects
@@ -101,6 +112,21 @@ func (s *objectService) Get(ctx context.Context, bucketName, objectName string, 
 	if err != nil {
 		closeResponse(resp)
 		return nil, types.ObjectInfo{}, err
+	}
+
+	if options.CSE != nil {
+		cseMetadata := map[string]string{}
+		for key, value := range objectInfo.UserMetadata {
+			cseMetadata[strings.ToLower(key)] = value
+		}
+		decrypted, err := options.CSE.Decrypt(resp.Body, cseMetadata)
+		if err != nil {
+			closeResponse(resp)
+			return nil, types.ObjectInfo{}, err
+		}
+		closeResponse(resp)
+		objectInfo.Size = int64(len(decrypted))
+		return io.NopCloser(bytes.NewReader(decrypted)), objectInfo, nil
 	}
 
 	// Return response body and object info

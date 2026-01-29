@@ -48,6 +48,9 @@ type Options struct {
 	// MaxRetries is the maximum number of retries
 	// Default: 10, set to 1 to disable retries
 	MaxRetries int
+
+	// Accelerate enables S3 Accelerate endpoints for object operations
+	Accelerate bool
 }
 
 // validate validates options

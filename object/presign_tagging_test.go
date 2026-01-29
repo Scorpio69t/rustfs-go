@@ -38,6 +38,16 @@ func TestPresignGetAndPut(t *testing.T) {
 	if headers.Get("x-amz-server-side-encryption") != "AES256" {
 		t.Fatalf("PresignPut() expected SSE-S3 header, got %q", headers.Get("x-amz-server-side-encryption"))
 	}
+
+	headURL, _, err := service.PresignHead(ctx, "demo-bucket", "head.txt", 30*time.Second, url.Values{
+		"response-content-disposition": []string{"inline"},
+	})
+	if err != nil {
+		t.Fatalf("PresignHead() error = %v", err)
+	}
+	if !strings.Contains(headURL.RawQuery, "X-Amz-Signature") {
+		t.Fatalf("PresignHead() missing signature in URL: %s", headURL.RawQuery)
+	}
 }
 
 func TestTaggingCRUD(t *testing.T) {

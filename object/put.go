@@ -2,9 +2,11 @@
 package object
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"encoding/base64"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -32,6 +34,24 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		options.ContentType = "application/octet-stream"
 	}
 
+	if options.CSE != nil {
+		ciphertext, metadata, err := options.CSE.Encrypt(reader)
+		if err != nil {
+			return types.UploadInfo{}, err
+		}
+		if options.UserMetadata == nil {
+			options.UserMetadata = map[string]string{}
+		}
+		for key, value := range metadata {
+			if existing, ok := options.UserMetadata[key]; ok && existing != value {
+				return types.UploadInfo{}, errors.New("cse metadata already set")
+			}
+			options.UserMetadata[key] = value
+		}
+		reader = bytes.NewReader(ciphertext)
+		objectSize = int64(len(ciphertext))
+	}
+
 	// Build request metadata
 	meta := core.RequestMetadata{
 		BucketName:    bucketName,
@@ -39,6 +59,7 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		ContentBody:   reader,
 		ContentLength: objectSize,
 		CustomHeader:  make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Set Content-Type
@@ -110,6 +131,9 @@ func (s *objectService) Put(ctx context.Context, bucketName, objectName string, 
 		md5Sum := md5Hash.Sum(nil)
 		meta.CustomHeader.Set("Content-MD5", base64.StdEncoding.EncodeToString(md5Sum))
 	}
+
+	// Set checksum headers
+	applyChecksumHeaders(&meta, options)
 
 	// Merge custom headers
 	if options.CustomHeaders != nil {

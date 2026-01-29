@@ -67,6 +67,7 @@ func TestMakeTargetURL(t *testing.T) {
 		bucketName   string
 		objectName   string
 		queryValues  url.Values
+		useAccelerate bool
 		want         string
 	}{
 		{
@@ -75,6 +76,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/my-bucket/",
 		},
 		{
@@ -83,6 +85,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "my-object.txt",
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/my-bucket/my-object.txt",
 		},
 		{
@@ -91,6 +94,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupDNS),
 			bucketName:   "my-bucket",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "https://my-bucket.s3.amazonaws.com/",
 		},
 		{
@@ -99,6 +103,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupDNS),
 			bucketName:   "my-bucket",
 			objectName:   "my-object.txt",
+			useAccelerate: false,
 			want:         "https://my-bucket.s3.amazonaws.com/my-object.txt",
 		},
 		{
@@ -107,6 +112,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "folder/my object+test.txt",
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/my-bucket/folder/my%20object%2Btest.txt",
 		},
 		{
@@ -116,6 +122,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketName:   "my-bucket",
 			objectName:   "my-object.txt",
 			queryValues:  url.Values{"max-keys": []string{"100"}, "prefix": []string{"test/"}},
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/my-bucket/my-object.txt?max-keys=100&prefix=test%2F",
 		},
 		{
@@ -124,6 +131,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/",
 		},
 		{
@@ -132,6 +140,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "http://localhost/my-bucket/",
 		},
 		{
@@ -140,6 +149,7 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "https://s3.amazonaws.com/my-bucket/",
 		},
 		{
@@ -148,7 +158,17 @@ func TestMakeTargetURL(t *testing.T) {
 			bucketLookup: int(types.BucketLookupPath),
 			bucketName:   "my-bucket",
 			objectName:   "",
+			useAccelerate: false,
 			want:         "http://localhost:9000/my-bucket/",
+		},
+		{
+			name:         "Accelerate host style",
+			endpointURL:  "https://s3.amazonaws.com",
+			bucketLookup: int(types.BucketLookupPath),
+			bucketName:   "my-bucket",
+			objectName:   "my-object.txt",
+			useAccelerate: true,
+			want:         "https://my-bucket.s3-accelerate.amazonaws.com/my-object.txt",
 		},
 	}
 
@@ -164,7 +184,7 @@ func TestMakeTargetURL(t *testing.T) {
 				bucketLookup: tt.bucketLookup,
 			}
 
-			got, err := executor.makeTargetURL(tt.bucketName, tt.objectName, "", tt.queryValues)
+			got, err := executor.makeTargetURL(tt.bucketName, tt.objectName, "", tt.queryValues, tt.useAccelerate)
 			if err != nil {
 				t.Fatalf("makeTargetURL() error = %v", err)
 			}
@@ -588,7 +608,7 @@ func BenchmarkMakeTargetURL(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		_, _ = executor.makeTargetURL("my-bucket", "my-object.txt", "us-east-1", nil)
+		_, _ = executor.makeTargetURL("my-bucket", "my-object.txt", "us-east-1", nil, false)
 	}
 }
 

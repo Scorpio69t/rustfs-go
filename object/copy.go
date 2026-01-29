@@ -43,6 +43,7 @@ func (s *objectService) Copy(ctx context.Context, destBucket, destObject, source
 		BucketName:   destBucket,
 		ObjectName:   destObject,
 		CustomHeader: make(http.Header),
+		UseAccelerate: options.UseAccelerate,
 	}
 
 	// Set copy source
