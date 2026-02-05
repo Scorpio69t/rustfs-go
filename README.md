@@ -430,8 +430,6 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 For issues or suggestions, please submit an [Issue](https://github.com/Scorpio69t/rustfs-go/issues).
 
-<iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://www.star-history.com/embed?secret=Z2hwX0E0QnRlMFBYZlpzYkdJZ2JIODN0dkhINWZYNVlVYTB4UTBBQQ==#Scorpio69t/rustfs-go&type=date&legend=top-left" frameBorder="0"></iframe>
-
 ---
 
 <div align="center">
