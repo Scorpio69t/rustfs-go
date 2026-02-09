@@ -430,6 +430,10 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 For issues or suggestions, please submit an [Issue](https://github.com/Scorpio69t/rustfs-go/issues).
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Scorpio69t/rustfs-go&type=Date)](https://star-history.com/#Scorpio69t/rustfs-go&Date)
+
 ---
 
 <div align="center">
